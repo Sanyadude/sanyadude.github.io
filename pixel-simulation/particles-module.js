@@ -291,6 +291,16 @@ const ParticlesModule = (() => {
             this.initialized = true;
         }
 
+        particles.clear = function () {
+            this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+            this.particleArray = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
+            this.staticParticleArray = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
+            this.particleColors = fillArray(this.arrayXY.x, this.arrayXY.y, () => Math.floor(Math.random() * 4));
+            this.particleModified = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
+            this.particleSleep = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
+            this.particlePrevSleep = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
+        }
+
         particles.on = function (name, callback) {
             this.callbacks[name] = callback;
         }

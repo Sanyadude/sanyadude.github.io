@@ -2,7 +2,9 @@ const infoContainer = document.querySelector('#info');
 const fpsContainer = document.querySelector('#fps');
 const spreadInput = document.querySelector('#spread-value');
 const amountInput = document.querySelector('#amount-value');
+const typeSelect = document.querySelector('#type');
 const debugCheck = document.querySelector('#debug');
+const resetButton = document.querySelector('#reset');
 
 const scale = 4;
 const min = { x: 1, y: 40 };
@@ -114,14 +116,25 @@ canvas.addEventListener('wheel', (e) => {
 
 spreadInput.addEventListener('change', (e) => {
     spawnSpread = +e.currentTarget.value;
+    updateInfo();
 });
 
 amountInput.addEventListener('change', (e) => {
     spawnedAmount = +e.currentTarget.value;
+    updateInfo();
 });
 
 debugCheck.addEventListener('change', (e) => {
     particles.debugMoving = e.currentTarget.checked;
+});
+
+typeSelect.addEventListener('change', (e) => {
+    currentParticleIndex = +e.currentTarget.value;
+    updateInfo();
+});
+
+resetButton.addEventListener('click', (e) => {
+    particles.clear();
 });
 
 let prevF = 0;

@@ -1,18 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Pixel simulation</title>
 </head>
+
 <body>
     <canvas id="text" class="text-canvas"></canvas>
     <div class="controls">
         <div>Mouse L - spawn; Mouse R - remove; Mouse Scroll - change type</div>
         <div id="info"></div>
-        <div id="fps"></div>
         <div>
+            <div class="control">
+                <div id="fps"></div>
+                <button type="button" id="reset">Reset canvas</button>
+            </div>
+            <div class="control">
+                <label>Select material:</label>
+                <select id="type">
+                    <option value="0">Wood</option>
+                    <option value="1">Water</option>
+                    <option value="2">Sand</option>
+                    <option value="3">Fire</option>
+                    <option value="4">Smoke</option>
+                    <option value="5">Steam</option>
+                    <option value="6">Acid</option>
+                </select>
+            </div>
             <div class="control">
                 <label>Debug moving:</label>
                 <input type="checkbox" id="debug">
@@ -64,4 +81,5 @@
 </body>
 <script src="particles-module.js"></script>
 <script src="index.js"></script>
+
 </html>
