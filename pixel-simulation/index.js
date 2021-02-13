@@ -106,10 +106,12 @@ canvas.addEventListener('wheel', (e) => {
         currentParticleIndex++;
         const maxIndex = particleTypes.length - 1;
         currentParticleIndex = currentParticleIndex <= maxIndex ? currentParticleIndex : 0;
+        typeSelect.value = currentParticleIndex;
     } else {
         currentParticleIndex--;
         const maxIndex = particleTypes.length - 1;
         currentParticleIndex = currentParticleIndex >= 0 ? currentParticleIndex : maxIndex;
+        typeSelect.value = currentParticleIndex;
     }
     updateInfo();
 });
