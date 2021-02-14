@@ -9,7 +9,7 @@ const ParticlesModule = (() => {
     const ICE_MAT = 14;
     const WATER_MAT = 15;
     const SAND_MAT = 20;
-    const SNOW_MAT = 20;
+    const SNOW_MAT = 21;
     const FIRE_MAT = 30;
     const SMOKE_MAT = 40;
     const STEAM_MAT = 41;
