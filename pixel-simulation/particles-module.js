@@ -1,5 +1,93 @@
 const ParticlesModule = (() => {
-    const fillArray = function (x, y, expression) {
+    const COLORS_PER_MAT = 4;
+
+    const EMTY_SPACE = 0;
+
+    const ROCK_MAT = 10;
+    const WOOD_MAT = 11;
+    const ICE_MAT = 14;
+    const WATER_MAT = 15;
+    const SAND_MAT = 20;
+    const FIRE_MAT = 30;
+    const SMOKE_MAT = 40;
+    const STEAM_MAT = 41;
+    const ACID_MAT = 50;
+    const PLANT_MAT = 60;
+
+    const ParticleProps = (() => {
+        const properties = {};
+
+        properties[WOOD_MAT] = {
+            id: WOOD_MAT,
+            name: 'Wood',
+            colors: ['#5a2806', '#7e470b', '#66300b', '#7a4408']
+        }
+        properties[ROCK_MAT] = {
+            id: ROCK_MAT,
+            name: 'Rock',
+            colors: ['#2c2b2b', '#383030', '#2c2b2b', '#383030']
+        }
+        properties[ICE_MAT] = {
+            id: ICE_MAT,
+            name: 'Ice',
+            colors: ['#b3e1e3', '#82cfd1', '#f7f7f7', '#b3e1e3']
+        }
+        properties[WATER_MAT] = {
+            id: WATER_MAT,
+            name: 'Water',
+            colors: ['#1ca3ec', '#42d6f7', '#1692d5', '#0a97e3']
+        }
+        properties[SAND_MAT] = {
+            id: SAND_MAT,
+            name: 'Sand',
+            colors: ['#e5c69d', '#eacba4', '#e0be91', '#b3a076']
+        }
+        properties[FIRE_MAT] = {
+            id: FIRE_MAT,
+            name: 'Fire',
+            colors: ['#f70000', '#f75700', '#b02103', '#f7c800']
+        }
+        properties[SMOKE_MAT] = {
+            id: SMOKE_MAT,
+            name: 'Smoke',
+            colors: ['#595656', '#696767', '#595656', '#696767']
+        }
+        properties[STEAM_MAT] = {
+            id: STEAM_MAT,
+            name: 'Steam',
+            colors: ['#e4ecf2', '#dfe6ec', '#d9e0e5', '#cdd9e1']
+        }
+        properties[ACID_MAT] = {
+            id: ACID_MAT,
+            name: 'Acid',
+            colors: ['#aab919', '#c5dc14', '#84e810', '#7de208']
+        }
+        properties[PLANT_MAT] = {
+            id: PLANT_MAT,
+            name: 'Plant',
+            colors: ['#57a65e', '#338453', '#5fb766', '#57a65e']
+        }
+
+        return properties;
+    })()
+
+    const colActions = {
+        move: 1,
+        swap: 2,
+        annihilate: 3
+    }
+
+    const particleCollisionActions = (() => {
+        const actions = {};
+
+        actions[WATER_MAT] = [[SMOKE_MAT, colActions.swap], [STEAM_MAT, colActions.swap], [ACID_MAT, colActions.swap]];
+        actions[SAND_MAT] = [[WATER_MAT, colActions.swap], [SMOKE_MAT, colActions.swap], [STEAM_MAT, colActions.swap], [ACID_MAT, colActions.swap]];
+        actions[ACID_MAT] = [[SMOKE_MAT, colActions.swap], [STEAM_MAT, colActions.swap]];
+
+        return actions;
+    })()
+
+    const fillArray = (x, y, expression) => {
         const filled = [];
         for (let i = 0; i <= y; i++) {
             filled.push([]);
@@ -8,6 +96,13 @@ const ParticlesModule = (() => {
             }
         }
         return filled;
+    }
+
+    //dx, dy
+    const directions = {
+        topLeft: [-1, -1], top: [-1, 0], topRight: [-1, 1],
+        left: [0, -1], center: [0, 0], right: [0, 1],
+        bottomLeft: [1, -1], bottom: [1, 0], bottomRight: [1, 1]
     }
 
     const awakeNeighbours = (x, y, sleep) => {
@@ -34,210 +129,237 @@ const ParticlesModule = (() => {
         }
     }
 
-    const granuleRules = () => {
-        let bottom = [1, 0];
-        let bottomLeft = [1, -1];
-        let bottomRight = [1, 1];
+    const granuleMoveDir = () => Math.random() < 0.5
+        ? [directions.bottom, directions.bottomLeft, directions.bottomRight]
+        : [directions.bottom, directions.bottomRight, directions.bottomLeft];
 
-        let rules = [bottom];
-        rules = rules.concat(Math.random() < 0.51 ? [bottomLeft, bottomRight] : [bottomRight, bottomLeft]);
+    const liquidMoveDir = () => Math.random() < 0.5
+        ? [directions.bottom, directions.bottomLeft, directions.bottomRight, directions.left, directions.right]
+        : [directions.bottom, directions.bottomRight, directions.bottomLeft, directions.right, directions.left];
 
-        return rules;
-    };
+    const gasMoveDir = () => Math.random() < 0.5
+        ? [directions.top, directions.topLeft, directions.topRight, directions.left, directions.right]
+        : [directions.top, directions.topRight, directions.topLeft, directions.right, directions.left];
 
-    const liquidRules = () => {
-        let bottom = [1, 0];
-        let bottomLeft = [1, -1];
-        let bottomRight = [1, 1];
-        let left = [0, -1];
-        let right = [0, 1];
+    const spreadMoveDir = [directions.top, directions.bottom, directions.left, directions.right];
+    const allDirMove = [directions.topLeft, directions.top, directions.topRight, directions.left, directions.right, directions.bottomLeft, directions.bottom, directions.bottomRight];
 
-        let rules = [bottom];
-        rules = rules.concat(Math.random() < 0.51 ? [bottomLeft, bottomRight] : [bottomRight, bottomLeft]);
-        rules = rules.concat(Math.random() < 0.51 ? [left, right] : [right, left]);
+    const updateStatic = (x, y, particles, modified, sleep) => sleep[x][y] = 1;
 
-        return rules;
-    };
-
-    const gasRules = () => {
-        let top = [-1, 0];
-        let topLeft = [-1, -1];
-        let topRight = [-1, 1];
-        let left = [0, -1];
-        let right = [0, 1];
-
-        let rules = [top];
-        rules = rules.concat(Math.random() < 0.51 ? [topLeft, topRight] : [topRight, topLeft]);
-        rules = rules.concat(Math.random() < 0.51 ? [left, right] : [right, left]);
-
-        return rules;
+    const updateGas = (matId, x, y, particles, modified, sleep) => {
+        const directions = gasMoveDir();
+        for (let i = 0; i < directions.length; i++) {
+            const dir = directions[i];
+            if (particles[x + dir[0]]) {
+                if (particles[x + dir[0]][y + dir[1]] === EMTY_SPACE) {
+                    particles[x + dir[0]][y + dir[1]] = matId;
+                    particles[x][y] = EMTY_SPACE;
+                    modified[x + dir[0]][y + dir[1]] = 1;
+                    awakeNeighbours(x, y, sleep);
+                    return;
+                }
+            }
+        }
+        sleep[x][y] = 1;
     }
+    const updateSmoke = (x, y, particles, modified, sleep) => updateGas(SMOKE_MAT, x, y, particles, modified, sleep);
+    const updateSteam = (x, y, particles, modified, sleep) => updateGas(STEAM_MAT, x, y, particles, modified, sleep);
 
-    const fastSpreadingRules = () => {
-        let top = [-1, 0];
-        let bottom = [1, 0];
-        let left = [0, -1];
-        let right = [0, 1];
-        return [top, bottom, left, right];
+    const updateWater = (x, y, particles, modified, sleep) => {
+        const directions = liquidMoveDir();
+        for (let i = 0; i < directions.length; i++) {
+            const dir = directions[i];
+            if (particles[x + dir[0]]) {
+                if (particles[x + dir[0]][y + dir[1]] === EMTY_SPACE) {
+                    particles[x + dir[0]][y + dir[1]] = WATER_MAT;
+                    particles[x][y] = EMTY_SPACE;
+                    modified[x + dir[0]][y + dir[1]] = 1;
+                    awakeNeighbours(x, y, sleep);
+                    return;
+                } else if (particles[x + dir[0]][y + dir[1]] === ICE_MAT && Math.random() < 0.1) {
+                    particles[x][y] = ICE_MAT;
+                    modified[x][y] = 1;
+                    awakeNeighbours(x, y, sleep);
+                    return;
+                }
+            }
+        }
+        if (particles[x + 1]) {
+            const colActions = particleCollisionActions[WATER_MAT];
+            for (let i = 0; i < colActions.length; i++) {
+                const otherParticle = colActions[i];
+                if (particles[x + 1][y] === otherParticle[0]) {
+                    particles[x + 1][y] = WATER_MAT;
+                    particles[x][y] = otherParticle[0];
+                    awakeNeighbours(x, y, sleep);
+                    return;
+                }
+            }
+        }
+        sleep[x][y] = 1;
     }
 
     const updateSand = (x, y, particles, modified, sleep) => {
-        const rules = granuleRules();
-        for (let i = 0; i < rules.length; i++) {
-            const rule = rules[i];
-            if (particles[x + rule[0]]) {
-                if (particles[x + rule[0]][y + rule[1]] === 0) {
-                    particles[x + rule[0]][y + rule[1]] = 3;
-                    particles[x][y] = 0;
-                    modified[x + rule[0]][y + rule[1]] = 1;
+        const directions = granuleMoveDir();
+        for (let i = 0; i < directions.length; i++) {
+            const dir = directions[i];
+            if (particles[x + dir[0]]) {
+                if (particles[x + dir[0]][y + dir[1]] === EMTY_SPACE) {
+                    particles[x + dir[0]][y + dir[1]] = SAND_MAT;
+                    particles[x][y] = EMTY_SPACE;
+                    modified[x + dir[0]][y + dir[1]] = 1;
                     awakeNeighbours(x, y, sleep);
                     return;
                 }
             }
         }
         if (particles[x + 1]) {
-            const otherParticleRules = [2, 5, 6, 7];
-            for (let i = 0; i < otherParticleRules.length; i++) {
-                const otherParticleId = otherParticleRules[i];
-                if (particles[x + 1][y] === otherParticleId) {
-                    particles[x + 1][y] = 3;
-                    particles[x][y] = otherParticleId;
+            const colActions = particleCollisionActions[SAND_MAT];
+            for (let i = 0; i < colActions.length; i++) {
+                const otherParticle = colActions[i];
+                if (particles[x + 1][y] === otherParticle[0]) {
+                    particles[x + 1][y] = SAND_MAT;
+                    particles[x][y] = otherParticle[0];
                     awakeNeighbours(x, y, sleep);
                     return;
                 }
             }
         }
         sleep[x][y] = 1;
-    };
-
-    const updateSmoke = (x, y, particles, modified, sleep) => {
-        const rules = gasRules();
-        for (let i = 0; i < rules.length; i++) {
-            const rule = rules[i];
-            if (particles[x + rule[0]]) {
-                if (particles[x + rule[0]][y + rule[1]] === 0) {
-                    particles[x + rule[0]][y + rule[1]] = 5;
-                    particles[x][y] = 0;
-                    modified[x + rule[0]][y + rule[1]] = 1;
-                    awakeNeighbours(x, y, sleep);
-                    return;
-                }
-            }
-        }
-        sleep[x][y] = 1;
-    };
-
-    const updateSteam = (x, y, particles, modified, sleep) => {
-        const rules = gasRules();
-        for (let i = 0; i < rules.length; i++) {
-            const rule = rules[i];
-            if (particles[x + rule[0]]) {
-                if (particles[x + rule[0]][y + rule[1]] === 0) {
-                    particles[x + rule[0]][y + rule[1]] = 6;
-                    particles[x][y] = 0;
-                    modified[x + rule[0]][y + rule[1]] = 1;
-                    awakeNeighbours(x, y, sleep);
-                    return;
-                }
-            }
-        }
-        sleep[x][y] = 1;
-    };
-
-    const updateWater = (x, y, particles, modified, sleep) => {
-        const rules = liquidRules();
-        for (let i = 0; i < rules.length; i++) {
-            const rule = rules[i];
-            if (particles[x + rule[0]]) {
-                if (particles[x + rule[0]][y + rule[1]] === 0) {
-                    particles[x + rule[0]][y + rule[1]] = 2;
-                    particles[x][y] = 0;
-                    modified[x + rule[0]][y + rule[1]] = 1;
-                    awakeNeighbours(x, y, sleep);
-                    return;
-                }
-            }
-        }
-        if (particles[x + 1]) {
-            const otherParticleRules = [5, 6, 7];
-            for (let i = 0; i < otherParticleRules.length; i++) {
-                const otherParticleId = otherParticleRules[i];
-                if (particles[x + 1][y] === otherParticleId) {
-                    particles[x + 1][y] = 2;
-                    particles[x][y] = otherParticleId;
-                    awakeNeighbours(x, y, sleep);
-                    return;
-                }
-            }
-        }
-        sleep[x][y] = 1;
-    };
-
-    const updateAcid = (x, y, particles, modified, sleep) => {
-        const rules = liquidRules();
-        for (let i = 0; i < rules.length; i++) {
-            const rule = rules[i];
-            if (particles[x + rule[0]]) {
-                if (particles[x + rule[0]][y + rule[1]] === 0) {
-                    particles[x + rule[0]][y + rule[1]] = 7;
-                    particles[x][y] = 0;
-                    modified[x + rule[0]][y + rule[1]] = 1;
-                    awakeNeighbours(x, y, sleep);
-                    return;
-                } else if (particles[x + rule[0]][y + rule[1]] !== 7 && Math.random() < 0.1) {
-                    particles[x + rule[0]][y + rule[1]] = 0;
-                    particles[x][y] = 0;
-                    modified[x + rule[0]][y + rule[1]] = 1;
-                    awakeNeighbours(x, y, sleep);
-                    return;
-                }
-            }
-        }
-        if (particles[x + 1]) {
-            const otherParticleRules = [5, 6];
-            for (let i = 0; i < otherParticleRules.length; i++) {
-                const otherParticleId = otherParticleRules[i];
-                if (particles[x + 1][y] === otherParticleId) {
-                    particles[x + 1][y] = 2;
-                    particles[x][y] = otherParticleId;
-                    awakeNeighbours(x, y, sleep);
-                    return;
-                }
-            }
-        }
-        sleep[x][y] = 1;
-    };
+    }
 
     const updateFire = (x, y, particles, modified, sleep) => {
-        const rules = fastSpreadingRules();
-        for (let i = 0; i < rules.length; i++) {
-            const rule = rules[i];
-            if (particles[x + rule[0]]) {
-                if (particles[x + rule[0]][y + rule[1]] === 1) {
-                    particles[x + rule[0]][y + rule[1]] = 4;
-                    particles[x][y] = 5;
-                    modified[x + rule[0]][y + rule[1]] = 1;
+        const directions = spreadMoveDir;
+        for (let i = 0; i < directions.length; i++) {
+            const dir = directions[i];
+            if (particles[x + dir[0]]) {
+                if (particles[x + dir[0]][y + dir[1]] === WOOD_MAT 
+                    || particles[x + dir[0]][y + dir[1]] === PLANT_MAT) {
+                    particles[x + dir[0]][y + dir[1]] = FIRE_MAT;
+                    particles[x][y] = SMOKE_MAT;
+                    modified[x + dir[0]][y + dir[1]] = 1;
                     awakeNeighbours(x, y, sleep);
-                } else if (particles[x + rule[0]][y + rule[1]] === 2) {
-                    particles[x + rule[0]][y + rule[1]] = 6;
-                    particles[x][y] = 0;
+                } else if (particles[x + dir[0]][y + dir[1]] === ICE_MAT) {
+                    particles[x + dir[0]][y + dir[1]] = WATER_MAT;
+                    particles[x][y] = EMTY_SPACE;
+                    awakeNeighbours(x, y, sleep);
+                } else if (particles[x + dir[0]][y + dir[1]] === WATER_MAT && Math.random() < 0.1) {
+                    particles[x + dir[0]][y + dir[1]] = STEAM_MAT;
+                    particles[x][y] = EMTY_SPACE;
                     awakeNeighbours(x, y, sleep);
                 }
             }
         }
-        particles[x][y] = particles[x][y] === 5 ? 5 : 0;
-    };
+        particles[x][y] = particles[x][y] === SMOKE_MAT ? SMOKE_MAT : 0;
+    }
 
-    const updateWood = (x, y, particles, modified, sleep) => {
+    const updateAcid = (x, y, particles, modified, sleep) => {
+        const directions = liquidMoveDir();
+        for (let i = 0; i < directions.length; i++) {
+            const dir = directions[i];
+            if (particles[x + dir[0]]) {
+                if (particles[x + dir[0]][y + dir[1]] === EMTY_SPACE) {
+                    particles[x + dir[0]][y + dir[1]] = ACID_MAT;
+                    particles[x][y] = EMTY_SPACE;
+                    modified[x + dir[0]][y + dir[1]] = 1;
+                    awakeNeighbours(x, y, sleep);
+                    return;
+                } else if (particles[x + dir[0]][y + dir[1]] !== ACID_MAT && Math.random() < 0.1) {
+                    particles[x + dir[0]][y + dir[1]] = EMTY_SPACE;
+                    particles[x][y] = EMTY_SPACE;
+                    modified[x + dir[0]][y + dir[1]] = 1;
+                    awakeNeighbours(x, y, sleep);
+                    return;
+                }
+            }
+        }
+        if (particles[x + 1]) {
+            const colActions = particleCollisionActions[ACID_MAT];
+            for (let i = 0; i < colActions.length; i++) {
+                const otherParticle = colActions[i];
+                if (particles[x + 1][y] === otherParticle[0]) {
+                    particles[x + 1][y] = ACID_MAT;
+                    particles[x][y] = otherParticle[0];
+                    awakeNeighbours(x, y, sleep);
+                    return;
+                }
+            }
+        }
         sleep[x][y] = 1;
-    };
+    }
+
+    const updatePlant = (x, y, particles, modified, sleep) => {
+        let plantsAround = true;
+        for (let i = 0; i < allDirMove.length; i++) {
+            const dir = allDirMove[i];
+            if (particles[x + dir[0]]) {
+                if (particles[x + dir[0]][y + dir[1]] !== PLANT_MAT) {
+                    plantsAround = false;
+                    break;
+                }
+            }
+        }
+        if (plantsAround) {
+            modified[x][y] = 1;
+            sleep[x][y] = 1;
+            return;
+        }
+        const rand = Math.random();
+        if (rand > 0.99) {
+            const top = directions.top;
+            if (particles[x + top[0]]) {
+                if (particles[x + top[0]][y + top[1]] !== PLANT_MAT) {
+                    particles[x][y] = EMTY_SPACE;
+                    modified[x][y] = 1;
+                    awakeNeighbours(x, y, sleep);
+                    return;
+                }
+            }
+        } else if (rand < 0.01) {
+            const topSide = Math.random() < 0.5 ? directions.topLeft : directions.topRight;
+            if (particles[x + topSide[0]]) {
+                if (particles[x + topSide[0]][y + topSide[1]] === EMTY_SPACE) {
+                    particles[x + topSide[0]][y + topSide[1]] = PLANT_MAT;
+                    modified[x + topSide[0]][y + topSide[1]] = 1;
+                    awakeNeighbours(x, y, sleep);
+                    return;
+                }
+            }
+        } else if (rand < 0.1) {
+            const top = directions.top;
+            if (particles[x + top[0]]) {
+                if (particles[x + top[0]][y + top[1]] === EMTY_SPACE) {
+                    particles[x + top[0]][y + top[1]] = PLANT_MAT;
+                    modified[x + top[0]][y + top[1]] = 1;
+                    awakeNeighbours(x, y, sleep);
+                    return;
+                }
+            }
+        }
+    }
+
+    const particlesUpdate = (() => {
+        const updateFunctions = {};
+
+        updateFunctions[WOOD_MAT] = updateStatic;
+        updateFunctions[ROCK_MAT] = updateStatic;
+        updateFunctions[ICE_MAT] = updateStatic;
+        updateFunctions[WATER_MAT] = updateWater;
+        updateFunctions[SAND_MAT] = updateSand;
+        updateFunctions[FIRE_MAT] = updateFire;
+        updateFunctions[SMOKE_MAT] = updateSmoke;
+        updateFunctions[STEAM_MAT] = updateSteam;
+        updateFunctions[ACID_MAT] = updateAcid;
+        updateFunctions[PLANT_MAT] = updatePlant;
+
+        return updateFunctions;
+    })()
 
     const Particles = function (scale, min, max, maxParticles) {
         const particles = {};
 
         particles.tickCount = 0;
         particles.updated = 0;
-
         particles.drawedMoving = 0;
         particles.drawedToStatic = 0;
         particles.drawedFromStatic = 0;
@@ -249,6 +371,7 @@ const ParticlesModule = (() => {
         particles.maxParticles = maxParticles || Infinity;
 
         particles.initialized = false;
+        particles.paused = false;
 
         particles.containerElement = null;
         particles.context = null;
@@ -262,6 +385,7 @@ const ParticlesModule = (() => {
         particles.particleModified = null;
         particles.particleSleep = null;
         particles.particlePrevSleep = null;
+
         particles.callbacks = {
             'before-draw': null
         };
@@ -282,23 +406,26 @@ const ParticlesModule = (() => {
                 x: this.max.x - this.min.x,
                 y: this.max.y - this.min.y
             }
-            this.particleArray = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
-            this.staticParticleArray = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
-            this.particleColors = fillArray(this.arrayXY.x, this.arrayXY.y, () => Math.floor(Math.random() * 4));
-            this.particleModified = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
-            this.particleSleep = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
-            this.particlePrevSleep = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
-            this.initialized = true;
+            this.clear();
         }
 
         particles.clear = function () {
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
             this.particleArray = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
             this.staticParticleArray = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
-            this.particleColors = fillArray(this.arrayXY.x, this.arrayXY.y, () => Math.floor(Math.random() * 4));
+            this.particleColors = fillArray(this.arrayXY.x, this.arrayXY.y, () => Math.floor(Math.random() * COLORS_PER_MAT));
             this.particleModified = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
             this.particleSleep = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
             this.particlePrevSleep = fillArray(this.arrayXY.x, this.arrayXY.y, () => 0);
+            this.drawBounds();
+        }
+
+        particles.start = function () {
+            this.paused = false;
+        }
+
+        particles.stop = function () {
+            this.paused = true;
         }
 
         particles.on = function (name, callback) {
@@ -328,7 +455,7 @@ const ParticlesModule = (() => {
             return count;
         }
 
-        particles.getImage = function () {
+        particles.saveImage = function () {
             const imageData = this.context.canvas.toDataURL('image/png');
             const a = document.createElement('a');
             a.href = imageData;
@@ -339,6 +466,8 @@ const ParticlesModule = (() => {
         }
 
         particles.add = function (id, x, y) {
+            if (this.paused)
+                return;
             if (this.particleArray[y - this.min.y] !== undefined
                 && this.particleArray[y - this.min.y][x - this.min.x] !== undefined
                 && this.particleArray[y - this.min.y][x - this.min.x] === 0) {
@@ -347,6 +476,8 @@ const ParticlesModule = (() => {
         }
 
         particles.addFew = function (id, x, y, spread, amount) {
+            if (this.paused)
+                return;
             for (let i = 0; i < amount; i++) {
                 const xR = Math.floor(Math.random() * spread) * ((Math.random() < 0.5) ? 1 : -1);
                 const xY = Math.floor(Math.random() * spread) * ((Math.random() < 0.5) ? 1 : -1);
@@ -371,6 +502,8 @@ const ParticlesModule = (() => {
         }
 
         particles.tick = function () {
+            if (this.paused)
+                return;
             this.tickCount++;
             this.update();
             this.draw();
@@ -396,35 +529,12 @@ const ParticlesModule = (() => {
             if (!id)
                 return;
             if (this.particleModified[row][col] === 0 && this.particleSleep[row][col] === 0) {
-                this.moveParticle(id, row, col);
+                if (id !== FIRE_MAT && id !== PLANT_MAT) {
+                    particlesUpdate[id](row, col, this.particleArray, this.particleModified, this.particleSleep);
+                } else if (this.tickCount % 10 === 0) {
+                    particlesUpdate[id](row, col, this.particleArray, this.particleModified, this.particleSleep);
+                }
                 this.updated++;
-            }
-        }
-
-        particles.moveParticle = function (cellId, row, col) {
-            switch (cellId) {
-                case 1:
-                    updateWood(row, col, this.particleArray, this.particleModified, this.particleSleep);
-                    return;
-                case 2:
-                    updateWater(row, col, this.particleArray, this.particleModified, this.particleSleep);
-                    return;
-                case 3:
-                    updateSand(row, col, this.particleArray, this.particleModified, this.particleSleep);
-                    return;
-                case 4:
-                    if (this.tickCount % 10 === 0)
-                        updateFire(row, col, this.particleArray, this.particleModified, this.particleSleep);
-                    return;
-                case 5:
-                    updateSmoke(row, col, this.particleArray, this.particleModified, this.particleSleep);
-                    return;
-                case 6:
-                    updateSteam(row, col, this.particleArray, this.particleModified, this.particleSleep);
-                    return;
-                case 7:
-                    updateAcid(row, col, this.particleArray, this.particleModified, this.particleSleep);
-                    return;
             }
         }
 
@@ -448,11 +558,11 @@ const ParticlesModule = (() => {
 
         particles.drawParticle = function (row, col) {
             const id = this.particleArray[row][col];
-            if (this.particleSleep[row][col] === 0 && id !== 0) {
+            if (id !== 0 && this.particleSleep[row][col] === 0) {
                 this.drawedMoving++;
                 this.staticParticleArray[row][col] = 1;
-                this.drawParticleMain(col, row, this.debugMoving ? 'red' : ParticleProps[id].colors[this.particleColors[row][col]]);
-            } else if (this.particleSleep[row][col] === 1 && this.particlePrevSleep[row][col] === 0) {
+                this.drawParticleMain(col, row, this.debugMoving ? '#c101ff' : ParticleProps[id].colors[this.particleColors[row][col]]);
+            } else if (id !== 0 && this.particleSleep[row][col] === 1 && this.particlePrevSleep[row][col] === 0) {
                 this.drawedToStatic++;
                 this.staticParticleArray[row][col] = 1;
                 this.drawParticleMain(col, row, ParticleProps[id].colors[this.particleColors[row][col]]);
@@ -479,44 +589,6 @@ const ParticlesModule = (() => {
         }
 
         return particles;
-    }
-
-    const ParticleProps = {
-        '1': {
-            id: 1,
-            name: 'Wood',
-            colors: ['#5a2806', '#7e470b', '#66300b', '#7a4408']
-        },
-        '2': {
-            id: 2,
-            name: 'Water',
-            colors: ['#1ca3ec', '#42d6f7', '#1692d5', '#0a97e3']
-        },
-        '3': {
-            id: 3,
-            name: 'Sand',
-            colors: ['#e5c69d', '#eacba4', '#e0be91', '#b3a076']
-        },
-        '4': {
-            id: 4,
-            name: 'Fire',
-            colors: ['#f70000', '#f75700', '#b02103', '#f7c800']
-        },
-        '5': {
-            id: 5,
-            name: 'Smoke',
-            colors: ['#595656', '#262626', '#595656', '#262626']
-        },
-        '6': {
-            id: 6,
-            name: 'Steam',
-            colors: ['#e4ecf2', '#dfe6ec', '#d9e0e5', '#cdd9e1']
-        },
-        '7': {
-            id: 7,
-            name: 'Acid',
-            colors: ['#aab919', '#c5dc14', '#84e810', '#7de208']
-        }
     }
 
     const particlesModule = {

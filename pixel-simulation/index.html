@@ -11,35 +11,30 @@
 <body>
     <canvas id="text" class="text-canvas"></canvas>
     <div class="controls">
-        <div>Mouse L - spawn; Mouse R - remove; Mouse Scroll - change type</div>
-        <div id="info"></div>
-        <div>
-            <div class="control">
-                <div id="fps"></div>
-                <button type="button" id="reset">Reset canvas</button>
-            </div>
-            <div class="control">
-                <label>Select material:</label>
-                <select id="type">
-                    <option value="">Select</option>
-                    <option value="0">Wood</option>
-                    <option value="1">Water</option>
-                    <option value="2">Sand</option>
-                    <option value="3">Fire</option>
-                    <option value="4">Smoke</option>
-                    <option value="5">Steam</option>
-                    <option value="6">Acid</option>
-                </select>
-            </div>
-            <div class="control">
-                <label>Debug moving:</label>
-                <input type="checkbox" id="debug">
-            </div>
-            <div class="control">
+        <div class="control">Mouse L - spawn; Mouse R - remove; Mouse Scroll - change type</div>
+        <div class="control">
+            <div id="info"></div>
+            <div id="fps"></div>
+        </div>
+        <div class="control">
+            <button class="control-button danger" type="button" id="reset">Reset canvas</button>
+            <button class="control-button primary" type="button" id="save">Save Img</button>
+            <button class="control-button primary" type="button" id="start">Start</button>
+            <button class="control-button primary" type="button" id="stop">Stop</button>
+            <select class="control-button" id="type">
+                <option value="">Material -</option>
+            </select>
+        </div>
+        <div class="control">
+            <label>Debug moving particles:</label>
+            <input type="checkbox" id="debug">
+        </div>
+        <div class="control">
+            <div>
                 <label>Amount:</label>
                 <input class="text-input" type="number" id="amount-value" value="10" min="1" max="100">
             </div>
-            <div class="control">
+            <div>
                 <label>Spread:</label>
                 <input class="text-input" type="number" id="spread-value" value="3" min="1" max="10">
             </div>
@@ -60,7 +55,6 @@
             position: absolute;
             top: 0;
             right: 0;
-            padding: 10px;
             background-color: #eee;
             border-left: 1px solid;
             border-bottom: 1px solid;
@@ -73,10 +67,42 @@
         .control {
             display: flex;
             justify-content: space-between;
+            padding: 2px 5px;
+        }
+
+        .control-button {
+            border: none;
+            flex: 1;
+            padding: 5px;
+            cursor: pointer;
+            border: 1px solid #000;
+            margin: -1px;
+            outline: none;
+            position: relative;
+        }
+
+        .control-button:hover:after {
+            content: "";
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         .text-input {
             width: 60px;
+        }
+
+        .danger {
+            color: #fff;
+            background-color: #dc3545;
+        }
+
+        .primary {
+            color: #fff;
+            background-color: #007bff;
         }
     </style>
 </body>

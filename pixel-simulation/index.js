@@ -5,6 +5,9 @@ const amountInput = document.querySelector('#amount-value');
 const typeSelect = document.querySelector('#type');
 const debugCheck = document.querySelector('#debug');
 const resetButton = document.querySelector('#reset');
+const startButton = document.querySelector('#start');
+const stopButton = document.querySelector('#stop');
+const saveButton = document.querySelector('#save');
 
 const scale = 4;
 const min = { x: 1, y: 40 };
@@ -17,11 +20,23 @@ const textCanvasContext = textCanvas.getContext('2d');
 
 const particles = new ParticlesModule.Particles(scale, min, max);
 particles.init(document.querySelector('body'));
+particles.on('before-draw', () => {
+    textCanvasContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
+    for (let i = 0; i < pixels.length; i++) {
+        const pixel = pixels[i];
+        textCanvasContext.fillStyle = pixel.color;
+        textCanvasContext.fillRect(pixel.x, pixel.y, pixel.w, pixel.h);
+    }
+});
 const canvas = particles.context.canvas;
 
 let particleTypes = [];
 for (const key in ParticlesModule.ParticleProps) {
     particleTypes.push(ParticlesModule.ParticleProps[key]);
+    const option = document.createElement('option');
+    option.value = particleTypes.length - 1;
+    option.innerText = `Material ${ParticlesModule.ParticleProps[key].name}`;
+    typeSelect.appendChild(option);
 }
 let currentParticleIndex = 0;
 
@@ -33,6 +48,7 @@ let isRightMouseButtonPressed = false;
 
 let spawnedAmount = +amountInput.value;
 let spawnSpread = +spreadInput.value;
+
 //draw pixels from text
 let pixels = [];
 const pixelsFromText = function (text, colors) {
@@ -57,17 +73,9 @@ const pixelsFromText = function (text, colors) {
             });
         }
     }
+    textCanvasContext.clearRect(0, 0, w, h);
     return pixels;
 }
-
-particles.on('before-draw', (particles) => {
-    textCanvasContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
-    for (let i = 0; i < pixels.length; i++) {
-        const pixel = pixels[i];
-        textCanvasContext.fillStyle = pixel.color;
-        textCanvasContext.fillRect(pixel.x, pixel.y, pixel.w, pixel.h);
-    }
-});
 
 const updateInfo = () => {
     const text = `Particle - ${particleTypes[currentParticleIndex].name} - a${spawnedAmount} - s${spawnSpread}`;
@@ -137,6 +145,18 @@ typeSelect.addEventListener('change', (e) => {
 
 resetButton.addEventListener('click', (e) => {
     particles.clear();
+});
+
+startButton.addEventListener('click', (e) => {
+    particles.start();
+});
+
+stopButton.addEventListener('click', (e) => {
+    particles.stop();
+});
+
+saveButton.addEventListener('click', (e) => {
+    particles.saveImage();
 });
 
 let prevF = 0;
