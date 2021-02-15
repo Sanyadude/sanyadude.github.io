@@ -8,10 +8,11 @@ const resetButton = document.querySelector('#reset');
 const startButton = document.querySelector('#start');
 const stopButton = document.querySelector('#stop');
 const saveButton = document.querySelector('#save');
+const matPicker = document.querySelector('#mat-picker');
 
 const scale = 4;
 const min = { x: 1, y: 40 };
-const max = { x: Math.floor(window.innerWidth / scale) - 2, y: Math.floor(window.innerHeight / scale) - 1 };
+const max = { x: Math.floor(window.innerWidth / scale) - 30, y: Math.floor(window.innerHeight / scale) - 1 };
 
 const textCanvas = document.querySelector('#text');
 textCanvas.width = window.innerWidth;
@@ -30,14 +31,35 @@ particles.on('before-draw', () => {
 });
 const canvas = particles.context.canvas;
 
-let particleTypes = [];
-for (const key in ParticlesModule.ParticleProps) {
-    particleTypes.push(ParticlesModule.ParticleProps[key]);
-    const option = document.createElement('option');
-    option.value = particleTypes.length - 1;
-    option.innerText = `Material ${ParticlesModule.ParticleProps[key].name}`;
-    typeSelect.appendChild(option);
-}
+let particleTypes = (() => {
+    const side = 50;
+    const particles = [];
+    for (const key in ParticlesModule.ParticleProps) {
+        particles.push(ParticlesModule.ParticleProps[key]);
+    }
+    particles.sort((a, b) => a.name > b.name ? 1 : -1);
+    particles.forEach((element, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.innerText = `Material ${element.name}`;
+        typeSelect.appendChild(option);
+        const matCanvas = document.createElement('canvas');
+        matCanvas.width = side;
+        matCanvas.height = side;
+        matCanvas.setAttribute('data-index', index);
+        matPicker.appendChild(matCanvas);
+        const matContext = matCanvas.getContext('2d');
+        for (let i = 0; i < side; i += scale) {
+            for (let j = 0; j < side; j += scale) {
+                matContext.fillStyle = element.colors[Math.floor(Math.random() * 4)];
+                matContext.fillRect(i, j, scale, scale);
+            }
+        }
+    });
+
+    return particles;
+})();
+
 let currentParticleIndex = 0;
 
 let cursorX = 0;
@@ -83,7 +105,17 @@ const updateInfo = () => {
     const colors = particleTypes[currentParticleIndex].colors;
     pixelsFromText(text, colors);
 }
-updateInfo();
+
+const changeMaterial = (prevIndex, index) => {
+    const prevMaterial = document.querySelector(`[data-index="${prevIndex}"]`);
+    prevMaterial.className = '';
+    const material = document.querySelector(`[data-index="${index}"]`);
+    material.className = 'active';
+    currentParticleIndex = index;
+    typeSelect.value = index;
+    updateInfo();
+}
+changeMaterial(currentParticleIndex, currentParticleIndex);
 
 canvas.addEventListener('mousemove', (e) => {
     cursorX = e.clientX;
@@ -111,17 +143,14 @@ canvas.addEventListener('mouseup', (e) => {
 canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
     if (event.deltaY < 0) {
-        currentParticleIndex++;
+        const newIndex = currentParticleIndex + 1;
         const maxIndex = particleTypes.length - 1;
-        currentParticleIndex = currentParticleIndex <= maxIndex ? currentParticleIndex : 0;
-        typeSelect.value = currentParticleIndex;
+        changeMaterial(currentParticleIndex, newIndex <= maxIndex ? newIndex : 0);
     } else {
-        currentParticleIndex--;
+        const newIndex = currentParticleIndex - 1;
         const maxIndex = particleTypes.length - 1;
-        currentParticleIndex = currentParticleIndex >= 0 ? currentParticleIndex : maxIndex;
-        typeSelect.value = currentParticleIndex;
+        changeMaterial(currentParticleIndex, newIndex >= 0 ? newIndex : maxIndex);
     }
-    updateInfo();
 });
 
 spreadInput.addEventListener('change', (e) => {
@@ -139,8 +168,7 @@ debugCheck.addEventListener('change', (e) => {
 });
 
 typeSelect.addEventListener('change', (e) => {
-    currentParticleIndex = +e.currentTarget.value;
-    updateInfo();
+    changeMaterial(currentParticleIndex, +e.currentTarget.value);
 });
 
 resetButton.addEventListener('click', (e) => {
@@ -158,6 +186,10 @@ stopButton.addEventListener('click', (e) => {
 saveButton.addEventListener('click', (e) => {
     particles.saveImage();
 });
+
+matPicker.addEventListener('click', (e) => {
+    changeMaterial(currentParticleIndex, +e.target.getAttribute('data-index'));
+})
 
 let prevF = 0;
 const mainLoop = (f) => {

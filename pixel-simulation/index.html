@@ -22,7 +22,6 @@
             <button class="control-button primary" type="button" id="start">Start</button>
             <button class="control-button primary" type="button" id="stop">Stop</button>
             <select class="control-button" id="type">
-                <option value="">Material -</option>
             </select>
         </div>
         <div class="control">
@@ -40,6 +39,7 @@
             </div>
         </div>
     </div>
+    <div class="material-picker" id="mat-picker"></div>
     <style>
         html,
         body {
@@ -58,6 +58,25 @@
             background-color: #eee;
             border-left: 1px solid;
             border-bottom: 1px solid;
+        }
+
+        .material-picker {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            margin-top: 200px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .material-picker canvas {
+            cursor: pointer;
+        }
+
+        .material-picker canvas:hover, .material-picker canvas.active {
+            outline: 2px solid #000;
+            z-index: 1;
         }
 
         .text-canvas {
@@ -81,7 +100,7 @@
             position: relative;
         }
 
-        .control-button:hover:after {
+        .control-button:hover::after {
             content: "";
             width: 100%;
             height: 100%;
