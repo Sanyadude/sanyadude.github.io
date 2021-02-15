@@ -142,7 +142,7 @@ canvas.addEventListener('mouseup', (e) => {
 
 canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
-    if (event.deltaY < 0) {
+    if (event.deltaY > 0) {
         const newIndex = currentParticleIndex + 1;
         const maxIndex = particleTypes.length - 1;
         changeMaterial(currentParticleIndex, newIndex <= maxIndex ? newIndex : 0);
