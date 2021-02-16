@@ -8,12 +8,19 @@ const resetButton = document.querySelector('#reset');
 const startButton = document.querySelector('#start');
 const stopButton = document.querySelector('#stop');
 const downloadButton = document.querySelector('#download');
+const toBase64 = document.querySelector('#toBase64');
+const fromBase64 = document.querySelector('#fromBase64');
 const saveButton = document.querySelector('#save');
 const loadButton = document.querySelector('#load');
 const matPicker = document.querySelector('#mat-picker');
+const modal = document.querySelector('#modal');
+const modalBase64PositionsText = document.querySelector('#modal-base64-positions');
+const modalRestoreButton = document.querySelector('#modal-restore');
+const modalHideButton = document.querySelector('#modal-hide');
+
 
 const scale = 4;
-const min = { x: 1, y: 35 };
+const min = { x: 1, y: 40 };
 const max = { x: Math.floor(window.innerWidth / scale) - 30, y: Math.floor(window.innerHeight / scale) - 1 };
 
 const textCanvas = document.querySelector('#text');
@@ -197,6 +204,28 @@ saveButton.addEventListener('click', (e) => {
 
 loadButton.addEventListener('click', (e) => {
     pixelWorld.restoreFromLocalStorage();
+});
+
+toBase64.addEventListener('click', (e) => {
+    let positions = pixelWorld.saveAsBase64();
+    modalBase64PositionsText.value = positions;
+    modal.classList.remove('hidden');
+});
+
+fromBase64.addEventListener('click', (e) => {
+    modal.classList.remove('hidden');
+    modalBase64PositionsText.value = '';
+});
+
+modalRestoreButton.addEventListener('click', (e) => {
+    pixelWorld.restoreFromBase64(modalBase64PositionsText.value);
+    modal.classList.add('hidden');
+    modalBase64PositionsText.value = '';
+});
+
+modalHideButton.addEventListener('click', (e) => {
+    modal.classList.add('hidden');
+    modalBase64PositionsText.value = '';
 });
 
 matPicker.addEventListener('click', (e) => {

@@ -9,6 +9,13 @@
 </head>
 
 <body>
+    <div class="modal hidden" id="modal">
+        <div class="modal-content">
+            <textarea id="modal-base64-positions"></textarea>
+            <button id="modal-restore" class="control-button primary">Restore</button>
+            <button id="modal-hide" class="control-button light">Cancel</button>
+        </div>
+    </div>
     <canvas id="text" class="text-canvas"></canvas>
     <div class="controls">
         <div class="control">Mouse L - spawn; Mouse R - remove; Mouse Scroll - change type</div>
@@ -17,10 +24,14 @@
             <div id="fps"></div>
         </div>
         <div class="control">
-            <button class="control-button danger" type="button" id="reset">CLEAR</button>
-            <button class="control-button primary" type="button" id="download">To Img</button>
+            <button class="control-button primary" type="button" id="toBase64">To Base64</button>
+            <button class="control-button primary" type="button" id="fromBase64">From Base64</button>
             <button class="control-button primary" type="button" id="save">Save</button>
             <button class="control-button primary" type="button" id="load">Load</button>
+        </div>
+        <div class="control">
+            <button class="control-button danger" type="button" id="reset">CLEAR</button>
+            <button class="control-button primary" type="button" id="download">To Img</button>
             <button class="control-button light active" type="button" id="start">Start</button>
             <button class="control-button light" type="button" id="stop">Stop</button>
             <select class="control-button light" id="type">
@@ -50,6 +61,38 @@
             margin: 0;
             padding: 0;
             position: relative;
+        }
+
+        .modal {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            color: #212529;
+            width: 80%;
+            margin: 20px auto;
+            padding: 10px;
+            border: 2px solid #212529;
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            height: 300px;
+            display: block;
+            resize: none;
+            box-sizing: border-box;
         }
 
         .controls {

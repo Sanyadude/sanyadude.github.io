@@ -502,7 +502,7 @@ const PixelsModule = (() => {
             a.remove();
         }
 
-        pixelWorld.saveToLocalStorage = function () {
+        pixelWorld.getMatPositions = function () {
             const positions = [];
             for (let row = 0; row < this.pixelsArray.length; row++) {
                 for (let col = 0; col < this.pixelsArray[row].length; col++) {
@@ -510,11 +510,32 @@ const PixelsModule = (() => {
                         positions.push([this.pixelsArray[row][col], row, col]);
                 }
             }
-            localStorage.setItem(storageKey, JSON.stringify(positions));
+            return positions;
+        }
+
+        pixelWorld.saveToLocalStorage = function () {
+            localStorage.setItem(storageKey, JSON.stringify(this.getMatPositions()));
         }
 
         pixelWorld.restoreFromLocalStorage = function () {
             const positions = JSON.parse(localStorage.getItem(storageKey));
+            this.restore(positions);
+        }
+
+        pixelWorld.saveAsBase64 = function () {
+            const positionsStr = JSON.stringify(this.getMatPositions());
+            return btoa(positionsStr);
+        }
+
+        pixelWorld.restoreFromBase64 = function (encodedString) {
+            const rawString = atob(encodedString);
+            if (!rawString)
+                return;
+            const positions = JSON.parse(rawString);
+            this.restore(positions);
+        }
+
+        pixelWorld.restore = function (positions) {
             if (!positions)
                 return;
             if (positions.constructor === Array) {
