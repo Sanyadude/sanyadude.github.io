@@ -17,11 +17,13 @@
             <div id="fps"></div>
         </div>
         <div class="control">
-            <button class="control-button danger" type="button" id="reset">Reset canvas</button>
-            <button class="control-button primary" type="button" id="save">Save Img</button>
-            <button class="control-button primary" type="button" id="start">Start</button>
-            <button class="control-button primary" type="button" id="stop">Stop</button>
-            <select class="control-button" id="type">
+            <button class="control-button danger" type="button" id="reset">CLEAR</button>
+            <button class="control-button primary" type="button" id="download">To Img</button>
+            <button class="control-button primary" type="button" id="save">Save</button>
+            <button class="control-button primary" type="button" id="load">Load</button>
+            <button class="control-button light active" type="button" id="start">Start</button>
+            <button class="control-button light" type="button" id="stop">Stop</button>
+            <select class="control-button light" id="type">
             </select>
         </div>
         <div class="control">
@@ -55,9 +57,11 @@
             position: absolute;
             top: 0;
             right: 0;
-            background-color: #eee;
-            border-left: 1px solid;
-            border-bottom: 1px solid;
+            background-color: #fff;
+            color: #212529;
+            border-left: 2px solid #212529;
+            border-bottom: 2px solid #212529;
+            border-bottom-left-radius: 4px;
         }
 
         .material-picker {
@@ -74,8 +78,9 @@
             cursor: pointer;
         }
 
-        .material-picker canvas:hover, .material-picker canvas.active {
-            outline: 2px solid #000;
+        .material-picker canvas:hover,
+        .material-picker canvas.active {
+            outline: 2px solid #212529;
             z-index: 1;
         }
 
@@ -94,10 +99,16 @@
             flex: 1;
             padding: 5px;
             cursor: pointer;
-            border: 1px solid #000;
+            border: 1px solid #212529;
             margin: -1px;
             outline: none;
             position: relative;
+            white-space: nowrap;
+        }
+
+        .control-button.active {
+            color: #fff;
+            background-color: #28a745;
         }
 
         .control-button:hover::after {
@@ -122,6 +133,10 @@
         .primary {
             color: #fff;
             background-color: #007bff;
+        }
+
+        .light {
+            background-color: #f8f9fa;
         }
     </style>
 </body>

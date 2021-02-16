@@ -7,11 +7,13 @@ const debugCheck = document.querySelector('#debug');
 const resetButton = document.querySelector('#reset');
 const startButton = document.querySelector('#start');
 const stopButton = document.querySelector('#stop');
+const downloadButton = document.querySelector('#download');
 const saveButton = document.querySelector('#save');
+const loadButton = document.querySelector('#load');
 const matPicker = document.querySelector('#mat-picker');
 
 const scale = 4;
-const min = { x: 1, y: 40 };
+const min = { x: 1, y: 35 };
 const max = { x: Math.floor(window.innerWidth / scale) - 30, y: Math.floor(window.innerHeight / scale) - 1 };
 
 const textCanvas = document.querySelector('#text');
@@ -19,29 +21,29 @@ textCanvas.width = window.innerWidth;
 textCanvas.height = scale * min.y;
 const textCanvasContext = textCanvas.getContext('2d');
 
-const particles = new ParticlesModule.Particles(scale, min, max);
-particles.init(document.querySelector('body'));
-particles.on('before-draw', () => {
+const pixelWorld = new PixelsModule.PixelWorld(scale, min, max);
+pixelWorld.init(document.querySelector('body'));
+pixelWorld.on('before-tick', () => {
     textCanvasContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
-    for (let i = 0; i < pixels.length; i++) {
-        const pixel = pixels[i];
+    for (let i = 0; i < textPixels.length; i++) {
+        const pixel = textPixels[i];
         textCanvasContext.fillStyle = pixel.color;
         textCanvasContext.fillRect(pixel.x, pixel.y, pixel.w, pixel.h);
     }
 });
-const canvas = particles.context.canvas;
+const canvas = pixelWorld.context.canvas;
 
-let particleTypes = (() => {
+let materials = (() => {
     const side = 50;
-    const particles = [];
-    for (const key in ParticlesModule.ParticleProps) {
-        particles.push(ParticlesModule.ParticleProps[key]);
+    const materials = [];
+    for (const key in PixelsModule.MaterialProps) {
+        materials.push(PixelsModule.MaterialProps[key]);
     }
-    particles.sort((a, b) => a.name > b.name ? 1 : -1);
-    particles.forEach((element, index) => {
+    materials.sort((a, b) => a.name > b.name ? 1 : -1);
+    materials.forEach((element, index) => {
         const option = document.createElement('option');
         option.value = index;
-        option.innerText = `Material ${element.name}`;
+        option.innerText = `Material [${element.name}]`;
         typeSelect.appendChild(option);
         const matCanvas = document.createElement('canvas');
         matCanvas.width = side;
@@ -57,7 +59,7 @@ let particleTypes = (() => {
         }
     });
 
-    return particles;
+    return materials;
 })();
 
 let currentParticleIndex = 0;
@@ -72,7 +74,7 @@ let spawnedAmount = +amountInput.value;
 let spawnSpread = +spreadInput.value;
 
 //draw pixels from text
-let pixels = [];
+let textPixels = [];
 const pixelsFromText = function (text, colors) {
     const w = textCanvas.width;
     const h = textCanvas.height;
@@ -80,13 +82,12 @@ const pixelsFromText = function (text, colors) {
     textCanvasContext.font = '14px arial';
     const paddingTop = 10;
     textCanvasContext.fillText(text.toUpperCase(), 0, paddingTop);
-
     const side = 2;
-    pixels = [];
+    textPixels = [];
     const data32 = new Uint32Array(textCanvasContext.getImageData(0, 0, w, paddingTop).data.buffer);
     for (let i = 0; i < data32.length; i++) {
         if (data32[i] & 0xff000000) {
-            pixels.push({
+            textPixels.push({
                 x: (i % w) * side + side,
                 y: ((i / w) | 0) * side + side,
                 w: side,
@@ -96,21 +97,20 @@ const pixelsFromText = function (text, colors) {
         }
     }
     textCanvasContext.clearRect(0, 0, w, h);
-    return pixels;
 }
 
 const updateInfo = () => {
-    const text = `Particle - ${particleTypes[currentParticleIndex].name} - a${spawnedAmount} - s${spawnSpread}`;
+    const text = `Material - ${materials[currentParticleIndex].name} - a${spawnedAmount} - s${spawnSpread}`;
     infoContainer.innerHTML = text;
-    const colors = particleTypes[currentParticleIndex].colors;
+    const colors = materials[currentParticleIndex].colors;
     pixelsFromText(text, colors);
 }
 
 const changeMaterial = (prevIndex, index) => {
     const prevMaterial = document.querySelector(`[data-index="${prevIndex}"]`);
-    prevMaterial.className = '';
+    prevMaterial.classList.remove('active');
     const material = document.querySelector(`[data-index="${index}"]`);
-    material.className = 'active';
+    material.classList.add('active');
     currentParticleIndex = index;
     typeSelect.value = index;
     updateInfo();
@@ -144,11 +144,11 @@ canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
     if (event.deltaY > 0) {
         const newIndex = currentParticleIndex + 1;
-        const maxIndex = particleTypes.length - 1;
+        const maxIndex = materials.length - 1;
         changeMaterial(currentParticleIndex, newIndex <= maxIndex ? newIndex : 0);
     } else {
         const newIndex = currentParticleIndex - 1;
-        const maxIndex = particleTypes.length - 1;
+        const maxIndex = materials.length - 1;
         changeMaterial(currentParticleIndex, newIndex >= 0 ? newIndex : maxIndex);
     }
 });
@@ -164,7 +164,7 @@ amountInput.addEventListener('change', (e) => {
 });
 
 debugCheck.addEventListener('change', (e) => {
-    particles.debugMoving = e.currentTarget.checked;
+    pixelWorld.toggleDebug(e.currentTarget.checked);
 });
 
 typeSelect.addEventListener('change', (e) => {
@@ -172,19 +172,31 @@ typeSelect.addEventListener('change', (e) => {
 });
 
 resetButton.addEventListener('click', (e) => {
-    particles.clear();
+    pixelWorld.clear();
 });
 
 startButton.addEventListener('click', (e) => {
-    particles.start();
+    startButton.classList.add('active');
+    stopButton.classList.remove('active');
+    pixelWorld.start();
 });
 
 stopButton.addEventListener('click', (e) => {
-    particles.stop();
+    startButton.classList.remove('active');
+    stopButton.classList.add('active');
+    pixelWorld.stop();
+});
+
+downloadButton.addEventListener('click', (e) => {
+    pixelWorld.saveAsImage();
 });
 
 saveButton.addEventListener('click', (e) => {
-    particles.saveImage();
+    pixelWorld.saveToLocalStorage();
+});
+
+loadButton.addEventListener('click', (e) => {
+    pixelWorld.restoreFromLocalStorage();
 });
 
 matPicker.addEventListener('click', (e) => {
@@ -193,14 +205,15 @@ matPicker.addEventListener('click', (e) => {
 
 let prevF = 0;
 const mainLoop = (f) => {
-    const pos = particles.getPositionFromCoords(cursorX, cursorY);
     if (isLeftMouseButtonPressed) {
-        particles.addFew(particleTypes[currentParticleIndex].id, pos.x, pos.y, spawnSpread, spawnedAmount);
+        const pos = pixelWorld.getPositionFromCoords(cursorX, cursorY);
+        pixelWorld.addFew(materials[currentParticleIndex].id, pos.row, pos.col, spawnSpread, spawnedAmount);
     }
     if (isRightMouseButtonPressed) {
-        particles.removeFew(pos.x, pos.y, spawnSpread, spawnedAmount);
+        const pos = pixelWorld.getPositionFromCoords(cursorX, cursorY);
+        pixelWorld.removeFew(pos.row, pos.col, spawnSpread, spawnedAmount);
     }
-    particles.tick();
+    pixelWorld.tick();
 
     fpsContainer.innerHTML = `fps: ${Math.round(1000 / (f - prevF))}`;
     prevF = f;
