@@ -21,21 +21,22 @@ const modalHideButton = document.querySelector('#modal-hide');
 
 const scale = 4;
 const min = { x: 1, y: 40 };
-const max = { x: Math.floor(window.innerWidth / scale) - 30, y: Math.floor(window.innerHeight / scale) - 1 };
+const max = { x: Math.floor(window.innerWidth / scale) - 2, y: Math.floor(window.innerHeight / scale) - 2 };
 
 const textCanvas = document.querySelector('#text');
 textCanvas.width = window.innerWidth;
 textCanvas.height = scale * min.y;
 const textCanvasContext = textCanvas.getContext('2d');
 
+const materialProperies = new MaterialsModule.Materials();
 const pixelWorld = new PixelsModule.PixelWorld(scale, min, max);
-pixelWorld.init(document.querySelector('body'));
+pixelWorld.init(document.querySelector('body'), materialProperies);
 pixelWorld.on('before-tick', () => {
     textCanvasContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
     for (let i = 0; i < textPixels.length; i++) {
         const pixel = textPixels[i];
         textCanvasContext.fillStyle = pixel.color;
-        textCanvasContext.fillRect(pixel.x, pixel.y, pixel.w, pixel.h);
+        textCanvasContext.fillRect(10 + pixel.x, 120 + pixel.y, pixel.w, pixel.h);
     }
 });
 const canvas = pixelWorld.context.canvas;
@@ -43,8 +44,8 @@ const canvas = pixelWorld.context.canvas;
 let materials = (() => {
     const side = 50;
     const materials = [];
-    for (const key in PixelsModule.MaterialProps) {
-        materials.push(PixelsModule.MaterialProps[key]);
+    for (const key in materialProperies) {
+        materials.push(materialProperies[key]);
     }
     materials.sort((a, b) => a.name > b.name ? 1 : -1);
     materials.forEach((element, index) => {
@@ -55,12 +56,13 @@ let materials = (() => {
         const matCanvas = document.createElement('canvas');
         matCanvas.width = side;
         matCanvas.height = side;
+        matCanvas.title = element.name;
         matCanvas.setAttribute('data-index', index);
         matPicker.appendChild(matCanvas);
         const matContext = matCanvas.getContext('2d');
         for (let i = 0; i < side; i += scale) {
             for (let j = 0; j < side; j += scale) {
-                matContext.fillStyle = element.colors[Math.floor(Math.random() * 4)];
+                matContext.fillStyle = element.colors[Math.floor(Math.random() * 7)];
                 matContext.fillRect(i, j, scale, scale);
             }
         }

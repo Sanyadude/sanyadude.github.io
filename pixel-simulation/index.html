@@ -38,7 +38,7 @@
             </select>
         </div>
         <div class="control">
-            <label>Debug moving particles:</label>
+            <label>Debug moving pixels:</label>
             <input type="checkbox" id="debug">
         </div>
         <div class="control">
@@ -105,14 +105,14 @@
             border-left: 2px solid #212529;
             border-bottom: 2px solid #212529;
             border-bottom-left-radius: 4px;
+            z-index: 2;
         }
 
         .material-picker {
             position: absolute;
-            top: 0;
-            right: 0;
-            width: 100px;
-            margin-top: 200px;
+            top: 5px;
+            left: 5px;
+            width: 400px;
             display: flex;
             flex-wrap: wrap;
         }
@@ -183,6 +183,7 @@
         }
     </style>
 </body>
+<script src="materials-module.js"></script>
 <script src="particles-module.js"></script>
 <script src="index.js"></script>
 

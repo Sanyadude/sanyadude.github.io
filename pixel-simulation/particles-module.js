@@ -1,67 +1,6 @@
 const PixelsModule = (() => {
-    const COLORS_PER_MAT = 4;
+    const COLORS_PER_MAT = 7;
     const DEBUG_COLOR = '#c101ff';
-
-    const EMTY_SPACE = 0;
-    const ROCK_MAT = 10;
-    const WOOD_MAT = 11;
-    const METAL_MAT = 12;
-    const GLASS_MAT = 13;
-    const ICE_MAT = 14;
-    const WATER_MAT = 15;
-    const SAND_MAT = 20;
-    const SNOW_MAT = 21;
-    const FIRE_MAT = 30;
-    const SMOKE_MAT = 40;
-    const STEAM_MAT = 41;
-    const ACID_MAT = 50;
-    const LAVA_MAT = 51;
-    const PLANT_MAT = 60;
-
-    //dx, dy
-    const directions = {
-        topLeft: [-1, -1], top: [-1, 0], topRight: [-1, 1],
-        left: [0, -1], center: [0, 0], right: [0, 1],
-        bottomLeft: [1, -1], bottom: [1, 0], bottomRight: [1, 1]
-    }
-
-    const moveInDirection = (x, y, pixels, directions, moveProperties, checkAll) => {
-        let moved = checkAll ? [] : false;
-        for (let i = 0; i < directions.length; i++) {
-            const xDir = x + directions[i][0];
-            const yDir = y + directions[i][1];
-            if (pixels[xDir]) {
-                if (pixels[xDir][yDir] === undefined)
-                    continue;
-                const rand = Math.random();
-                for (let j = 0; j < moveProperties.length; j++) {
-                    const moveProp = moveProperties[j];
-                    if (moveProp.conditionCheck(pixels[xDir][yDir], rand)) {
-                        pixels[xDir][yDir] = moveProp.targetMatIdAfter;
-                        pixels[x][y] = moveProp.sourceMatIdAfter;
-                        const movedDir = { x: xDir, y: yDir };
-                        if (!checkAll)
-                            return movedDir;
-                        else
-                            moved.push(movedDir);
-                    }
-                }
-            }
-        }
-        return moved;
-    }
-
-    const hasMatAround = (matId, x, y, pixels) => {
-        for (let i = 0; i < allDirMove.length; i++) {
-            const dir = allDirMove[i];
-            if (pixels[x + dir[0]]) {
-                if (pixels[x + dir[0]][y + dir[1]] !== matId) {
-                    return false;
-                }
-            }
-        }
-        return true
-    }
 
     const awakeNeighbours = (x, y, sleep) => {
         if (sleep[x - 1]) {
@@ -86,309 +25,6 @@ const PixelsModule = (() => {
                 sleep[x + 1][y + 1] = 0;
         }
     }
-
-    const granuleMoveDir = () => Math.random() < 0.5
-        ? [directions.bottom, directions.bottomLeft, directions.bottomRight]
-        : [directions.bottom, directions.bottomRight, directions.bottomLeft];
-
-    const liquidMoveDir = () => Math.random() < 0.5
-        ? [directions.bottom, directions.bottomLeft, directions.bottomRight, directions.left, directions.right]
-        : [directions.bottom, directions.bottomRight, directions.bottomLeft, directions.right, directions.left];
-
-    const gasMoveDir = () => Math.random() < 0.5
-        ? [directions.top, directions.topLeft, directions.topRight, directions.left, directions.right]
-        : [directions.top, directions.topRight, directions.topLeft, directions.right, directions.left];
-
-    const sideMoveDir = [directions.top, directions.bottom, directions.left, directions.right];
-    const allDirMove = [directions.topLeft, directions.top, directions.topRight, directions.left, directions.right, directions.bottomLeft, directions.bottom, directions.bottomRight];
-
-    const updateStatic = (x, y, pixels, modified, sleep) => sleep[x][y] = 1;
-
-    const updateGas = (matId, x, y, pixels, modified, sleep) => {
-        const directions = gasMoveDir();
-        const swapMaterials = [EMTY_SPACE, WATER_MAT, SAND_MAT, SNOW_MAT, ACID_MAT, LAVA_MAT]
-        const moveParams = swapMaterials.map(swapMat => ({
-            conditionCheck: (mat, chance) => mat === swapMat,
-            targetMatIdAfter: matId,
-            sourceMatIdAfter: swapMat
-        }));
-        const moved = moveInDirection(x, y, pixels, directions, moveParams);
-        if (moved) {
-            modified[moved.x][moved.y] = 1;
-            awakeNeighbours(x, y, sleep);
-            return;
-        }
-        sleep[x][y] = 1;
-    }
-    const updateSmoke = (x, y, pixels, modified, sleep) => updateGas(SMOKE_MAT, x, y, pixels, modified, sleep);
-    const updateSteam = (x, y, pixels, modified, sleep) => updateGas(STEAM_MAT, x, y, pixels, modified, sleep);
-
-    const updateGranule = (matId, x, y, pixels, modified, sleep) => {
-        const directions = granuleMoveDir();
-        const swapMaterials = [EMTY_SPACE, WATER_MAT, ACID_MAT, LAVA_MAT];
-        const moveParams = swapMaterials.map(swapMat => ({
-            conditionCheck: (mat, chance) => mat === swapMat,
-            targetMatIdAfter: matId,
-            sourceMatIdAfter: swapMat
-        }));
-        const moved = moveInDirection(x, y, pixels, directions, moveParams);
-        if (moved) {
-            modified[moved.x][moved.y] = 1;
-            awakeNeighbours(x, y, sleep);
-            return;
-        }
-        sleep[x][y] = 1;
-    }
-    const updateSand = (x, y, pixels, modified, sleep) => updateGranule(SAND_MAT, x, y, pixels, modified, sleep);
-    const updateSnow = (x, y, pixels, modified, sleep) => updateGranule(SNOW_MAT, x, y, pixels, modified, sleep);
-
-    const updateWater = (x, y, pixels, modified, sleep) => {
-        const directions = liquidMoveDir();
-        const swapMaterials = [EMTY_SPACE, ACID_MAT, LAVA_MAT]
-        let moveParams = swapMaterials.map(swapMat => ({
-            conditionCheck: (mat, chance) => mat === swapMat,
-            targetMatIdAfter: WATER_MAT,
-            sourceMatIdAfter: swapMat
-        }));
-        moveParams = moveParams.concat([{
-            conditionCheck: (mat, chance) => mat === ICE_MAT && chance < 0.1,
-            targetMatIdAfter: ICE_MAT,
-            sourceMatIdAfter: ICE_MAT
-        }, {
-            conditionCheck: (mat, chance) => mat === SNOW_MAT && chance < 0.01,
-            targetMatIdAfter: WATER_MAT,
-            sourceMatIdAfter: WATER_MAT
-        }]);
-        const moved = moveInDirection(x, y, pixels, directions, moveParams);
-        if (moved) {
-            modified[moved.x][moved.y] = 1;
-            awakeNeighbours(x, y, sleep);
-            return;
-        }
-        sleep[x][y] = 1;
-    }
-
-    const updateFire = (x, y, pixels, modified, sleep) => {
-        const directions = sideMoveDir;
-        const moveParams = [{
-            conditionCheck: (mat, chance) => mat === WOOD_MAT || mat === PLANT_MAT,
-            targetMatIdAfter: FIRE_MAT,
-            sourceMatIdAfter: SMOKE_MAT
-        }, {
-            conditionCheck: (mat, chance) => mat === ICE_MAT || mat === SNOW_MAT,
-            targetMatIdAfter: WATER_MAT,
-            sourceMatIdAfter: EMTY_SPACE
-        }, {
-            conditionCheck: (mat, chance) => mat === SAND_MAT,
-            targetMatIdAfter: GLASS_MAT,
-            sourceMatIdAfter: EMTY_SPACE
-        }, {
-            conditionCheck: (mat, chance) => mat === WATER_MAT && chance < 0.3,
-            targetMatIdAfter: STEAM_MAT,
-            sourceMatIdAfter: EMTY_SPACE
-        }]
-        const moved = moveInDirection(x, y, pixels, directions, moveParams, true);
-        if (moved) {
-            moved.forEach(m => modified[m.x][m.y] = 1);
-            awakeNeighbours(x, y, sleep);
-        }
-        pixels[x][y] = pixels[x][y] === SMOKE_MAT ? SMOKE_MAT : EMTY_SPACE;
-    }
-
-    const updateAcid = (x, y, pixels, modified, sleep) => {
-        const directions = liquidMoveDir();
-        const swapMaterials = [EMTY_SPACE, LAVA_MAT]
-        const moveParams = swapMaterials.map(swapMat => ({
-            conditionCheck: (mat, chance) => mat === swapMat,
-            targetMatIdAfter: ACID_MAT,
-            sourceMatIdAfter: swapMat
-        }));
-        moveParams.push({
-            conditionCheck: (mat, chance) => mat !== ACID_MAT && mat !== METAL_MAT && mat !== GLASS_MAT && chance < 0.1,
-            targetMatIdAfter: EMTY_SPACE,
-            sourceMatIdAfter: EMTY_SPACE
-        });
-        const moved = moveInDirection(x, y, pixels, directions, moveParams);
-        if (moved) {
-            modified[moved.x][moved.y] = 1;
-            awakeNeighbours(x, y, sleep);
-            return;
-        }
-        sleep[x][y] = 1;
-    }
-
-    const updateLava = (x, y, pixels, modified, sleep) => {
-        let lavaAround = hasMatAround(LAVA_MAT, x, y, pixels);
-        if (lavaAround) {
-            modified[x][y] = 1;
-            sleep[x][y] = 1;
-            return;
-        }
-        const directions = liquidMoveDir();
-        const moveParams = [{
-            conditionCheck: (mat, chance) => mat === EMTY_SPACE,
-            targetMatIdAfter: LAVA_MAT,
-            sourceMatIdAfter: EMTY_SPACE
-        }, {
-            conditionCheck: (mat, chance) => mat === SAND_MAT && chance < 0.1,
-            targetMatIdAfter: LAVA_MAT,
-            sourceMatIdAfter: GLASS_MAT
-        }, {
-            conditionCheck: (mat, chance) => (mat === WATER_MAT || mat === SNOW_MAT) && chance < 0.1,
-            targetMatIdAfter: LAVA_MAT,
-            sourceMatIdAfter: STEAM_MAT
-        }, {
-            conditionCheck: (mat, chance) => mat === ICE_MAT,
-            targetMatIdAfter: LAVA_MAT,
-            sourceMatIdAfter: WATER_MAT
-        }, {
-            conditionCheck: (mat, chance) => mat !== LAVA_MAT && chance < 0.1,
-            targetMatIdAfter: FIRE_MAT,
-            sourceMatIdAfter: SMOKE_MAT
-        }, {
-            conditionCheck: (mat, chance) => mat !== LAVA_MAT && chance < 0.3,
-            targetMatIdAfter: LAVA_MAT,
-            sourceMatIdAfter: FIRE_MAT
-        }]
-        const moved = moveInDirection(x, y, pixels, directions, moveParams);
-        if (moved) {
-            modified[moved.x][moved.y] = 1;
-            awakeNeighbours(x, y, sleep);
-            return;
-        }
-    }
-
-    const updatePlant = (x, y, pixels, modified, sleep) => {
-        let plantsAround = hasMatAround(PLANT_MAT, x, y, pixels);
-        if (plantsAround) {
-            modified[x][y] = 1;
-            sleep[x][y] = 1;
-            return;
-        }
-        const rand = Math.random();
-        if (rand > 0.99) {
-            const top = directions.top;
-            if (pixels[x + top[0]]) {
-                if (pixels[x + top[0]][y + top[1]] !== PLANT_MAT) {
-                    pixels[x][y] = EMTY_SPACE;
-                    modified[x][y] = 1;
-                    awakeNeighbours(x, y, sleep);
-                    return;
-                }
-            }
-        } else if (rand < 0.01) {
-            const topSide = Math.random() < 0.5 ? directions.topLeft : directions.topRight;
-            if (pixels[x + topSide[0]]) {
-                if (pixels[x + topSide[0]][y + topSide[1]] === EMTY_SPACE) {
-                    pixels[x + topSide[0]][y + topSide[1]] = PLANT_MAT;
-                    modified[x + topSide[0]][y + topSide[1]] = 1;
-                    awakeNeighbours(x, y, sleep);
-                    return;
-                }
-            }
-        } else if (rand < 0.1) {
-            const top = directions.top;
-            if (pixels[x + top[0]]) {
-                if (pixels[x + top[0]][y + top[1]] === EMTY_SPACE) {
-                    pixels[x + top[0]][y + top[1]] = PLANT_MAT;
-                    modified[x + top[0]][y + top[1]] = 1;
-                    awakeNeighbours(x, y, sleep);
-                    return;
-                }
-            }
-        }
-    }
-
-    const MaterialProps = (() => {
-        const properties = {};
-
-        properties[WOOD_MAT] = {
-            id: WOOD_MAT,
-            name: 'Wood',
-            colors: ['#5a2806', '#7e470b', '#66300b', '#7a4408'],
-            update: updateStatic
-        }
-        properties[ROCK_MAT] = {
-            id: ROCK_MAT,
-            name: 'Rock',
-            colors: ['#2c2b2b', '#383030', '#2c2b2b', '#383030'],
-            update: updateStatic
-        }
-        properties[METAL_MAT] = {
-            id: METAL_MAT,
-            name: 'Metal',
-            colors: ['#b5b5b5', '#c6c6c6', '#b5b5b5', '#e7e7e7'],
-            update: updateStatic
-        }
-        properties[GLASS_MAT] = {
-            id: GLASS_MAT,
-            name: 'Glass',
-            colors: ['#dbe1e3', '#d8e4e9', '#a7c7cb', '#a7c7cb'],
-            update: updateStatic
-        }
-        properties[ICE_MAT] = {
-            id: ICE_MAT,
-            name: 'Ice',
-            colors: ['#b3e1e3', '#82cfd1', '#f7f7f7', '#b3e1e3'],
-            update: updateStatic
-        }
-        properties[WATER_MAT] = {
-            id: WATER_MAT,
-            name: 'Water',
-            colors: ['#1ca3ec', '#42d6f7', '#1692d5', '#0a97e3'],
-            update: updateWater
-        }
-        properties[SAND_MAT] = {
-            id: SAND_MAT,
-            name: 'Sand',
-            colors: ['#e5c69d', '#eacba4', '#e0be91', '#b3a076'],
-            update: updateSand
-        }
-        properties[SNOW_MAT] = {
-            id: SNOW_MAT,
-            name: 'Snow',
-            colors: ['#f7f2f2', '#f1f1f1', '#e8f2f7', '#f1f1f1'],
-            update: updateSnow
-        }
-        properties[FIRE_MAT] = {
-            id: FIRE_MAT,
-            name: 'Fire',
-            colors: ['#f70000', '#f75700', '#b02103', '#f7c800'],
-            update: updateFire
-        }
-        properties[SMOKE_MAT] = {
-            id: SMOKE_MAT,
-            name: 'Smoke',
-            colors: ['#595656', '#696767', '#595656', '#696767'],
-            update: updateSmoke
-        }
-        properties[STEAM_MAT] = {
-            id: STEAM_MAT,
-            name: 'Steam',
-            colors: ['#e4ecf2', '#dfe6ec', '#d9e0e5', '#cdd9e1'],
-            update: updateSteam
-        }
-        properties[ACID_MAT] = {
-            id: ACID_MAT,
-            name: 'Acid',
-            colors: ['#aab919', '#c5dc14', '#84e810', '#7de208'],
-            update: updateAcid
-        }
-        properties[LAVA_MAT] = {
-            id: LAVA_MAT,
-            name: 'Lava',
-            colors: ['#f72400', '#f76300', '#c90f1f', '#463a31'],
-            update: updateLava
-        }
-        properties[PLANT_MAT] = {
-            id: PLANT_MAT,
-            name: 'Plant',
-            colors: ['#57a65e', '#338453', '#5fb766', '#57a65e'],
-            update: updatePlant
-        }
-
-        return properties;
-    })()
 
     const fillArray = (rows, cols, expression) => {
         const filled = [];
@@ -434,8 +70,11 @@ const PixelsModule = (() => {
 
         let callbacks = { 'before-tick': null };
 
-        pixelWorld.init = function (element) {
+        pixelWorld.materials = null;
+
+        pixelWorld.init = function (element, materials) {
             containerElement = element;
+            this.materials = materials;
             const canvas = document.createElement('canvas');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -455,7 +94,7 @@ const PixelsModule = (() => {
 
         pixelWorld.clear = function () {
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
-            this.pixelsArray = fillArray(this.arrayCells.rows, this.arrayCells.cols, () => EMTY_SPACE);
+            this.pixelsArray = fillArray(this.arrayCells.rows, this.arrayCells.cols, () => 0);
             this.renderedPixels = fillArray(this.arrayCells.rows, this.arrayCells.cols, () => 0);
             this.pixelsColors = fillArray(this.arrayCells.rows, this.arrayCells.cols, () => Math.floor(Math.random() * COLORS_PER_MAT));
             this.pixelsModified = fillArray(this.arrayCells.rows, this.arrayCells.cols, () => 0);
@@ -485,7 +124,7 @@ const PixelsModule = (() => {
             let count = 0;
             for (let row = 0; row < this.pixelsArray.length; row++) {
                 for (let col = 0; col < this.pixelsArray[row].length; col++) {
-                    if (this.pixelsArray[row][col] !== EMTY_SPACE)
+                    if (this.pixelsArray[row][col] !== 0)
                         count++;
                 }
             }
@@ -506,7 +145,7 @@ const PixelsModule = (() => {
             const positions = [];
             for (let row = 0; row < this.pixelsArray.length; row++) {
                 for (let col = 0; col < this.pixelsArray[row].length; col++) {
-                    if (this.pixelsArray[row][col] !== EMTY_SPACE)
+                    if (this.pixelsArray[row][col] !== 0)
                         positions.push([this.pixelsArray[row][col], row, col]);
                 }
             }
@@ -547,10 +186,10 @@ const PixelsModule = (() => {
         pixelWorld.add = function (id, row, col) {
             if (this.pixelsArray[row] !== undefined
                 && this.pixelsArray[row][col] !== undefined
-                && this.pixelsArray[row][col] === EMTY_SPACE) {
+                && this.pixelsArray[row][col] === 0) {
                 this.pixelsArray[row][col] = id;
                 this.renderedPixels[row][col] = 1;
-                this.drawParticleMain(col, row, MaterialProps[id].colors[this.pixelsColors[row][col]]);
+                this.drawParticleMain(col, row, this.materials[id].colors[this.pixelsColors[row][col]]);
             }
         }
 
@@ -565,7 +204,7 @@ const PixelsModule = (() => {
         pixelWorld.remove = function (row, col) {
             if (this.pixelsArray[row] !== undefined
                 && this.pixelsArray[row][col] !== undefined) {
-                this.pixelsArray[row][col] = EMTY_SPACE;
+                this.pixelsArray[row][col] = 0;
                 awakeNeighbours(row, col, this.pixelsSleeping);
                 this.renderedPixels[row][col] = 0;
                 this.clearMain(col, row);
@@ -609,10 +248,12 @@ const PixelsModule = (() => {
             if (!id)
                 return;
             if (this.pixelsModified[row][col] === 0 && this.pixelsSleeping[row][col] === 0) {
-                if (id !== FIRE_MAT && id !== PLANT_MAT && id !== SNOW_MAT) {
-                    MaterialProps[id].update(row, col, this.pixelsArray, this.pixelsModified, this.pixelsSleeping);
-                } else if (tickCounter % 10 === 0) {
-                    MaterialProps[id].update(row, col, this.pixelsArray, this.pixelsModified, this.pixelsSleeping);
+                if (tickCounter % this.materials[id].updateFrequency === 0) {
+                    const wasUpdated = this.materials[id].update(row, col, this.pixelsArray, this.pixelsModified);
+                    if (wasUpdated === true)
+                        awakeNeighbours(row, col, this.pixelsSleeping);
+                    else if (wasUpdated === false)
+                        this.pixelsSleeping[row][col] = 1;
                 }
                 pixelsUpdated++;
             }
@@ -630,17 +271,17 @@ const PixelsModule = (() => {
 
         pixelWorld.drawParticle = function (row, col) {
             const id = this.pixelsArray[row][col];
-            if (id !== EMTY_SPACE) {
+            if (id !== 0) {
                 if (this.pixelsSleeping[row][col] === 0) {
                     this.renderedPixels[row][col] = 1;
                     pixelsRendered++;
-                    this.drawParticleMain(col, row, debugActivity ? DEBUG_COLOR : MaterialProps[id].colors[this.pixelsColors[row][col]]);
+                    this.drawParticleMain(col, row, debugActivity ? DEBUG_COLOR : this.materials[id].colors[this.pixelsColors[row][col]]);
                 } else if (this.pixelsSleeping[row][col] === 1 && this.pixelsPrevTickSleeping[row][col] === 0) {
                     this.renderedPixels[row][col] = 1;
                     pixelsRendered++;
-                    this.drawParticleMain(col, row, MaterialProps[id].colors[this.pixelsColors[row][col]]);
+                    this.drawParticleMain(col, row, this.materials[id].colors[this.pixelsColors[row][col]]);
                 }
-            } else if (this.renderedPixels[row][col] === 1 && id === EMTY_SPACE) {
+            } else if (this.renderedPixels[row][col] === 1 && id === 0) {
                 erasedPixels++;
                 this.renderedPixels[row][col] = 0;
                 this.clearMain(col, row);
@@ -665,7 +306,6 @@ const PixelsModule = (() => {
     }
 
     return {
-        PixelWorld: PixelWorld,
-        MaterialProps: MaterialProps
+        PixelWorld: PixelWorld
     };
 })();
