@@ -1,36 +1,39 @@
-const infoContainer = document.querySelector('#info');
-const fpsContainer = document.querySelector('#fps');
-const spreadInput = document.querySelector('#spread-value');
-const amountInput = document.querySelector('#amount-value');
-const typeSelect = document.querySelector('#type');
-const debugCheck = document.querySelector('#debug');
-const resetButton = document.querySelector('#reset');
+const body = document.querySelector('body');
+
+const infoContainer = document.querySelector('#material-info');
+const fpsContainer = document.querySelector('#fps-info');
+
+const importFromFileInput = document.querySelector('#import-from-file');
+const exportToFileButton = document.querySelector('#export-to-file');
+const exportToImgButton = document.querySelector('#export-to-img');
+const saveButton = document.querySelector('#save-to-local-storage');
+const loadButton = document.querySelector('#load-from-local-storage');
+
+const clearButton = document.querySelector('#clear');
+const undoButton = document.querySelector('#undo');
 const startButton = document.querySelector('#start');
 const stopButton = document.querySelector('#stop');
-const downloadButton = document.querySelector('#download');
-const toBase64 = document.querySelector('#toBase64');
-const fromBase64 = document.querySelector('#fromBase64');
-const saveButton = document.querySelector('#save');
-const loadButton = document.querySelector('#load');
-const matPicker = document.querySelector('#mat-picker');
-const modal = document.querySelector('#modal');
-const modalBase64PositionsText = document.querySelector('#modal-base64-positions');
-const modalRestoreButton = document.querySelector('#modal-restore');
-const modalHideButton = document.querySelector('#modal-hide');
+const typeSelect = document.querySelector('#type');
 
+const spreadInput = document.querySelector('#spread');
+const amountInput = document.querySelector('#amount');
+const debugCheckbox = document.querySelector('#debug');
+
+const materialPicker = document.querySelector('#material-picker');
+
+const textCanvas = document.querySelector('#pixel-text');
 
 const scale = 4;
 const min = { x: 1, y: 40 };
 const max = { x: Math.floor(window.innerWidth / scale) - 2, y: Math.floor(window.innerHeight / scale) - 2 };
 
-const textCanvas = document.querySelector('#text');
 textCanvas.width = window.innerWidth;
 textCanvas.height = scale * min.y;
 const textCanvasContext = textCanvas.getContext('2d');
 
 const materialProperies = new MaterialsModule.Materials();
 const pixelWorld = new PixelsModule.PixelWorld(scale, min, max);
-pixelWorld.init(document.querySelector('body'), materialProperies);
+pixelWorld.init(body, materialProperies);
 pixelWorld.on('before-tick', () => {
     textCanvasContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
     for (let i = 0; i < textPixels.length; i++) {
@@ -39,7 +42,8 @@ pixelWorld.on('before-tick', () => {
         textCanvasContext.fillRect(10 + pixel.x, 120 + pixel.y, pixel.w, pixel.h);
     }
 });
-const canvas = pixelWorld.context.canvas;
+const pixelCanvas = pixelWorld.context.canvas;
+let prevData = [pixelWorld.toBase64()];
 
 let materials = (() => {
     const side = 50;
@@ -58,7 +62,7 @@ let materials = (() => {
         matCanvas.height = side;
         matCanvas.title = element.name;
         matCanvas.setAttribute('data-index', index);
-        matPicker.appendChild(matCanvas);
+        materialPicker.appendChild(matCanvas);
         const matContext = matCanvas.getContext('2d');
         for (let i = 0; i < side; i += scale) {
             for (let j = 0; j < side; j += scale) {
@@ -109,8 +113,8 @@ const pixelsFromText = function (text, colors) {
 }
 
 const updateInfo = () => {
-    const text = `Material - ${materials[currentParticleIndex].name} - a${spawnedAmount} - s${spawnSpread}`;
-    infoContainer.innerHTML = text;
+    const text = `Material ${materials[currentParticleIndex].name}`;
+    infoContainer.innerHTML = text + ` [amount ${spawnedAmount}, spread ${spawnSpread}]`;
     const colors = materials[currentParticleIndex].colors;
     pixelsFromText(text, colors);
 }
@@ -124,32 +128,36 @@ const changeMaterial = (prevIndex, index) => {
     typeSelect.value = index;
     updateInfo();
 }
-changeMaterial(currentParticleIndex, currentParticleIndex);
+const defaultMatIndex = 8;
+changeMaterial(currentParticleIndex, defaultMatIndex);
 
-canvas.addEventListener('mousemove', (e) => {
+pixelCanvas.addEventListener('mousemove', (e) => {
     cursorX = e.clientX;
     cursorY = e.clientY;
 });
 
-canvas.addEventListener('mousedown', (e) => {
+pixelCanvas.addEventListener('mousedown', (e) => {
     if (e.button === 0)
         isLeftMouseButtonPressed = true;
     if (e.button === 2)
         isRightMouseButtonPressed = true;
 });
 
-canvas.addEventListener('contextmenu', (e) => {
+pixelCanvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
 });
 
-canvas.addEventListener('mouseup', (e) => {
+pixelCanvas.addEventListener('mouseup', (e) => {
     if (e.button === 0)
         isLeftMouseButtonPressed = false;
     if (e.button === 2)
         isRightMouseButtonPressed = false;
+    prevData.push(pixelWorld.toBase64());
+    if (prevData.length > 10)
+        prevData.shift();
 });
 
-canvas.addEventListener('wheel', (e) => {
+pixelCanvas.addEventListener('wheel', (e) => {
     e.preventDefault();
     if (event.deltaY > 0) {
         const newIndex = currentParticleIndex + 1;
@@ -162,26 +170,28 @@ canvas.addEventListener('wheel', (e) => {
     }
 });
 
-spreadInput.addEventListener('change', (e) => {
-    spawnSpread = +e.currentTarget.value;
-    updateInfo();
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    pixelCanvas.addEventListener(eventName, (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+    });
 });
 
-amountInput.addEventListener('change', (e) => {
-    spawnedAmount = +e.currentTarget.value;
-    updateInfo();
+pixelCanvas.addEventListener('drop', (e) => {
+    const file = e.dataTransfer.files[0];
+    pixelWorld.fromFile(file);
 });
 
-debugCheck.addEventListener('change', (e) => {
-    pixelWorld.toggleDebug(e.currentTarget.checked);
-});
-
-typeSelect.addEventListener('change', (e) => {
-    changeMaterial(currentParticleIndex, +e.currentTarget.value);
-});
-
-resetButton.addEventListener('click', (e) => {
+clearButton.addEventListener('click', (e) => {
     pixelWorld.clear();
+});
+
+undoButton.addEventListener('click', (e) => {
+    if (prevData.length <= 1)
+        return;
+    prevData.pop();
+    const lastData = prevData.length - 1;
+    pixelWorld.fromBase64(prevData[lastData]);
 });
 
 startButton.addEventListener('click', (e) => {
@@ -196,8 +206,22 @@ stopButton.addEventListener('click', (e) => {
     pixelWorld.stop();
 });
 
-downloadButton.addEventListener('click', (e) => {
-    pixelWorld.saveAsImage();
+typeSelect.addEventListener('change', (e) => {
+    changeMaterial(currentParticleIndex, +e.currentTarget.value);
+});
+
+importFromFileInput.addEventListener('change', (event) => {
+    const file = importFromFileInput.files[0];
+    pixelWorld.fromFile(file);
+    importFromFileInput.value = '';
+});
+
+exportToImgButton.addEventListener('click', (e) => {
+    pixelWorld.toImage();
+});
+
+exportToFileButton.addEventListener('click', (e) => {
+    pixelWorld.toFile();
 });
 
 saveButton.addEventListener('click', (e) => {
@@ -205,34 +229,26 @@ saveButton.addEventListener('click', (e) => {
 });
 
 loadButton.addEventListener('click', (e) => {
-    pixelWorld.restoreFromLocalStorage();
+    pixelWorld.loadFromLocalStorage();
 });
 
-toBase64.addEventListener('click', (e) => {
-    let positions = pixelWorld.saveAsBase64();
-    modalBase64PositionsText.value = positions;
-    modal.classList.remove('hidden');
+spreadInput.addEventListener('change', (e) => {
+    spawnSpread = +e.currentTarget.value;
+    updateInfo();
 });
 
-fromBase64.addEventListener('click', (e) => {
-    modal.classList.remove('hidden');
-    modalBase64PositionsText.value = '';
+amountInput.addEventListener('change', (e) => {
+    spawnedAmount = +e.currentTarget.value;
+    updateInfo();
 });
 
-modalRestoreButton.addEventListener('click', (e) => {
-    pixelWorld.restoreFromBase64(modalBase64PositionsText.value);
-    modal.classList.add('hidden');
-    modalBase64PositionsText.value = '';
+debugCheckbox.addEventListener('change', (e) => {
+    pixelWorld.toggleDebug(e.currentTarget.checked);
 });
 
-modalHideButton.addEventListener('click', (e) => {
-    modal.classList.add('hidden');
-    modalBase64PositionsText.value = '';
-});
-
-matPicker.addEventListener('click', (e) => {
+materialPicker.addEventListener('click', (e) => {
     changeMaterial(currentParticleIndex, +e.target.getAttribute('data-index'));
-})
+});
 
 let prevF = 0;
 const mainLoop = (f) => {

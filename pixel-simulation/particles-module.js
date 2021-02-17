@@ -41,7 +41,7 @@ const PixelsModule = (() => {
         const pixelWorld = {};
 
         let storageKey = 'PixelWorld.pixelPositions';
-        let defaultSaveFileName = 'pixelWorld_img';
+        let defaultSaveFileName = 'pixelWorld';
 
         let tickCounter = 0;
         let pixelsUpdated = 0;
@@ -131,16 +131,6 @@ const PixelsModule = (() => {
             return count;
         }
 
-        pixelWorld.saveAsImage = function () {
-            const imageData = this.context.canvas.toDataURL('image/png');
-            const a = document.createElement('a');
-            a.href = imageData;
-            a.download = defaultSaveFileName + '.png';
-            containerElement.appendChild(a);
-            a.click();
-            a.remove();
-        }
-
         pixelWorld.getMatPositions = function () {
             const positions = [];
             for (let row = 0; row < this.pixelsArray.length; row++) {
@@ -152,21 +142,53 @@ const PixelsModule = (() => {
             return positions;
         }
 
+        pixelWorld.toImage = function () {
+            const imageData = this.context.canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = imageData;
+            a.download = defaultSaveFileName + '.png';
+            containerElement.appendChild(a);
+            a.click();
+            a.remove();
+        }
+
         pixelWorld.saveToLocalStorage = function () {
             localStorage.setItem(storageKey, JSON.stringify(this.getMatPositions()));
         }
 
-        pixelWorld.restoreFromLocalStorage = function () {
+        pixelWorld.loadFromLocalStorage = function () {
             const positions = JSON.parse(localStorage.getItem(storageKey));
             this.restore(positions);
         }
 
-        pixelWorld.saveAsBase64 = function () {
+        pixelWorld.toFile = function () {
+            const file = new Blob([this.toBase64()], { type: 'txt' });
+            const url = URL.createObjectURL(file);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = defaultSaveFileName + '.txt';
+            containerElement.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        pixelWorld.fromFile = function (file) {
+            if (file.constructor !== File)
+                return;
+            const reader = new FileReader();
+            reader.readAsText(file);
+            reader.onload = () => this.fromBase64(reader.result);
+        }
+
+        pixelWorld.toBase64 = function () {
             const positionsStr = JSON.stringify(this.getMatPositions());
             return btoa(positionsStr);
         }
 
-        pixelWorld.restoreFromBase64 = function (encodedString) {
+        pixelWorld.fromBase64 = function (encodedString) {
+            if (!encodedString)
+                return;
             const rawString = atob(encodedString);
             if (!rawString)
                 return;
@@ -175,12 +197,10 @@ const PixelsModule = (() => {
         }
 
         pixelWorld.restore = function (positions) {
-            if (!positions)
+            if (positions.constructor !== Array)
                 return;
-            if (positions.constructor === Array) {
-                this.clear();
-                positions.forEach(pos => this.add(pos[0], pos[1], pos[2]));
-            }
+            this.clear();
+            positions.forEach(pos => this.add(pos[0], pos[1], pos[2]));
         }
 
         pixelWorld.add = function (id, row, col) {
