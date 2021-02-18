@@ -44,6 +44,11 @@ pixelWorld.on('before-tick', () => {
 });
 const pixelCanvas = pixelWorld.context.canvas;
 let prevData = [pixelWorld.toBase64()];
+const saveDataFromPixelWorld = () => {
+    prevData.push(pixelWorld.toBase64());
+    if (prevData.length > 10)
+        prevData.shift();
+}
 
 let materials = (() => {
     const side = 50;
@@ -152,9 +157,7 @@ pixelCanvas.addEventListener('mouseup', (e) => {
         isLeftMouseButtonPressed = false;
     if (e.button === 2)
         isRightMouseButtonPressed = false;
-    prevData.push(pixelWorld.toBase64());
-    if (prevData.length > 10)
-        prevData.shift();
+    saveDataFromPixelWorld();
 });
 
 pixelCanvas.addEventListener('wheel', (e) => {
@@ -183,7 +186,9 @@ pixelCanvas.addEventListener('drop', (e) => {
 });
 
 clearButton.addEventListener('click', (e) => {
+    saveDataFromPixelWorld();
     pixelWorld.clear();
+    saveDataFromPixelWorld();
 });
 
 undoButton.addEventListener('click', (e) => {
@@ -229,6 +234,7 @@ saveButton.addEventListener('click', (e) => {
 });
 
 loadButton.addEventListener('click', (e) => {
+    saveDataFromPixelWorld();
     pixelWorld.loadFromLocalStorage();
 });
 

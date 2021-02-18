@@ -16,16 +16,27 @@ const MaterialsModule = (() => {
     const PLANT_MAT = 60;
     const RAINBOW_MAT = 70;
 
-    const COLORS_PER_MAT = 7;
-    const generateMaterialColors = (colors) => {
+    const generateMaterialColors = (colors, max) => {
         const matColors = [];
-        for (let i = 0, j = 0; i < COLORS_PER_MAT; i++ , j++) {
+        for (let i = 0, j = 0; i < max; i++ , j++) {
             if (j >= colors.length)
                 j = 0;
             matColors.push(colors[j]);
         }
         return matColors;
     }
+
+    const getRgbFromHex = (hexColor) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hexColor);
+        if (result) {
+            return {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            }
+        }
+    }
+
     //dx, dy
     const directions = {
         topLeft: [-1, -1], top: [-1, 0], topRight: [-1, 1],
@@ -320,114 +331,60 @@ const MaterialsModule = (() => {
         return false;
     }
 
+    const MaterialFactory = function () {
+        const materialFactory = {};
+
+        const COLORS_PER_MAT = 7;
+        
+        materialFactory.createMaterial = (id, name, colors, updateFunction, updateFrequency) => {
+            const material = {
+                id: id,
+                name: name,
+                colors: generateMaterialColors(colors, COLORS_PER_MAT),
+                rgbColor: getRgbFromHex(colors[0]),
+                updateFrequency: updateFrequency || 1,
+                update: updateFunction || updateStatic
+            }
+            return material;
+        }
+
+        return materialFactory;
+    }
+
     const Materials = function () {
         const materials = {};
 
-        materials[WOOD_MAT] = {
-            id: WOOD_MAT,
-            name: 'Wood',
-            colors: generateMaterialColors(['#5a2806', '#7e470b', '#66300b', '#7a4408']),
-            updateFrequency: 1,
-            update: updateStatic
-        }
-        materials[ROCK_MAT] = {
-            id: ROCK_MAT,
-            name: 'Rock',
-            colors: generateMaterialColors(['#2c2b2b', '#383030', '#2c2b2b']),
-            updateFrequency: 1,
-            update: updateStatic
-        }
-        materials[METAL_MAT] = {
-            id: METAL_MAT,
-            name: 'Metal',
-            colors: generateMaterialColors(['#b5b5b5', '#c6c6c6', '#b5b5b5', '#e7e7e7']),
-            updateFrequency: 1,
-            update: updateStatic
-        }
-        materials[GLASS_MAT] = {
-            id: GLASS_MAT,
-            name: 'Glass',
-            colors: generateMaterialColors(['#dbe1e3', '#d8e4e9', '#a7c7cb']),
-            updateFrequency: 1,
-            update: updateStatic
-        }
-        materials[ICE_MAT] = {
-            id: ICE_MAT,
-            name: 'Ice',
-            colors: generateMaterialColors(['#b3e1e3', '#82cfd1', '#f7f7f7']),
-            updateFrequency: 1,
-            update: updateStatic
-        }
-        materials[WATER_MAT] = {
-            id: WATER_MAT,
-            name: 'Water',
-            colors: generateMaterialColors(['#1ca3ec', '#42d6f7', '#1692d5', '#0a97e3']),
-            updateFrequency: 1,
-            update: updateWater
-        }
-        materials[SAND_MAT] = {
-            id: SAND_MAT,
-            name: 'Sand',
-            colors: generateMaterialColors(['#e5c69d', '#eacba4', '#e0be91', '#b3a076']),
-            updateFrequency: 1,
-            update: updateSand
-        }
-        materials[SNOW_MAT] = {
-            id: SNOW_MAT,
-            name: 'Snow',
-            colors: generateMaterialColors(['#f7f2f2', '#f1f1f1', '#e8f2f7']),
-            updateFrequency: 10,
-            update: updateSnow
-        }
-        materials[FIRE_MAT] = {
-            id: FIRE_MAT,
-            name: 'Fire',
-            colors: generateMaterialColors(['#f70000', '#f75700', '#b02103', '#f7c800']),
-            updateFrequency: 10,
-            update: updateFire
-        }
-        materials[SMOKE_MAT] = {
-            id: SMOKE_MAT,
-            name: 'Smoke',
-            colors: generateMaterialColors(['#595656', '#696767']),
-            updateFrequency: 1,
-            update: updateSmoke
-        }
-        materials[STEAM_MAT] = {
-            id: STEAM_MAT,
-            name: 'Steam',
-            colors: generateMaterialColors(['#dfe6ec', '#d9e0e5']),
-            updateFrequency: 1,
-            update: updateSteam
-        }
-        materials[ACID_MAT] = {
-            id: ACID_MAT,
-            name: 'Acid',
-            colors: generateMaterialColors(['#aab919', '#c5dc14', '#84e810', '#7de208']),
-            updateFrequency: 1,
-            update: updateAcid
-        }
-        materials[LAVA_MAT] = {
-            id: LAVA_MAT,
-            name: 'Lava',
-            colors: generateMaterialColors(['#f72400', '#f76300', '#c90f1f', '#463a31']),
-            updateFrequency: 1,
-            update: updateLava
-        }
-        materials[PLANT_MAT] = {
-            id: PLANT_MAT,
-            name: 'Plant',
-            colors: generateMaterialColors(['#57a65e', '#338453', '#5fb766']),
-            updateFrequency: 10,
-            update: updatePlant
-        }
-        materials[RAINBOW_MAT] = {
-            id: RAINBOW_MAT,
-            name: 'Rainbow',
-            colors: generateMaterialColors(['#4a058f', '#337ac7', '#23be40', '#dedc3d', '#de7800', '#c8131e', '#cb39e0']),
-            updateFrequency: 1,
-            update: updateRainbow
-        }
+        const materialFactory = new MaterialFactory();        
+        materials[WOOD_MAT] = materialFactory.createMaterial(WOOD_MAT, 'Wood', 
+            ['#5a2806', '#7e470b', '#66300b', '#7a4408']);
+        materials[ROCK_MAT] = materialFactory.createMaterial(ROCK_MAT, 'Rock', 
+            ['#2c2b2b', '#383030', '#2c2b2b']);
+        materials[METAL_MAT] = materialFactory.createMaterial(METAL_MAT, 'Metal', 
+            ['#b5b5b5', '#c6c6c6', '#b5b5b5', '#e7e7e7']);
+        materials[GLASS_MAT] = materialFactory.createMaterial(GLASS_MAT, 'Glass', 
+            ['#dbe1e3', '#d8e4e9', '#a7c7cb']);
+        materials[ICE_MAT] = materialFactory.createMaterial(ICE_MAT, 'Ice', 
+            ['#b3e1e3', '#82cfd1', '#f7f7f7']);
+        materials[WATER_MAT] = materialFactory.createMaterial(WATER_MAT, 'Water', 
+            ['#1ca3ec', '#42d6f7', '#1692d5', '#0a97e3'], updateWater);
+        materials[SAND_MAT] = materialFactory.createMaterial(SAND_MAT, 'Sand', 
+            ['#e5c69d', '#eacba4', '#e0be91', '#b3a076'], updateSand);
+        materials[SNOW_MAT] = materialFactory.createMaterial(SNOW_MAT, 'Snow', 
+            ['#f7f2f2', '#f1f1f1', '#e8f2f7'], updateSnow);
+        materials[FIRE_MAT] = materialFactory.createMaterial(FIRE_MAT, 'Fire', 
+            ['#f70000', '#f75700', '#b02103', '#f7c800'], updateFire, 10);
+        materials[SMOKE_MAT] = materialFactory.createMaterial(SMOKE_MAT, 'Smoke', 
+            ['#595656', '#696767'], updateSmoke);
+        materials[STEAM_MAT] = materialFactory.createMaterial(STEAM_MAT, 'Steam', 
+            ['#dfe6ec', '#d9e0e5'], updateSteam);
+        materials[ACID_MAT] = materialFactory.createMaterial(ACID_MAT, 'Acid', 
+            ['#aab919', '#c5dc14', '#84e810', '#7de208'], updateAcid);
+        materials[LAVA_MAT] = materialFactory.createMaterial(LAVA_MAT, 'Lava', 
+            ['#f72400', '#f76300', '#c90f1f', '#463a31'], updateLava);
+        materials[PLANT_MAT] = materialFactory.createMaterial(PLANT_MAT, 'Plant', 
+            ['#57a65e', '#338453', '#5fb766'], updatePlant, 10);
+        materials[RAINBOW_MAT] = materialFactory.createMaterial(RAINBOW_MAT, 'Rainbow', 
+            ['#4a058f', '#337ac7', '#23be40', '#dedc3d', '#de7800', '#c8131e', '#cb39e0'], updateRainbow);
 
         return materials;
     };

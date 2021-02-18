@@ -37,6 +37,109 @@ const PixelsModule = (() => {
         return filled;
     }
 
+    const findClosestMatToRgb = (rgb, materials) => {
+        let closestMat = null;
+        let closestValue = Infinity;
+        for (let i = 0; i < materials.length; i++) {
+            const matColor = materials[i].rgbColor;
+            if (!closestMat) {
+                closestMat = materials[i];
+                continue;
+            }
+            const value = Math.sqrt(Math.pow(rgb.r - matColor.r, 2) + Math.pow(rgb.g - matColor.g, 2) + Math.pow(rgb.b - matColor.b, 2));
+            if (value < closestValue) {
+                closestMat = materials[i];
+                closestValue = value;
+            }
+        }
+        return closestMat;
+    }
+
+    const imageToPositions = (img, pixelWorld) => {
+        const imgCanvas = document.createElement('canvas');
+        const imgContext = imgCanvas.getContext('2d');
+        imgCanvas.width = img.width;
+        imgCanvas.height = img.height;
+        imgContext.drawImage(img, 0, 0);
+
+        const matColorsArray = [];
+        for (const key in pixelWorld.materials) {
+            //70 - rainbow id
+            if (pixelWorld.materials[key].id === 70)
+                continue;
+            matColorsArray.push(pixelWorld.materials[key]);
+        }
+
+        const data = imgContext.getImageData(0, 0, img.width, img.height).data;
+        const positions = [];
+        const ratio = Math.max(Math.ceil(img.width / pixelWorld.arrayCells.cols), Math.ceil(img.height / pixelWorld.arrayCells.rows));
+        for (let row = 0; row < pixelWorld.arrayCells.rows; row++) {
+            for (let col = 0; col < Math.floor(img.width / ratio); col++) {
+                const i = (row * img.width + col) * ratio * 4;
+                if (i > data.length)
+                    break;
+                if (data[i + 3] > 0) {
+                    const matId = findClosestMatToRgb({ r: data[i], g: data[i + 1], b: data[i + 2] }, matColorsArray).id;
+                    positions.push([matId, row, col]);
+                }
+            }
+        }
+        pixelWorld.restore(positions);
+    };
+
+    const imageDataUrlToPositions = (dataUrl, pixelWorld) => {
+        const img = new Image();
+        img.src = dataUrl;
+        img.onload = () => imageToPositions(img, pixelWorld);
+    }
+
+    const imageDataUrlSaveToImage = (dataUrl, fileName) => {
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = fileName + '.png';
+        body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
+    const textToTxtFile = (text, fileName) => {
+        const file = new Blob([text], { type: 'txt' });
+        const url = URL.createObjectURL(file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName + '.txt';
+        body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    const readFromFileAsText = (file, callback) => {
+        const reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = () => callback(reader.result);
+    }
+
+    const readFromFileAsDataUrl = (file, callback) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => callback(reader.result);
+    }
+
+    const toBase64 = function (data) {
+        const rawString = JSON.stringify(data);
+        return btoa(rawString);
+    }
+
+    const fromBase64 = (encodedString) => {
+        if (!encodedString)
+            return;
+        const rawString = atob(encodedString);
+        if (!rawString)
+            return;
+        return JSON.parse(rawString);
+    }
+
     const PixelWorld = function (scale, min, max, maxCount) {
         const pixelWorld = {};
 
@@ -144,12 +247,7 @@ const PixelsModule = (() => {
 
         pixelWorld.toImage = function () {
             const imageData = this.context.canvas.toDataURL('image/png');
-            const a = document.createElement('a');
-            a.href = imageData;
-            a.download = defaultSaveFileName + '.png';
-            containerElement.appendChild(a);
-            a.click();
-            a.remove();
+            imageDataUrlSaveToImage(imageData, defaultSaveFileName);
         }
 
         pixelWorld.saveToLocalStorage = function () {
@@ -162,37 +260,25 @@ const PixelsModule = (() => {
         }
 
         pixelWorld.toFile = function () {
-            const file = new Blob([this.toBase64()], { type: 'txt' });
-            const url = URL.createObjectURL(file);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = defaultSaveFileName + '.txt';
-            containerElement.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
+            textToTxtFile(this.toBase64(), defaultSaveFileName);
         }
 
         pixelWorld.fromFile = function (file) {
             if (file.constructor !== File)
                 return;
-            const reader = new FileReader();
-            reader.readAsText(file);
-            reader.onload = () => this.fromBase64(reader.result);
+            if (file.type === 'text/plain') {
+                readFromFileAsText(file, (result) => this.fromBase64(result));
+            } else if (file.type === 'image/png' || file.type === 'image/jpeg') {
+                readFromFileAsDataUrl(file, (result) => imageDataUrlToPositions(result, this));
+            }
         }
 
         pixelWorld.toBase64 = function () {
-            const positionsStr = JSON.stringify(this.getMatPositions());
-            return btoa(positionsStr);
+            return toBase64(this.getMatPositions());
         }
 
         pixelWorld.fromBase64 = function (encodedString) {
-            if (!encodedString)
-                return;
-            const rawString = atob(encodedString);
-            if (!rawString)
-                return;
-            const positions = JSON.parse(rawString);
+            const positions = fromBase64(encodedString);
             this.restore(positions);
         }
 
