@@ -1,4 +1,5 @@
 const body = document.querySelector('body');
+const pixelWorldContainer = document.querySelector('#pixel-world-container');
 
 const infoContainer = document.querySelector('#material-info');
 const fpsContainer = document.querySelector('#fps-info');
@@ -24,22 +25,20 @@ const materialPicker = document.querySelector('#material-picker');
 const textCanvas = document.querySelector('#pixel-text');
 
 const scale = 4;
-const min = { x: 1, y: 40 };
-const max = { x: Math.floor(window.innerWidth / scale) - 2, y: Math.floor(window.innerHeight / scale) - 2 };
-
-textCanvas.width = window.innerWidth;
-textCanvas.height = scale * min.y;
+textCanvas.width = body.offsetWidth;
+textCanvas.height = scale * 35;
+pixelWorldContainer.style.height = (window.innerHeight - textCanvas.height - 10) + 'px';
 const textCanvasContext = textCanvas.getContext('2d');
 
 const materialProperies = new MaterialsModule.Materials();
-const pixelWorld = new PixelsModule.PixelWorld(scale, min, max);
-pixelWorld.init(body, materialProperies);
+const pixelWorld = new PixelsModule.PixelWorld(scale);
+pixelWorld.init(pixelWorldContainer, materialProperies);
 pixelWorld.on('before-tick', () => {
     textCanvasContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
     for (let i = 0; i < textPixels.length; i++) {
         const pixel = textPixels[i];
         textCanvasContext.fillStyle = pixel.color;
-        textCanvasContext.fillRect(10 + pixel.x, 120 + pixel.y, pixel.w, pixel.h);
+        textCanvasContext.fillRect(5 + pixel.x, 110 + pixel.y, pixel.w, pixel.h);
     }
 });
 const pixelCanvas = pixelWorld.context.canvas;
@@ -48,6 +47,14 @@ const saveDataFromPixelWorld = () => {
     prevData.push(pixelWorld.toBase64());
     if (prevData.length > 10)
         prevData.shift();
+}
+
+const undoData = () => {
+    if (prevData.length <= 1)
+        return;
+    prevData.pop();
+    const lastData = prevData.length - 1;
+    pixelWorld.fromBase64(prevData[lastData]);
 }
 
 let materials = (() => {
@@ -137,8 +144,8 @@ const defaultMatIndex = 8;
 changeMaterial(currentParticleIndex, defaultMatIndex);
 
 pixelCanvas.addEventListener('mousemove', (e) => {
-    cursorX = e.clientX;
-    cursorY = e.clientY;
+    cursorX = e.offsetX;
+    cursorY = e.offsetY;
 });
 
 pixelCanvas.addEventListener('mousedown', (e) => {
@@ -192,11 +199,13 @@ clearButton.addEventListener('click', (e) => {
 });
 
 undoButton.addEventListener('click', (e) => {
-    if (prevData.length <= 1)
-        return;
-    prevData.pop();
-    const lastData = prevData.length - 1;
-    pixelWorld.fromBase64(prevData[lastData]);
+    undoData();
+});
+
+document.addEventListener('keyup', (e) => {
+    //z key - 90
+    if (e.keyCode === 90 && e.ctrlKey)
+        undoData();
 });
 
 startButton.addEventListener('click', (e) => {

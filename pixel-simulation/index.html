@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <canvas id="pixel-text" class="text-canvas"></canvas>
+    <canvas id="pixel-text" class="pixel-text-container"></canvas>
     <div class="controls">
         <div class="control">Mouse L - spawn; Mouse R - remove; Mouse Scroll - change type</div>
         <div class="control">
@@ -48,6 +48,7 @@
         </div>
     </div>
     <div class="material-picker" id="material-picker"></div>
+    <div class="pixel-world-container" id="pixel-world-container"></div>
     <style>
         html,
         body {
@@ -56,6 +57,14 @@
             margin: 0;
             padding: 0;
             position: relative;
+        }
+
+        .pixel-world-container {
+            margin: 5px;
+        }
+
+        .pixel-text-container {
+            display: block;
         }
 
         .hidden {
@@ -92,10 +101,6 @@
         .material-picker canvas.active {
             outline: 2px solid #212529;
             z-index: 1;
-        }
-
-        .text-canvas {
-            position: absolute;
         }
 
         .control {
@@ -159,7 +164,7 @@
     </style>
 </body>
 <script src="materials-module.js"></script>
-<script src="particles-module.js"></script>
+<script src="pixels-module.js"></script>
 <script src="index.js"></script>
 
 </html>

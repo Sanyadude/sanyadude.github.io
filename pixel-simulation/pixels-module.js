@@ -179,8 +179,8 @@ const PixelsModule = (() => {
             containerElement = element;
             this.materials = materials;
             const canvas = document.createElement('canvas');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            canvas.width = element.offsetWidth;
+            canvas.height = element.offsetHeight;
             element.appendChild(canvas);
             this.context = canvas.getContext('2d');
             this.min = min || { x: 1, y: 1 };
