@@ -1,40 +1,29 @@
 const PixelsModule = (() => {
     const COLORS_PER_MAT = 7;
     const DEBUG_COLOR = '#c101ff';
+    const DEBUG_PIXEL_MAT_ID = 9999;
 
-    const awakeNeighbours = (x, y, sleep) => {
-        if (sleep[x - 1]) {
-            if (sleep[x - 1][y - 1] !== undefined)
-                sleep[x - 1][y - 1] = 0;
-            sleep[x - 1][y] = 0;
-            if (sleep[x - 1][y + 1] !== undefined)
-                sleep[x - 1][y + 1] = 0;
-        }
-        if (sleep[x]) {
-            if (sleep[x][y - 1] !== undefined)
-                sleep[x][y - 1] = 0;
-            sleep[x][y] = 0;
-            if (sleep[x][y + 1] !== undefined)
-                sleep[x][y + 1] = 0;
-        }
-        if (sleep[x + 1]) {
-            if (sleep[x + 1][y - 1] !== undefined)
-                sleep[x + 1][y - 1] = 0;
-            sleep[x + 1][y] = 0;
-            if (sleep[x + 1][y + 1] !== undefined)
-                sleep[x + 1][y + 1] = 0;
-        }
-    }
+    const awakeAll = CoreModule.MovingOptions.awakeAllNeighbours;
 
-    const fillArray = (rows, cols, expression) => {
+    const fillGrid = (gridSize, expression) => {
         const filled = [];
-        for (let i = 0; i <= rows; i++) {
+        for (let i = 0; i <= gridSize.rows; i++) {
             filled.push([]);
-            for (let j = 0; j <= cols; j++) {
+            for (let j = 0; j <= gridSize.cols; j++) {
                 filled[i].push(expression(i, j));
             }
         }
         return filled;
+    }
+
+    const executeOnGrid = (gridSize, expression) => {
+        const filled = [];
+        for (let i = 0; i <= gridSize.rows; i++) {
+            filled.push([]);
+            for (let j = 0; j <= gridSize.cols; j++) {
+                expression(i, j);
+            }
+        }
     }
 
     const findClosestMatToRgb = (rgb, materials) => {
@@ -64,16 +53,15 @@ const PixelsModule = (() => {
 
         const matColorsArray = [];
         for (const key in pixelWorld.materials) {
-            //70 - rainbow id
-            if (pixelWorld.materials[key].id === 70)
+            if (pixelWorld.materials[key].specialBehavior)
                 continue;
             matColorsArray.push(pixelWorld.materials[key]);
         }
 
         const data = imgContext.getImageData(0, 0, img.width, img.height).data;
         const positions = [];
-        const ratio = Math.max(Math.ceil(img.width / pixelWorld.arrayCells.cols), Math.ceil(img.height / pixelWorld.arrayCells.rows));
-        for (let row = 0; row < pixelWorld.arrayCells.rows; row++) {
+        const ratio = Math.max(Math.ceil(img.width / pixelWorld.gridSize.cols), Math.ceil(img.height / pixelWorld.gridSize.rows));
+        for (let row = 0; row < pixelWorld.gridSize.rows; row++) {
             for (let col = 0; col < Math.floor(img.width / ratio); col++) {
                 const i = (row * img.width + col) * ratio * 4;
                 if (i > data.length)
@@ -140,7 +128,7 @@ const PixelsModule = (() => {
         return JSON.parse(rawString);
     }
 
-    const PixelWorld = function (scale, min, max, maxCount) {
+    const PixelWorld = function (scale) {
         const pixelWorld = {};
 
         let storageKey = 'PixelWorld.pixelPositions';
@@ -154,26 +142,24 @@ const PixelsModule = (() => {
         let debugActivity = false;
 
         let pixelScale = scale || 10;
-        let maxPixels = maxCount || Infinity;
 
         let paused = false;
+        let slowRate = 1;
 
         let containerElement = null;
         pixelWorld.context = null;
         pixelWorld.min = null;
         pixelWorld.max = null
-        pixelWorld.arrayCells = null;
+        pixelWorld.gridSize = null;
 
-        pixelWorld.pixelsArray = null;
-        pixelWorld.renderedPixels = null;
-        pixelWorld.pixelsColors = null;
-        pixelWorld.pixelsModified = null;
-        pixelWorld.pixelsSleeping = null;
-        pixelWorld.pixelsPrevTickSleeping = null;
+        pixelWorld.pixelsArray = [];
+        pixelWorld.renderedPixels = [];
+        pixelWorld.pixelsColors = [];
 
         let callbacks = { 'before-tick': null };
 
         pixelWorld.materials = null;
+        const pixelFactory = new CoreModule.PixelFactory;
 
         pixelWorld.init = function (element, materials) {
             containerElement = element;
@@ -183,12 +169,12 @@ const PixelsModule = (() => {
             canvas.height = element.offsetHeight;
             element.appendChild(canvas);
             this.context = canvas.getContext('2d');
-            this.min = min || { x: 1, y: 1 };
-            this.max = max || {
+            this.min = { x: 1, y: 1 };
+            this.max = {
                 x: Math.floor(canvas.width / pixelScale) - 1,
                 y: Math.floor(canvas.height / pixelScale) - 1
             };
-            this.arrayCells = {
+            this.gridSize = {
                 rows: this.max.y - this.min.y,
                 cols: this.max.x - this.min.x
             }
@@ -197,22 +183,20 @@ const PixelsModule = (() => {
 
         pixelWorld.clear = function () {
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
-            this.pixelsArray = fillArray(this.arrayCells.rows, this.arrayCells.cols, () => 0);
-            this.renderedPixels = fillArray(this.arrayCells.rows, this.arrayCells.cols, () => 0);
-            this.pixelsColors = fillArray(this.arrayCells.rows, this.arrayCells.cols, () => Math.floor(Math.random() * COLORS_PER_MAT));
-            this.pixelsModified = fillArray(this.arrayCells.rows, this.arrayCells.cols, () => 0);
-            this.pixelsSleeping = fillArray(this.arrayCells.rows, this.arrayCells.cols, () => 0);
-            this.pixelsPrevTickSleeping = fillArray(this.arrayCells.rows, this.arrayCells.cols, () => 0);
-            this.drawBounds();
+            this.pixelsArray = fillGrid(this.gridSize, () => null);
+            this.renderedPixels = fillGrid(this.gridSize, () => 0);
+            this.pixelsColors = fillGrid(this.gridSize, () => Math.floor(Math.random() * COLORS_PER_MAT));
+            this.drawContextBounds();
         }
 
+        pixelWorld.setSlowRate = (value) => slowRate = value;
         pixelWorld.start = () => paused = false;
         pixelWorld.stop = () => paused = true;
         pixelWorld.toggleDebug = (forceState) => debugActivity = forceState ? forceState : !debugActivity;
         pixelWorld.on = (name, callback) => callbacks[name] = callback;
         pixelWorld.off = (name) => delete callbacks[name];
         pixelWorld.trigger = function (name) {
-            if (typeof callbacks[name] === 'function')
+            if (typeof callbacks[name] == 'function')
                 callbacks[name](this);
         }
 
@@ -223,11 +207,16 @@ const PixelsModule = (() => {
             }
         }
 
-        pixelWorld.getCount = function () {
+        pixelWorld.getCount = function (condition) {
             let count = 0;
             for (let row = 0; row < this.pixelsArray.length; row++) {
                 for (let col = 0; col < this.pixelsArray[row].length; col++) {
-                    if (this.pixelsArray[row][col] !== 0)
+                    if (this.pixelsArray[row][col] == null)
+                        continue;
+                    if (typeof condition !== 'function') {
+                        count++;
+                        continue;
+                    } else if (condition(this.pixelsArray[row][col]))
                         count++;
                 }
             }
@@ -238,8 +227,8 @@ const PixelsModule = (() => {
             const positions = [];
             for (let row = 0; row < this.pixelsArray.length; row++) {
                 for (let col = 0; col < this.pixelsArray[row].length; col++) {
-                    if (this.pixelsArray[row][col] !== 0)
-                        positions.push([this.pixelsArray[row][col], row, col]);
+                    if (this.pixelsArray[row][col] != null)
+                        positions.push([this.pixelsArray[row][col].matId, row, col]);
                 }
             }
             return positions;
@@ -266,9 +255,9 @@ const PixelsModule = (() => {
         pixelWorld.fromFile = function (file) {
             if (file.constructor !== File)
                 return;
-            if (file.type === 'text/plain') {
+            if (file.type == 'text/plain') {
                 readFromFileAsText(file, (result) => this.fromBase64(result));
-            } else if (file.type === 'image/png' || file.type === 'image/jpeg') {
+            } else if (file.type == 'image/png' || file.type == 'image/jpeg') {
                 readFromFileAsDataUrl(file, (result) => imageDataUrlToPositions(result, this));
             }
         }
@@ -292,36 +281,58 @@ const PixelsModule = (() => {
         pixelWorld.add = function (id, row, col) {
             if (this.pixelsArray[row] !== undefined
                 && this.pixelsArray[row][col] !== undefined
-                && this.pixelsArray[row][col] === 0) {
-                this.pixelsArray[row][col] = id;
-                this.renderedPixels[row][col] = 1;
-                this.drawParticleMain(col, row, this.materials[id].colors[this.pixelsColors[row][col]]);
+                && this.pixelsArray[row][col] == null) {
+                this.pixelsArray[row][col] = pixelFactory.create(id);
+                this.renderedPixels[row][col] = id;
+                this.drawContextPixel(col, row, this.materials[id].colors[this.pixelsColors[row][col]]);
             }
         }
 
-        pixelWorld.addFew = function (id, row, col, spread, amount) {
-            for (let i = 0; i < amount; i++) {
-                const dRow = Math.floor(Math.random() * spread) * ((Math.random() < 0.5) ? 1 : -1);
-                const dCol = Math.floor(Math.random() * spread) * ((Math.random() < 0.5) ? 1 : -1);
-                this.add(id, row + dRow, col + dCol);
+        pixelWorld.addFewInSquare = function (id, row, col, side) {
+            for (let dRow = -side; dRow <= side; dRow++) {
+                for (let dCol = -side; dCol <= side; dCol++) {
+                    if (Math.random() < 0.7)
+                        continue;
+                    this.add(id, row + dRow, col + dCol);
+                }
+            }
+        }
+
+        pixelWorld.addFewInRadius = function (id, row, col, radius) {
+            for (let dRow = -radius; dRow <= radius; dRow++) {
+                for (let dCol = -radius; dCol <= radius; dCol++) {
+                    if (radius - 1 < Math.sqrt(dRow * dRow + dCol * dCol) || (radius > 1 && Math.random() < 0.7))
+                        continue;
+                    this.add(id, row + dRow, col + dCol);
+                }
             }
         }
 
         pixelWorld.remove = function (row, col) {
             if (this.pixelsArray[row] !== undefined
                 && this.pixelsArray[row][col] !== undefined) {
-                this.pixelsArray[row][col] = 0;
-                awakeNeighbours(row, col, this.pixelsSleeping);
+                this.pixelsArray[row][col] = null;
                 this.renderedPixels[row][col] = 0;
-                this.clearMain(col, row);
+                this.clearContextPixel(col, row);
+                awakeAll(row, col, this.pixelsArray);
             }
         }
 
-        pixelWorld.removeFew = function (row, col, spread, amount) {
-            for (let i = 0; i < amount; i++) {
-                const dRow = Math.floor(Math.random() * spread) * ((Math.random() < 0.5) ? 1 : -1);
-                const dCol = Math.floor(Math.random() * spread) * ((Math.random() < 0.5) ? 1 : -1);
-                this.remove(row + dRow, col + dCol);
+        pixelWorld.removeFewInRadius = function (row, col, radius) {
+            for (let dRow = -radius; dRow <= radius; dRow++) {
+                for (let dCol = -radius; dCol <= radius; dCol++) {
+                    if (radius < Math.sqrt(dRow * dRow + dCol * dCol))
+                        continue;
+                    this.remove(row + dRow, col + dCol);
+                }
+            }
+        }
+
+        pixelWorld.removeFewInSquare = function (row, col, side) {
+            for (let dRow = -side; dRow <= side; dRow++) {
+                for (let dCol = -side; dCol <= side; dCol++) {
+                    this.remove(row + dRow, col + dCol);
+                }
             }
         }
 
@@ -330,37 +341,41 @@ const PixelsModule = (() => {
             if (paused)
                 return;
             tickCounter++;
+            if (tickCounter % slowRate !== 0)
+                return;
             this.update();
             this.draw();
-            this.pixelsPrevTickSleeping = fillArray(this.arrayCells.rows, this.arrayCells.cols, (row, col) => this.pixelsSleeping[row][col]);
         }
 
         pixelWorld.update = function () {
             pixelsUpdated = 0;
-            this.pixelsModified = fillArray(this.arrayCells.rows, this.arrayCells.cols, () => 0);
+            executeOnGrid(this.gridSize, (row, col) => {
+                if (this.pixelsArray[row][col] == null)
+                    return;
+                this.pixelsArray[row][col].updated = false;
+                this.pixelsArray[row][col].prevSleeping = this.pixelsArray[row][col].sleeping;
+            });
             for (let row = this.pixelsArray.length - 1; row >= 0; row--) {
-                if (row % 2 === 0) {
-                    for (let col = this.pixelsArray[row].length - 1; col >= 0; col--)
-                        this.updateParticle(row, col);
+                if (row % 2 == 0) {
+                    for (let col = this.pixelsArray[row].length - 1; col >= 0; col--) {
+                        this.updatePixel(row, col);
+                    }
                 } else {
-                    for (let col = 0; col < this.pixelsArray[row].length; col++)
-                        this.updateParticle(row, col);
+                    for (let col = 0; col < this.pixelsArray[row].length; col++) {
+                        this.updatePixel(row, col);
+                    }
                 }
             }
         }
 
-        pixelWorld.updateParticle = function (row, col) {
-            const id = this.pixelsArray[row][col];
-            if (!id)
+        pixelWorld.updatePixel = function (row, col) {
+            const pixel = this.pixelsArray[row][col];
+            if (pixel == null)
                 return;
-            if (this.pixelsModified[row][col] === 0 && this.pixelsSleeping[row][col] === 0) {
-                if (tickCounter % this.materials[id].updateFrequency === 0) {
-                    const wasUpdated = this.materials[id].update(row, col, this.pixelsArray, this.pixelsModified);
-                    if (wasUpdated === true)
-                        awakeNeighbours(row, col, this.pixelsSleeping);
-                    else if (wasUpdated === false)
-                        this.pixelsSleeping[row][col] = 1;
-                }
+            const id = pixel.matId;
+            pixel.lifeTime++;
+            if (!pixel.updated && !pixel.sleeping && (tickCounter % this.materials[id].updateFrequency == 0)) {
+                this.materials[id].update(pixel, row, col, this.pixelsArray);
                 pixelsUpdated++;
             }
         }
@@ -370,40 +385,41 @@ const PixelsModule = (() => {
             erasedPixels = 0;
             for (let row = 0; row < this.pixelsArray.length; row++) {
                 for (let col = 0; col < this.pixelsArray[row].length; col++)
-                    this.drawParticle(row, col);
+                    this.drawPixel(row, col);
             }
-            this.drawBounds();
+            this.drawContextBounds();
         }
 
-        pixelWorld.drawParticle = function (row, col) {
-            const id = this.pixelsArray[row][col];
-            if (id !== 0) {
-                if (this.pixelsSleeping[row][col] === 0) {
-                    this.renderedPixels[row][col] = 1;
+        pixelWorld.drawPixel = function (row, col) {
+            const pixel = this.pixelsArray[row][col];
+            if (pixel != null) {
+                const matId = pixel.matId;
+                if (this.renderedPixels[row][col] == matId)
+                    return;
+                if (!pixel.sleeping || (pixel.sleeping && !pixel.prevSleeping)) {
+                    const drawDebugPixel = !pixel.sleeping && debugActivity;
+                    this.renderedPixels[row][col] = drawDebugPixel ? DEBUG_PIXEL_MAT_ID : matId;
                     pixelsRendered++;
-                    this.drawParticleMain(col, row, debugActivity ? DEBUG_COLOR : this.materials[id].colors[this.pixelsColors[row][col]]);
-                } else if (this.pixelsSleeping[row][col] === 1 && this.pixelsPrevTickSleeping[row][col] === 0) {
-                    this.renderedPixels[row][col] = 1;
-                    pixelsRendered++;
-                    this.drawParticleMain(col, row, this.materials[id].colors[this.pixelsColors[row][col]]);
+                    const color = drawDebugPixel ? DEBUG_COLOR : this.materials[matId].colors[this.pixelsColors[row][col]];
+                    this.drawContextPixel(col, row, color);
                 }
-            } else if (this.renderedPixels[row][col] === 1 && id === 0) {
+            } else if (this.renderedPixels[row][col] != 0) {
                 erasedPixels++;
                 this.renderedPixels[row][col] = 0;
-                this.clearMain(col, row);
+                this.clearContextPixel(col, row);
             }
         }
 
-        pixelWorld.drawParticleMain = function (x, y, color) {
+        pixelWorld.drawContextPixel = function (x, y, color) {
             this.context.fillStyle = color;
             this.context.fillRect((this.min.x + x) * pixelScale, (this.min.y + y) * pixelScale, pixelScale, pixelScale);
         }
 
-        pixelWorld.clearMain = function (x, y) {
+        pixelWorld.clearContextPixel = function (x, y) {
             this.context.clearRect((this.min.x + x) * pixelScale, (this.min.y + y) * pixelScale, pixelScale, pixelScale);
         }
 
-        pixelWorld.drawBounds = function () {
+        pixelWorld.drawContextBounds = function () {
             this.context.strokeStyle = '#000';
             this.context.strokeRect(this.min.x * pixelScale, this.min.y * pixelScale, (this.max.x - this.min.x + 1) * pixelScale, (this.max.y - this.min.y + 1) * pixelScale);
         }

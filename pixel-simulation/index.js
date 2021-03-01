@@ -16,13 +16,17 @@ const startButton = document.querySelector('#start');
 const stopButton = document.querySelector('#stop');
 const typeSelect = document.querySelector('#type');
 
-const spreadInput = document.querySelector('#spread');
-const amountInput = document.querySelector('#amount');
+const spreadRadiusInput = document.querySelector('#spread');
+const spawnInSquare = document.querySelector('#spawn-in-square');
+const speedInput = document.querySelector('#speed');
 const debugCheckbox = document.querySelector('#debug');
 
 const materialPicker = document.querySelector('#material-picker');
+const materialPickerSpreadCanvas = document.querySelector('#material-picker-spread');
 
 const textCanvas = document.querySelector('#pixel-text');
+
+const dataIndexAttr = 'data-index';
 
 const scale = 4;
 textCanvas.width = body.offsetWidth;
@@ -30,7 +34,7 @@ textCanvas.height = scale * 35;
 pixelWorldContainer.style.height = (window.innerHeight - textCanvas.height - 10) + 'px';
 const textCanvasContext = textCanvas.getContext('2d');
 
-const materialProperies = new MaterialsModule.Materials();
+const materialProperies = MaterialsModule.Materials;
 const pixelWorld = new PixelsModule.PixelWorld(scale);
 pixelWorld.init(pixelWorldContainer, materialProperies);
 pixelWorld.on('before-tick', () => {
@@ -58,7 +62,7 @@ const undoData = () => {
 }
 
 let materials = (() => {
-    const side = 50;
+    const side = 40;
     const materials = [];
     for (const key in materialProperies) {
         materials.push(materialProperies[key]);
@@ -73,7 +77,7 @@ let materials = (() => {
         matCanvas.width = side;
         matCanvas.height = side;
         matCanvas.title = element.name;
-        matCanvas.setAttribute('data-index', index);
+        matCanvas.setAttribute(dataIndexAttr, index);
         materialPicker.appendChild(matCanvas);
         const matContext = matCanvas.getContext('2d');
         for (let i = 0; i < side; i += scale) {
@@ -87,6 +91,7 @@ let materials = (() => {
     return materials;
 })();
 
+const defaultMatIndex = 13;
 let currentParticleIndex = 0;
 
 let cursorX = 0;
@@ -95,11 +100,12 @@ let cursorY = 0;
 let isLeftMouseButtonPressed = false;
 let isRightMouseButtonPressed = false;
 
-let spawnedAmount = +amountInput.value;
-let spawnSpread = +spreadInput.value;
+let spreadRadius = +spreadRadiusInput.value;
+let spreadInSquare = false;
+
+let textPixels = [];
 
 //draw pixels from text
-let textPixels = [];
 const pixelsFromText = function (text, colors) {
     const w = textCanvas.width;
     const h = textCanvas.height;
@@ -124,23 +130,41 @@ const pixelsFromText = function (text, colors) {
     textCanvasContext.clearRect(0, 0, w, h);
 }
 
+const updateSpreadCanvas = (colors) => {
+    const context = materialPickerSpreadCanvas.getContext('2d');
+    const w = materialPickerSpreadCanvas.width;
+    const h = materialPickerSpreadCanvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    context.clearRect(0, 0, w, h);
+    for (let dx = -spreadRadius; dx <= spreadRadius; dx++) {
+        for (let dy = -spreadRadius; dy <= spreadRadius; dy++) {
+            if (!spreadInSquare && spreadRadius - 1 < Math.sqrt(dx * dx + dy * dy))
+                continue;
+            context.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+            context.fillRect(cx + dx * scale, cy + dy * scale, scale, scale);
+        }
+    }
+}
+
 const updateInfo = () => {
     const text = `Material ${materials[currentParticleIndex].name}`;
-    infoContainer.innerHTML = text + ` [amount ${spawnedAmount}, spread ${spawnSpread}]`;
+    infoContainer.innerHTML = text + ` [spread ${spreadRadius}]`;
     const colors = materials[currentParticleIndex].colors;
     pixelsFromText(text, colors);
+    updateSpreadCanvas(colors);
 }
 
 const changeMaterial = (prevIndex, index) => {
-    const prevMaterial = document.querySelector(`[data-index="${prevIndex}"]`);
+    const prevMaterial = document.querySelector(`[${dataIndexAttr}="${prevIndex}"]`);
     prevMaterial.classList.remove('active');
-    const material = document.querySelector(`[data-index="${index}"]`);
+    const material = document.querySelector(`[${dataIndexAttr}="${index}"]`);
     material.classList.add('active');
     currentParticleIndex = index;
     typeSelect.value = index;
     updateInfo();
 }
-const defaultMatIndex = 8;
+
 changeMaterial(currentParticleIndex, defaultMatIndex);
 
 pixelCanvas.addEventListener('mousemove', (e) => {
@@ -247,14 +271,18 @@ loadButton.addEventListener('click', (e) => {
     pixelWorld.loadFromLocalStorage();
 });
 
-spreadInput.addEventListener('change', (e) => {
-    spawnSpread = +e.currentTarget.value;
+spreadRadiusInput.addEventListener('change', (e) => {
+    spreadRadius = +e.currentTarget.value;
     updateInfo();
 });
 
-amountInput.addEventListener('change', (e) => {
-    spawnedAmount = +e.currentTarget.value;
+spawnInSquare.addEventListener('change', (e) => {
+    spreadInSquare = e.currentTarget.checked;
     updateInfo();
+});
+
+speedInput.addEventListener('change', (e) => {
+    pixelWorld.setSlowRate(+e.currentTarget.value);
 });
 
 debugCheckbox.addEventListener('change', (e) => {
@@ -262,22 +290,29 @@ debugCheckbox.addEventListener('change', (e) => {
 });
 
 materialPicker.addEventListener('click', (e) => {
-    changeMaterial(currentParticleIndex, +e.target.getAttribute('data-index'));
+    if (e.target.hasAttribute(dataIndexAttr))
+        changeMaterial(currentParticleIndex, +e.target.getAttribute(dataIndexAttr));
 });
 
 let prevF = 0;
 const mainLoop = (f) => {
+    const pos = pixelWorld.getPositionFromCoords(cursorX, cursorY);
+
     if (isLeftMouseButtonPressed) {
-        const pos = pixelWorld.getPositionFromCoords(cursorX, cursorY);
-        pixelWorld.addFew(materials[currentParticleIndex].id, pos.row, pos.col, spawnSpread, spawnedAmount);
+        if (spreadInSquare)
+            pixelWorld.addFewInSquare(materials[currentParticleIndex].id, pos.row, pos.col, spreadRadius);
+        else
+            pixelWorld.addFewInRadius(materials[currentParticleIndex].id, pos.row, pos.col, spreadRadius);
     }
     if (isRightMouseButtonPressed) {
-        const pos = pixelWorld.getPositionFromCoords(cursorX, cursorY);
-        pixelWorld.removeFew(pos.row, pos.col, spawnSpread, spawnedAmount);
+        if (spreadInSquare)
+            pixelWorld.removeFewInSquare(pos.row, pos.col, spreadRadius);
+        else
+            pixelWorld.removeFewInRadius(pos.row, pos.col, spreadRadius);
     }
     pixelWorld.tick();
 
-    fpsContainer.innerHTML = `fps: ${Math.round(1000 / (f - prevF))}`;
+    fpsContainer.innerHTML = `Pos:${pos.row},${pos.col}; fps: ${Math.round(1000 / (f - prevF))}`;
     prevF = f;
     requestAnimationFrame(mainLoop);
 }
