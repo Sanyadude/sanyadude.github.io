@@ -22,20 +22,19 @@ const CoreModule = (() => {
 
     const randNegToPos = (number) => Math.ceil(Math.random() * number) * (Math.round(Math.random()) ? 1 : -1);
 
-    const MaterialFactory = function () {
+    const MaterialFactory = function (maxColors) {
         const materialFactory = {};
 
-        const COLORS_PER_MAT = 7;
-
-        materialFactory.create = (id, name, colors, updateFunction, options) => {
+        materialFactory.create = (id, name, colors, updateFunc, options) => {
             options = options || {};
             const material = {
                 id: id,
                 name: name,
-                colors: generateMaterialColors(colors, COLORS_PER_MAT),
+                colors: generateMaterialColors(colors, maxColors),
                 rgbColor: getRgbFromHex(colors[0]),
+                update: updateFunc,
                 updateFrequency: options.updateFrequency || 1,
-                update: updateFunction,
+                isAlive: options.isAlive || (() => true),
                 specialBehavior: options.specialBehavior || false
             }
             return material;
@@ -43,6 +42,33 @@ const CoreModule = (() => {
 
         return materialFactory;
     }
+
+    const MaterialsPackage = function (maxColors) {
+        const materialPackage = {};
+        const materials = {};
+
+        const materialFactory = new CoreModule.MaterialFactory(maxColors);
+
+        materialPackage.getMaxColors = () => maxColors;
+        materialPackage.addMaterial = (id, name, colors, updateFunc, options) => {
+            materials[id] = materialFactory.create(id, name, colors, updateFunc, options);
+        };
+        materialPackage.removeMaterial = (material) => delete materials[material.id];
+        materialPackage.getMaterials = () => materials;
+        materialPackage.getMatColor = (id, index) => materials[id].colors[index];
+
+        materialPackage.update = (pixel, row, col, pixelsArray, tick) => {
+            if (!materials[pixel.matId].isAlive(pixel, row, col, pixelsArray))
+                return false;
+            if (!pixel.updated && !pixel.sleeping && (tick % materials[pixel.matId].updateFrequency == 0)) {
+                materials[pixel.matId].update(pixel, row, col, pixelsArray);
+                return true;
+            }
+            return false;
+        };
+
+        return materialPackage;
+    };
 
     const PixelFactory = function () {
         const pixelFactory = {};
@@ -67,6 +93,13 @@ const CoreModule = (() => {
         left: [0, -1], center: [0, 0], right: [0, 1],
         bottomLeft: [1, -1], bottom: [1, 0], bottomRight: [1, 1]
     }
+    const sideMoveDir = [directions.top, directions.bottom, directions.left, directions.right];
+    const allDirMove = [directions.topLeft, directions.top, directions.topRight, directions.left, directions.right, directions.bottomLeft, directions.bottom, directions.bottomRight];
+
+    const allDirClockwise = [directions.left, directions.topLeft, directions.top, directions.topRight, directions.right, directions.bottomRight, directions.bottom, directions.bottomLeft];
+    const allDirCounterClockwise = allDirClockwise.reverse();
+
+    const randomDirection = () => allDirMove[Math.floor(Math.random() * allDirMove.length)];
 
     const granuleMoveDir = () => {
         const chance = Math.random();
@@ -83,9 +116,6 @@ const CoreModule = (() => {
         ? [directions.top, directions.topLeft, directions.topRight, directions.left, directions.right]
         : [directions.top, directions.topRight, directions.topLeft, directions.right, directions.left];
 
-    const sideMoveDir = [directions.top, directions.bottom, directions.left, directions.right];
-    const allDirMove = [directions.topLeft, directions.top, directions.topRight, directions.left, directions.right, directions.bottomLeft, directions.bottom, directions.bottomRight];
-
     const hasMatAround = (matId, x, y, pixels) => {
         for (let i = 0; i < allDirMove.length; i++) {
             const dir = allDirMove[i];
@@ -99,6 +129,35 @@ const CoreModule = (() => {
             }
         }
         return true
+    }
+
+    const getEmptyDirections = (x, y, pixels) => {
+        const directionsClockwise = [directions.left,
+        directions.topLeft,
+        directions.top,
+        directions.topRight,
+        directions.right,
+        directions.bottomRight,
+        directions.bottom,
+        directions.bottomLeft];
+        const emptyDirections = [];
+        for (let i = 0; i < directionsClockwise.length; i++) {
+            const prevDir = i == 0
+                ? directionsClockwise[directionsClockwise.length - 1]
+                : directionsClockwise[i - 1];
+            const dir = directionsClockwise[i];
+            const nextDir = i == directionsClockwise.length - 1
+                ? directionsClockwise[0]
+                : directionsClockwise[i + 1];
+            if (pixels[x + dir[0]] && pixels[x + prevDir[0]] && pixels[x + nextDir[0]]) {
+                if (pixels[x + dir[0]][y + dir[1]] == null
+                    && pixels[x + dir[0]][y + dir[1]] == null
+                    && pixels[x + dir[0]][y + dir[1]] == null) {
+                    emptyDirections.push(dir);
+                }
+            }
+        }
+        return emptyDirections;
     }
 
     const moveInDirection = (x, y, pixels, directions, moveHandlers) => {
@@ -191,7 +250,10 @@ const CoreModule = (() => {
         //directions arrays
         sideMoveDir: sideMoveDir,
         allDirMove: allDirMove,
+        allDirClockwise: allDirClockwise,
+        allDirCounterClockwise: allDirCounterClockwise,
         //methods that return directions array
+        getRandomDirection: randomDirection,
         getGranuleMoveDir: granuleMoveDir,
         getLiquidMoveDir: liquidMoveDir,
         getGasMoveDir: gasMoveDir
@@ -204,6 +266,7 @@ const CoreModule = (() => {
         awakeAllNeighbours: awakeAllNeighbours,
         //check if mat around
         hasMatAround: hasMatAround,
+        getEmptyDirections: getEmptyDirections,
         //move methods
         moveInDirection: moveInDirection,
         spreadInDirection: spreadInDirection,
@@ -212,8 +275,9 @@ const CoreModule = (() => {
     }
 
     return {
-        PixelFactory: PixelFactory,
+        MaterialsPackage: MaterialsPackage,
         MaterialFactory: MaterialFactory,
+        PixelFactory: PixelFactory,
         DirectionsOptions: DirectionsOptions,
         MovingOptions: MovingOptions,
         Utils: Utils

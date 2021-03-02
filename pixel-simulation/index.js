@@ -30,13 +30,15 @@ const dataIndexAttr = 'data-index';
 
 const scale = 4;
 textCanvas.width = body.offsetWidth;
-textCanvas.height = scale * 35;
+textCanvas.height = 140;
 pixelWorldContainer.style.height = (window.innerHeight - textCanvas.height - 10) + 'px';
 const textCanvasContext = textCanvas.getContext('2d');
 
-const materialProperies = MaterialsModule.Materials;
+const materialPack = MaterialsModule.MaterialsPack;
+const colorsPerMat = materialPack.getMaxColors();
+const materialProperies = materialPack.getMaterials();
 const pixelWorld = new PixelsModule.PixelWorld(scale);
-pixelWorld.init(pixelWorldContainer, materialProperies);
+pixelWorld.init(pixelWorldContainer, materialPack);
 pixelWorld.on('before-tick', () => {
     textCanvasContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
     for (let i = 0; i < textPixels.length; i++) {
@@ -82,7 +84,7 @@ let materials = (() => {
         const matContext = matCanvas.getContext('2d');
         for (let i = 0; i < side; i += scale) {
             for (let j = 0; j < side; j += scale) {
-                matContext.fillStyle = element.colors[Math.floor(Math.random() * 7)];
+                matContext.fillStyle = element.colors[Math.floor(Math.random() * colorsPerMat)];
                 matContext.fillRect(i, j, scale, scale);
             }
         }
@@ -300,9 +302,9 @@ const mainLoop = (f) => {
 
     if (isLeftMouseButtonPressed) {
         if (spreadInSquare)
-            pixelWorld.addFewInSquare(materials[currentParticleIndex].id, pos.row, pos.col, spreadRadius);
+            pixelWorld.addFewInSquare(materials[currentParticleIndex].id, pos.row, pos.col, spreadRadius, 0.7);
         else
-            pixelWorld.addFewInRadius(materials[currentParticleIndex].id, pos.row, pos.col, spreadRadius);
+            pixelWorld.addFewInRadius(materials[currentParticleIndex].id, pos.row, pos.col, spreadRadius,  0.7);
     }
     if (isRightMouseButtonPressed) {
         if (spreadInSquare)

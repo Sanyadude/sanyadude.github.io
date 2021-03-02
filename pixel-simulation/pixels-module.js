@@ -1,5 +1,4 @@
 const PixelsModule = (() => {
-    const COLORS_PER_MAT = 7;
     const DEBUG_COLOR = '#c101ff';
     const DEBUG_PIXEL_MAT_ID = 9999;
 
@@ -44,7 +43,7 @@ const PixelsModule = (() => {
         return closestMat;
     }
 
-    const imageToPositions = (img, pixelWorld) => {
+    const imageToPositions = (img, pixelWorld, materials) => {
         const imgCanvas = document.createElement('canvas');
         const imgContext = imgCanvas.getContext('2d');
         imgCanvas.width = img.width;
@@ -52,10 +51,10 @@ const PixelsModule = (() => {
         imgContext.drawImage(img, 0, 0);
 
         const matColorsArray = [];
-        for (const key in pixelWorld.materials) {
-            if (pixelWorld.materials[key].specialBehavior)
+        for (const key in materials) {
+            if (materials[key].specialBehavior)
                 continue;
-            matColorsArray.push(pixelWorld.materials[key]);
+            matColorsArray.push(materials[key]);
         }
 
         const data = imgContext.getImageData(0, 0, img.width, img.height).data;
@@ -75,10 +74,10 @@ const PixelsModule = (() => {
         pixelWorld.restore(positions);
     };
 
-    const imageDataUrlToPositions = (dataUrl, pixelWorld) => {
+    const imageDataUrlToPositions = (dataUrl, pixelWorld, materials) => {
         const img = new Image();
         img.src = dataUrl;
-        img.onload = () => imageToPositions(img, pixelWorld);
+        img.onload = () => imageToPositions(img, pixelWorld, materials);
     }
 
     const imageDataUrlSaveToImage = (dataUrl, fileName) => {
@@ -158,12 +157,12 @@ const PixelsModule = (() => {
 
         let callbacks = { 'before-tick': null };
 
-        pixelWorld.materials = null;
+        let materialPackage = null;
         const pixelFactory = new CoreModule.PixelFactory;
 
-        pixelWorld.init = function (element, materials) {
+        pixelWorld.init = function (element, materialPack) {
             containerElement = element;
-            this.materials = materials;
+            materialPackage = materialPack;
             const canvas = document.createElement('canvas');
             canvas.width = element.offsetWidth;
             canvas.height = element.offsetHeight;
@@ -185,7 +184,7 @@ const PixelsModule = (() => {
             this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
             this.pixelsArray = fillGrid(this.gridSize, () => null);
             this.renderedPixels = fillGrid(this.gridSize, () => 0);
-            this.pixelsColors = fillGrid(this.gridSize, () => Math.floor(Math.random() * COLORS_PER_MAT));
+            this.pixelsColors = fillGrid(this.gridSize, () => Math.floor(Math.random() * materialPackage.getMaxColors()));
             this.drawContextBounds();
         }
 
@@ -258,7 +257,7 @@ const PixelsModule = (() => {
             if (file.type == 'text/plain') {
                 readFromFileAsText(file, (result) => this.fromBase64(result));
             } else if (file.type == 'image/png' || file.type == 'image/jpeg') {
-                readFromFileAsDataUrl(file, (result) => imageDataUrlToPositions(result, this));
+                readFromFileAsDataUrl(file, (result) => imageDataUrlToPositions(result, this, materialPack.getMaterials()));
             }
         }
 
@@ -284,24 +283,24 @@ const PixelsModule = (() => {
                 && this.pixelsArray[row][col] == null) {
                 this.pixelsArray[row][col] = pixelFactory.create(id);
                 this.renderedPixels[row][col] = id;
-                this.drawContextPixel(col, row, this.materials[id].colors[this.pixelsColors[row][col]]);
+                this.drawContextPixel(col, row, materialPackage.getMatColor(id, this.pixelsColors[row][col]));
             }
         }
 
-        pixelWorld.addFewInSquare = function (id, row, col, side) {
+        pixelWorld.addFewInSquare = function (id, row, col, side, chance) {
             for (let dRow = -side; dRow <= side; dRow++) {
                 for (let dCol = -side; dCol <= side; dCol++) {
-                    if (Math.random() < 0.7)
+                    if (Math.random() < chance)
                         continue;
                     this.add(id, row + dRow, col + dCol);
                 }
             }
         }
 
-        pixelWorld.addFewInRadius = function (id, row, col, radius) {
+        pixelWorld.addFewInRadius = function (id, row, col, radius, chance) {
             for (let dRow = -radius; dRow <= radius; dRow++) {
                 for (let dCol = -radius; dCol <= radius; dCol++) {
-                    if (radius - 1 < Math.sqrt(dRow * dRow + dCol * dCol) || (radius > 1 && Math.random() < 0.7))
+                    if (radius - 1 < Math.sqrt(dRow * dRow + dCol * dCol) || (radius > 1 && Math.random() < chance))
                         continue;
                     this.add(id, row + dRow, col + dCol);
                 }
@@ -372,12 +371,9 @@ const PixelsModule = (() => {
             const pixel = this.pixelsArray[row][col];
             if (pixel == null)
                 return;
-            const id = pixel.matId;
             pixel.lifeTime++;
-            if (!pixel.updated && !pixel.sleeping && (tickCounter % this.materials[id].updateFrequency == 0)) {
-                this.materials[id].update(pixel, row, col, this.pixelsArray);
+            if (materialPackage.update(pixel, row, col, this.pixelsArray, tickCounter))
                 pixelsUpdated++;
-            }
         }
 
         pixelWorld.draw = function () {
@@ -400,7 +396,7 @@ const PixelsModule = (() => {
                     const drawDebugPixel = !pixel.sleeping && debugActivity;
                     this.renderedPixels[row][col] = drawDebugPixel ? DEBUG_PIXEL_MAT_ID : matId;
                     pixelsRendered++;
-                    const color = drawDebugPixel ? DEBUG_COLOR : this.materials[matId].colors[this.pixelsColors[row][col]];
+                    const color = drawDebugPixel ? DEBUG_COLOR : materialPackage.getMatColor(matId, this.pixelsColors[row][col]);
                     this.drawContextPixel(col, row, color);
                 }
             } else if (this.renderedPixels[row][col] != 0) {
