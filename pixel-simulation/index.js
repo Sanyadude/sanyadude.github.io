@@ -93,7 +93,7 @@ let materials = (() => {
     return materials;
 })();
 
-const defaultMatIndex = 13;
+const defaultMatIndex = 14;
 let currentParticleIndex = 0;
 
 let cursorX = 0;
