@@ -4,6 +4,8 @@ const pixelWorldContainer = document.querySelector('#pixel-world-container');
 const infoContainer = document.querySelector('#material-info');
 const fpsContainer = document.querySelector('#fps-info');
 
+const controlsContainer = document.querySelector('#controls-container');
+
 const importFromFileInput = document.querySelector('#import-from-file');
 const exportToFileButton = document.querySelector('#export-to-file');
 const exportToImgButton = document.querySelector('#export-to-img');
@@ -30,8 +32,12 @@ const dataIndexAttr = 'data-index';
 
 const scale = 4;
 textCanvas.width = body.offsetWidth;
-textCanvas.height = 140;
+textCanvas.height = controlsContainer.offsetHeight + 8;
+
 pixelWorldContainer.style.height = (window.innerHeight - textCanvas.height - 10) + 'px';
+if (window.innerWidth < 960) {
+    pixelWorldContainer.style.height = (window.innerHeight - controlsContainer.offsetHeight - 10) + 'px';
+}
 const textCanvasContext = textCanvas.getContext('2d');
 
 const materialPack = MaterialsModule.MaterialsPack;
@@ -99,8 +105,8 @@ let currentParticleIndex = 0;
 let cursorX = 0;
 let cursorY = 0;
 
-let isLeftMouseButtonPressed = false;
-let isRightMouseButtonPressed = false;
+let isSpreadMaterialEnabled = false;
+let isRemoveMaterialEnabled = false;
 
 let spreadRadius = +spreadRadiusInput.value;
 let spreadInSquare = false;
@@ -174,11 +180,26 @@ pixelCanvas.addEventListener('mousemove', (e) => {
     cursorY = e.offsetY;
 });
 
+pixelCanvas.addEventListener('touchmove', (e) => {
+    const touch = e.touches[0];
+    const touchTargetRect = document.elementFromPoint(touch.clientX, touch.clientY).getBoundingClientRect();
+    cursorX = touch.clientX - touchTargetRect.x;
+    cursorY = touch.clientY - touchTargetRect.y;
+});
+
 pixelCanvas.addEventListener('mousedown', (e) => {
     if (e.button === 0)
-        isLeftMouseButtonPressed = true;
+        isSpreadMaterialEnabled = true;
     if (e.button === 2)
-        isRightMouseButtonPressed = true;
+        isRemoveMaterialEnabled = true;
+});
+
+pixelCanvas.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    const touchTargetRect = document.elementFromPoint(touch.clientX, touch.clientY).getBoundingClientRect();
+    cursorX = touch.clientX - touchTargetRect.x;
+    cursorY = touch.clientY - touchTargetRect.y;
+    isSpreadMaterialEnabled = true;
 });
 
 pixelCanvas.addEventListener('contextmenu', (e) => {
@@ -187,9 +208,14 @@ pixelCanvas.addEventListener('contextmenu', (e) => {
 
 pixelCanvas.addEventListener('mouseup', (e) => {
     if (e.button === 0)
-        isLeftMouseButtonPressed = false;
+        isSpreadMaterialEnabled = false;
     if (e.button === 2)
-        isRightMouseButtonPressed = false;
+        isRemoveMaterialEnabled = false;
+    saveDataFromPixelWorld();
+});
+
+pixelCanvas.addEventListener('touchend', (e) => {
+    isSpreadMaterialEnabled = false;
     saveDataFromPixelWorld();
 });
 
@@ -300,13 +326,13 @@ let prevF = 0;
 const mainLoop = (f) => {
     const pos = pixelWorld.getPositionFromCoords(cursorX, cursorY);
 
-    if (isLeftMouseButtonPressed) {
+    if (isSpreadMaterialEnabled) {
         if (spreadInSquare)
             pixelWorld.addFewInSquare(materials[currentParticleIndex].id, pos.row, pos.col, spreadRadius, 0.7);
         else
-            pixelWorld.addFewInRadius(materials[currentParticleIndex].id, pos.row, pos.col, spreadRadius,  0.7);
+            pixelWorld.addFewInRadius(materials[currentParticleIndex].id, pos.row, pos.col, spreadRadius, 0.7);
     }
-    if (isRightMouseButtonPressed) {
+    if (isRemoveMaterialEnabled) {
         if (spreadInSquare)
             pixelWorld.removeFewInSquare(pos.row, pos.col, spreadRadius);
         else
