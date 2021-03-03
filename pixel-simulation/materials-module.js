@@ -57,14 +57,13 @@ const MaterialsModule = (() => {
     const updateGas = (currentPixel, x, y, pixels) => {
         const moveHandlers = [
             {
-                conditionCheck: (pixel, chance) => pixel == null,
-                success: (newX, newY) => swap(x, y, newX, newY, pixels)
+                conditionCheck: (pixel) => pixel == null,
+                success: (newX, newY, chance) => swap(x, y, newX, newY, pixels)
             }
         ];
         const moved = moveInDirection(x, y, pixels, getGasMoveDir(), moveHandlers);
         if (moved) {
-            const awakeDirections = allDirMove;
-            awakeNeighbours(x, y, pixels, awakeDirections);
+            awakeNeighbours(x, y, pixels, allDirMove);
             currentPixel.updated = true;
             currentPixel.sleeping = false;
         } else {
@@ -75,17 +74,17 @@ const MaterialsModule = (() => {
     const updateGranule = (currentPixel, x, y, pixels) => {
         const moveHandlers = [
             {
-                conditionCheck: (pixel, chance) => pixel == null,
-                success: (newX, newY) => swap(x, y, newX, newY, pixels)
+                conditionCheck: (pixel) => pixel == null,
+                success: (newX, newY, chance) => swap(x, y, newX, newY, pixels)
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == WATER_MAT
+                conditionCheck: (pixel) => pixel.matId == WATER_MAT
                     || pixel.matId == OIL_MAT
                     || pixel.matId == ACID_MAT
                     || pixel.matId == LAVA_MAT
                     || pixel.matId == STEAM_MAT
                     || pixel.matId == SMOKE_MAT,
-                success: (newX, newY) => {
+                success: (newX, newY, chance) => {
                     pixels[newX][newY].updated = true;
                     pixels[newX][newY].sleeping = false;
                     swap(x, y, newX, newY, pixels);
@@ -106,40 +105,60 @@ const MaterialsModule = (() => {
     const updateWater = (currentPixel, x, y, pixels) => {
         const moveHandlers = [
             {
-                conditionCheck: (pixel, chance) => pixel == null,
-                success: (newX, newY) => swap(x, y, newX, newY, pixels)
+                conditionCheck: (pixel) => pixel == null,
+                success: (newX, newY, chance) => swap(x, y, newX, newY, pixels)
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == STEAM_MAT
+                conditionCheck: (pixel) => pixel.matId == STEAM_MAT
                     || pixel.matId == SMOKE_MAT
                     || pixel.matId == OIL_MAT,
-                success: (newX, newY) => {
+                success: (newX, newY, chance) => {
                     pixels[newX][newY].updated = true;
                     pixels[newX][newY].sleeping = false;
                     swap(x, y, newX, newY, pixels);
                 }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == LAVA_MAT,
-                success: (newX, newY) => transformTo(STEAM_MAT, x, y, pixels)
+                conditionCheck: (pixel) => pixel.matId == LAVA_MAT,
+                success: (newX, newY, chance) => {
+                    if (chance < 0.5) {
+                        pixels[newX][newY] = null;
+                    }
+                    transformTo(STEAM_MAT, x, y, pixels);
+                }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == PLANT_MAT,
-                success: (newX, newY) => pixels[newX][newY].lifeTime = 0
+                conditionCheck: (pixel) => pixel.matId == PLANT_MAT,
+                success: (newX, newY, chance) => pixels[newX][newY].lifeTime = 0
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == ICE_MAT && chance < 0.1,
-                success: (newX, newY) => transformTo(ICE_MAT, x, y, pixels)
+                conditionCheck: (pixel) => pixel.matId == BLOOM_MAT,
+                success: (newX, newY, chance) => {
+                    if (chance < 0.99)
+                        return;
+                    transformTo(PLANT_MAT, x, y, pixels);
+                }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == SNOW_MAT && chance < 0.1,
-                success: (newX, newY) => transformTo(WATER_MAT, newX, newY, pixels)
+                conditionCheck: (pixel) => pixel.matId == ICE_MAT,
+                success: (newX, newY, chance) => {
+                    if (chance < 0.9)
+                        return;
+                    transformTo(ICE_MAT, x, y, pixels);
+                }
+            },
+            {
+                conditionCheck: (pixel) => pixel.matId == SNOW_MAT,
+                success: (newX, newY, chance) => {
+                    if (chance < 0.9)
+                        return;
+                    transformTo(WATER_MAT, newX, newY, pixels);
+                }
             }
         ];
         const moved = moveInDirection(x, y, pixels, getLiquidMoveDir(), moveHandlers);
         if (moved) {
-            const awakeDirections = allDirMove;
-            awakeNeighbours(x, y, pixels, awakeDirections);
+            awakeNeighbours(x, y, pixels, allDirMove);
             currentPixel.updated = true;
             currentPixel.sleeping = false;
         } else {
@@ -150,26 +169,25 @@ const MaterialsModule = (() => {
     const updateOil = (currentPixel, x, y, pixels) => {
         const moveHandlers = [
             {
-                conditionCheck: (pixel, chance) => pixel == null,
-                success: (newX, newY) => swap(x, y, newX, newY, pixels)
+                conditionCheck: (pixel) => pixel == null,
+                success: (newX, newY, chance) => swap(x, y, newX, newY, pixels)
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == STEAM_MAT || pixel.matId == SMOKE_MAT,
-                success: (newX, newY) => {
+                conditionCheck: (pixel) => pixel.matId == STEAM_MAT || pixel.matId == SMOKE_MAT,
+                success: (newX, newY, chance) => {
                     pixels[newX][newY].updated = true;
                     pixels[newX][newY].sleeping = false;
                     swap(x, y, newX, newY, pixels);
                 }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == LAVA_MAT,
-                success: (newX, newY) => transformTo(FIRE_MAT, x, y, pixels)
+                conditionCheck: (pixel) => pixel.matId == LAVA_MAT,
+                success: (newX, newY, chance) => transformTo(FIRE_MAT, x, y, pixels)
             }
         ];
         const moved = moveInDirection(x, y, pixels, getLiquidMoveDir(), moveHandlers);
         if (moved) {
-            const awakeDirections = allDirMove;
-            awakeNeighbours(x, y, pixels, awakeDirections);
+            awakeNeighbours(x, y, pixels, allDirMove);
             currentPixel.updated = true;
             currentPixel.sleeping = false;
         } else {
@@ -180,33 +198,34 @@ const MaterialsModule = (() => {
     const updateAcid = (currentPixel, x, y, pixels) => {
         const moveHandlers = [
             {
-                conditionCheck: (pixel, chance) => pixel == null,
-                success: (newX, newY) => swap(x, y, newX, newY, pixels)
+                conditionCheck: (pixel) => pixel == null,
+                success: (newX, newY, chance) => swap(x, y, newX, newY, pixels)
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == STEAM_MAT || pixel.matId == SMOKE_MAT,
-                success: (newX, newY) => {
+                conditionCheck: (pixel) => pixel.matId == STEAM_MAT || pixel.matId == SMOKE_MAT,
+                success: (newX, newY, chance) => {
                     pixels[newX][newY].updated = true;
                     pixels[newX][newY].sleeping = false;
                     swap(x, y, newX, newY, pixels);
                 }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == LAVA_MAT,
-                success: (newX, newY) => {
+                conditionCheck: (pixel) => pixel.matId == LAVA_MAT,
+                success: (newX, newY, chance) => {
                     pixels[newX][newY].updated = true;
                     pixels[newX][newY].sleeping = false;
                     swap(x, y, newX, newY, pixels);
                 }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId !== ACID_MAT
-                    && pixel.matId !== WATER_MAT
-                    && pixel.matId !== OIL_MAT
-                    && pixel.matId !== GLASS_MAT
-                    && pixel.matId !== RAINBOW_MAT
-                    && chance < 0.1,
-                success: (newX, newY) => {
+                conditionCheck: (pixel) => pixel.matId != ACID_MAT
+                    && pixel.matId != WATER_MAT
+                    && pixel.matId != OIL_MAT
+                    && pixel.matId != GLASS_MAT
+                    && pixel.matId != RAINBOW_MAT,
+                success: (newX, newY, chance) => {
+                    if (chance < 0.9)
+                        return;
                     pixels[x][y] = null;
                     pixels[newX][newY] = null;
                 }
@@ -214,8 +233,7 @@ const MaterialsModule = (() => {
         ];
         const moved = moveInDirection(x, y, pixels, getLiquidMoveDir(), moveHandlers);
         if (moved) {
-            const awakeDirections = allDirMove;
-            awakeNeighbours(x, y, pixels, awakeDirections);
+            awakeNeighbours(x, y, pixels, allDirMove);
             currentPixel.updated = true;
             currentPixel.sleeping = false;
         } else {
@@ -224,41 +242,61 @@ const MaterialsModule = (() => {
     }
 
     const updateLava = (currentPixel, x, y, pixels) => {
-        const shouldAnnihilate = Math.random() < 0.2;
+        if (currentPixel.lifeTime < 100 + randNegToPos(90)) {
+            const fireSpreadDir = [];
+            for (let i = 0; i < 1; i++) {
+                fireSpreadDir.push([randNegToPos(3), randNegToPos(3)]);
+            }
+            const fireSpreadHandlers = [
+                {
+                    conditionCheck: (pixel) => pixel == null,
+                    success: (newX, newY, chance) => pixels[newX][newY] = pixelFactory.create(FIRE_MAT)
+                }
+            ];
+            moveInDirection(x, y, pixels, fireSpreadDir, fireSpreadHandlers);
+        }
         const moveHandlers = [
             {
-                conditionCheck: (pixel, chance) => pixel == null,
-                success: (newX, newY) => swap(x, y, newX, newY, pixels)
+                conditionCheck: (pixel) => pixel == null,
+                success: (newX, newY, chance) => swap(x, y, newX, newY, pixels)
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == STEAM_MAT || pixel.matId == SMOKE_MAT,
-                success: (newX, newY) => {
+                conditionCheck: (pixel) => pixel.matId == FIRE_MAT,
+                success: (newX, newY, chance) => swap(x, y, newX, newY, pixels)
+            },
+            {
+                conditionCheck: (pixel) => pixel.matId == STEAM_MAT || pixel.matId == SMOKE_MAT,
+                success: (newX, newY, chance) => {
                     pixels[newX][newY].updated = true;
                     pixels[newX][newY].sleeping = false;
                     swap(x, y, newX, newY, pixels);
                 }
             },
             {
-                conditionCheck: (pixel, chance) => (pixel.matId === WATER_MAT || pixel.matId === SNOW_MAT),
-                success: (newX, newY) => {
+                conditionCheck: (pixel) => pixel.matId == WATER_MAT || pixel.matId == SNOW_MAT,
+                success: (newX, newY, chance) => {
+                    if (chance < 0.3) {
+                        pixels[x][y] = null;
+                    }
                     transformTo(STEAM_MAT, newX, newY, pixels);
                     swap(x, y, newX, newY, pixels);
                 }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId === ICE_MAT,
-                success: (newX, newY) => {
+                conditionCheck: (pixel) => pixel.matId == ICE_MAT,
+                success: (newX, newY, chance) => {
                     transformTo(WATER_MAT, newX, newY, pixels);
                     swap(x, y, newX, newY, pixels);
                 }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId !== LAVA_MAT
-                    && pixel.matId !== ROCK_MAT
-                    && pixel.matId !== RAINBOW_MAT
-                    && chance < 0.3,
-                success: (newX, newY) => {
-                    if (shouldAnnihilate) {
+                conditionCheck: (pixel) => pixel.matId != LAVA_MAT
+                    && pixel.matId != ROCK_MAT
+                    && pixel.matId != RAINBOW_MAT,
+                success: (newX, newY, chance) => {
+                    if (chance < 0.7)
+                        return;
+                    if (chance < 0.71) {
                         transformTo(FIRE_MAT, newX, newY, pixels);
                         pixels[x][y] = null;
                     } else {
@@ -269,30 +307,7 @@ const MaterialsModule = (() => {
         ];
         const moved = moveInDirection(x, y, pixels, getLiquidMoveDir(), moveHandlers);
         if (moved) {
-            const awakeDirections = allDirMove;
-            awakeNeighbours(x, y, pixels, awakeDirections);
-            currentPixel.updated = true;
-            currentPixel.sleeping = false;
-        } else {
-            currentPixel.sleeping = true;
-        }
-    }
-
-    const updateRainbow = (currentPixel, x, y, pixels) => {
-        const moveHandlers = [
-            {
-                conditionCheck: (pixel, chance) => pixel == null,
-                success: (newX, newY) => swap(x, y, newX, newY, pixels)
-            },
-            {
-                conditionCheck: (pixel, chance) => pixel.matId !== RAINBOW_MAT,
-                success: (newX, newY) => transformTo(RAINBOW_MAT, newX, newY, pixels)
-            }
-        ];
-        const moved = moveInDirection(x, y, pixels, getLiquidMoveDir(), moveHandlers);
-        if (moved) {
-            const awakeDirections = allDirMove;
-            awakeNeighbours(x, y, pixels, awakeDirections);
+            awakeNeighbours(x, y, pixels, allDirMove);
             currentPixel.updated = true;
             currentPixel.sleeping = false;
         } else {
@@ -301,25 +316,30 @@ const MaterialsModule = (() => {
     }
 
     const updateFire = (currentPixel, x, y, pixels) => {
-        const moveHandlers = [
+        const spreadHandlers = [
             {
-                conditionCheck: (pixel, chance) => pixel.matId == WATER_MAT && chance < 0.3,
-                success: (newX, newY) => {
+                conditionCheck: (pixel) => pixel == null,
+                success: (newX, newY, chance) => {}
+            },
+            {
+                conditionCheck: (pixel) => pixel.matId == WATER_MAT,
+                success: (newX, newY, chance) => {
+                    if (chance > 0.3)
+                        return;
                     transformTo(STEAM_MAT, newX, newY, pixels);
                     pixels[x][y] = null;
                 }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == ICE_MAT || pixel.matId == SNOW_MAT,
-                success: (newX, newY) => {
+                conditionCheck: (pixel) => pixel.matId == ICE_MAT || pixel.matId == SNOW_MAT,
+                success: (newX, newY, chance) => {
                     transformTo(WATER_MAT, newX, newY, pixels);
                     pixels[x][y] = null;
                 }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == SAND_MAT,
-                success: (newX, newY) => {
-                    const chance = Math.random();
+                conditionCheck: (pixel) => pixel.matId == SAND_MAT,
+                success: (newX, newY, chance) => {
                     transformTo(GLASS_MAT, newX, newY, pixels);
                     if (chance < 0.3) {
                         currentPixel.lifeTime = 0;
@@ -328,9 +348,8 @@ const MaterialsModule = (() => {
                 }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == WOOD_MAT,
-                success: (newX, newY) => {
-                    const chance = Math.random();
+                conditionCheck: (pixel) => pixel.matId == WOOD_MAT,
+                success: (newX, newY, chance) => {
                     if (chance < 0.01) {
                         transformTo(ASH_MAT, newX, newY, pixels)
                         swap(x, y, newX, newY, pixels);
@@ -338,7 +357,7 @@ const MaterialsModule = (() => {
                         transformTo(FIRE_MAT, newX, newY, pixels)
                     } else if (chance < 0.5) {
                         if (pixels[x - 1]) {
-                            if (pixels[x - 1][y] == null && chance < 0.05) {
+                            if (pixels[x - 1][y] === null && chance < 0.05) {
                                 pixels[x - 1][y] = pixelFactory.create(SMOKE_MAT);
                             }
                         }
@@ -347,9 +366,8 @@ const MaterialsModule = (() => {
                 }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == PLANT_MAT || pixel.matId == BLOOM_MAT,
-                success: (newX, newY) => {
-                    const chance = Math.random();
+                conditionCheck: (pixel) => pixel.matId == PLANT_MAT || pixel.matId == BLOOM_MAT,
+                success: (newX, newY, chance) => {
                     if (chance < 0.02) {
                         transformTo(ASH_MAT, newX, newY, pixels)
                         swap(x, y, newX, newY, pixels);
@@ -366,20 +384,20 @@ const MaterialsModule = (() => {
                 }
             },
             {
-                conditionCheck: (pixel, chance) => (pixel.matId == GUN_POWDER_MAT
-                    || pixel.matId == OIL_MAT) && chance < 0.9,
-                success: (newX, newY) => {
-                    const chance = Math.random();
+                conditionCheck: (pixel) => pixel.matId == GUN_POWDER_MAT || pixel.matId == OIL_MAT,
+                success: (newX, newY, chance) => {
+                    if (chance < 0.1)
+                        return;
                     transformTo(FIRE_MAT, newX, newY, pixels);
                     //transformTo(SMOKE_MAT, x, y, pixels);
-                    if (chance < 0.5)
+                    if (chance < 0.6)
                         return;
                     if (pixels[x - 1]) {
-                        if (pixels[x - 1][y] == null)
+                        if (pixels[x - 1][y] === null)
                             pixels[x - 1][y] = pixelFactory.create(SMOKE_MAT);
-                        if (pixels[x - 1][y - 1] == null)
+                        if (pixels[x - 1][y - 1] === null)
                             pixels[x - 1][y - 1] = pixelFactory.create(SMOKE_MAT);
-                        if (pixels[x - 1][y + 1] == null)
+                        if (pixels[x - 1][y + 1] === null)
                             pixels[x - 1][y + 1] = pixelFactory.create(SMOKE_MAT);
                     }
                 }
@@ -389,11 +407,10 @@ const MaterialsModule = (() => {
         for (let i = 0; i < 4; i++) {
             fireSpreadDir.push([randNegToPos(2), randNegToPos(2)]);
         }
-        const spreaded = spreadInDirection(x, y, pixels, fireSpreadDir, moveHandlers);
-        if (!spreaded && pixels[x][y].lifeTime > 3) {
+        spreadInDirection(x, y, pixels, fireSpreadDir, spreadHandlers);
+        if (currentPixel.lifeTime > 4) {
             pixels[x][y] = null;
-            const awakeDirections = allDirMove;
-            awakeNeighbours(x, y, pixels, awakeDirections);
+            awakeNeighbours(x, y, pixels, allDirMove);
         }
     }
 
@@ -404,12 +421,11 @@ const MaterialsModule = (() => {
         const growDirection = allDirClockwise[currentPixel.growDir];
         const growHandlers = [
             {
-                conditionCheck: (pixel, chance) => pixel == null,
-                success: (newX, newY) => {
-                    const chance = Math.random();
-                    if (chance < 0.01) {
+                conditionCheck: (pixel) => pixel == null,
+                success: (newX, newY, chance) => {
+                    if (chance < 0.005) {
                         pixels[newX][newY] = pixelFactory.create(BLOOM_MAT);
-                    } else if (chance < 0.1) {
+                    } else if (chance < 0.05) {
                         const randDirStep = (Math.floor(Math.random() * 10) % 3) - 1;
                         const currentGrow = currentPixel.growDir;
                         let newGrowDir = currentGrow + randDirStep;
@@ -422,32 +438,98 @@ const MaterialsModule = (() => {
         const growed = moveInDirection(x, y, pixels, [growDirection], growHandlers);
         const moveHandlers = [
             {
-                conditionCheck: (pixel, chance) => pixel == null,
-                success: (newX, newY) => { }
+                conditionCheck: (pixel) => pixel == null,
+                success: (newX, newY, chance) => { }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == WATER_MAT && chance < 0.01,
-                success: (newX, newY) => transformTo(PLANT_MAT, newX, newY, pixels)
+                conditionCheck: (pixel) => pixel.matId == WATER_MAT,
+                success: (newX, newY, chance) => {
+                    if (chance < 0.99)
+                        return;
+                    transformTo(PLANT_MAT, newX, newY, pixels);
+                }
             },
             {
-                conditionCheck: (pixel, chance) => pixel.matId == SAND_MAT && chance < 0.01,
-                success: (newX, newY) => transformTo(WOOD_MAT, newX, newY, pixels)
-            },
-            {
-                conditionCheck: (pixel, chance) => pixel.matId == WOOD_MAT && chance < 0.001,
-                success: (newX, newY) => transformTo(WOOD_MAT, x, y, pixels)
+                conditionCheck: (pixel) => pixel.matId == WOOD_MAT,
+                success: (newX, newY, chance) => {
+                    if (chance < 0.999)
+                        return;
+                    transformTo(WOOD_MAT, x, y, pixels);
+                }
             }
         ];
         const moved = moveInDirection(x, y, pixels, allDirMove, moveHandlers);
         if (growed || moved) {
-            const awakeDirections = allDirMove;
-            awakeNeighbours(x, y, pixels, awakeDirections);
+            awakeNeighbours(x, y, pixels, allDirMove);
             currentPixel.updated = true;
+        }
+    }
+
+    const updateBloom = (currentPixel, x, y, pixels) => {
+        let growed = false;
+        if (currentPixel.lifeTime < 2) {
+            const growHandlers = [
+                {
+                    conditionCheck: (pixel) => pixel == null,
+                    success: (newX, newY, chance) => {
+                        pixels[newX][newY] = pixelFactory.create(BLOOM_MAT);
+                        pixels[newX][newY].lifeTime = currentPixel.lifeTime;
+                    }
+                }
+            ];
+            growed = spreadInDirection(x, y, pixels, sideMoveDir, growHandlers);
+        }
+        const moveHandlers = [
+            {
+                conditionCheck: (pixel) => pixel == null,
+                success: (newX, newY, chance) => {
+                    if (chance < 0.9)
+                        return;
+                    pixels[newX][newY] = pixelFactory.create(PLANT_MAT);
+                }
+            }
+        ];
+        const moved = moveInDirection(x, y, pixels, [getRandomDirection()], moveHandlers);
+        if (growed || moved) {
+            awakeNeighbours(x, y, pixels, allDirMove);
+            currentPixel.updated = true;
+        }
+    }
+
+    const updateRainbow = (currentPixel, x, y, pixels) => {
+        const moveHandlers = [
+            {
+                conditionCheck: (pixel) => pixel == null,
+                success: (newX, newY, chance) => swap(x, y, newX, newY, pixels)
+            },
+            {
+                conditionCheck: (pixel) => pixel.matId != RAINBOW_MAT,
+                success: (newX, newY, chance) => transformTo(RAINBOW_MAT, newX, newY, pixels)
+            }
+        ];
+        const moved = moveInDirection(x, y, pixels, getLiquidMoveDir(), moveHandlers);
+        if (moved) {
+            awakeNeighbours(x, y, pixels, allDirMove);
+            currentPixel.updated = true;
+            currentPixel.sleeping = false;
+        } else {
+            currentPixel.sleeping = true;
         }
     }
 
     const isPlantAlive = (pixel, row, col, pixelsArray) => {
         if (pixel.lifeTime > 200 + randNegToPos(50)) {
+            pixel.sleeping = true;
+            pixel.prevSleeping = true;
+            pixel.updated = true;
+            return true;
+        }
+
+        return true;
+    }
+
+    const isBloomAlive = (pixel, row, col, pixelsArray) => {
+        if (pixel.lifeTime > 20) {
             pixel.sleeping = true;
             pixel.prevSleeping = true;
             pixel.updated = true;
@@ -499,14 +581,16 @@ const MaterialsModule = (() => {
             isAlive: isPlantAlive
         });
         materialPackage.addMaterial(BLOOM_MAT, 'Bloom',
-            ['#db9cbb', '#f0c4e7', '#c26392'], updateSolid);
+            ['#db9cbb', '#f0c4e7', '#c26392'], updateBloom, {
+                isAlive: isBloomAlive
+            });
         materialPackage.addMaterial(SAND_MAT, 'Sand',
             ['#e5c69d', '#eacba4', '#e0be91', '#b3a076'], updateGranule);
         materialPackage.addMaterial(GUN_POWDER_MAT, 'Gun powder',
             ['#575661', '#6a6971'], updateGranule);
         materialPackage.addMaterial(SNOW_MAT, 'Snow',
             ['#f7f2f2', '#f1f1f1', '#e8f2f7'], updateGranule, {
-            updateFrequency: 5
+            updateFrequency: 2
         });
         materialPackage.addMaterial(ASH_MAT, 'Ash',
             ['#9b9897', '#989586', '#727064'], updateGranule, {

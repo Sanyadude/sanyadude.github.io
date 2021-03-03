@@ -168,11 +168,12 @@ const CoreModule = (() => {
                 continue;
             if (pixels[xDir][yDir] === undefined)
                 continue;
+            const chance = Math.random();
             for (let j = 0; j < moveHandlers.length; j++) {
                 const moveHandler = moveHandlers[j];
-                if (!moveHandler.conditionCheck(pixels[xDir][yDir], Math.random()))
+                if (!moveHandler.conditionCheck(pixels[xDir][yDir]))
                     continue;
-                moveHandler.success(xDir, yDir);
+                moveHandler.success(xDir, yDir, chance);
                 return true;
             }
         }
@@ -188,10 +189,11 @@ const CoreModule = (() => {
                 continue;
             if (pixels[xDir][yDir] === undefined)
                 continue;
+            const chance = Math.random();
             for (let j = 0; j < spreadHandlers.length; j++) {
                 const spreadHandler = spreadHandlers[j];
-                if (pixels[x][y] !== null && pixels[xDir][yDir] !== null && spreadHandler.conditionCheck(pixels[xDir][yDir], Math.random())) {
-                    spreadHandler.success(xDir, yDir);
+                if (pixels[x][y] !== null && spreadHandler.conditionCheck(pixels[xDir][yDir])) {
+                    spreadHandler.success(xDir, yDir, chance);
                     spreaded = true;
                     break;
                 }
