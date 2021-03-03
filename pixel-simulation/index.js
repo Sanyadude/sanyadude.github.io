@@ -185,6 +185,7 @@ pixelCanvas.addEventListener('touchmove', (e) => {
     const touchTargetRect = document.elementFromPoint(touch.clientX, touch.clientY).getBoundingClientRect();
     cursorX = touch.clientX - touchTargetRect.x;
     cursorY = touch.clientY - touchTargetRect.y;
+    e.preventDefault();
 });
 
 pixelCanvas.addEventListener('mousedown', (e) => {
