@@ -34,7 +34,7 @@ const CoreModule = (() => {
                 rgbColor: getRgbFromHex(colors[0]),
                 update: updateFunc,
                 updateFrequency: options.updateFrequency || 1,
-                isAlive: options.isAlive || (() => true),
+                beforeUpdate: options.beforeUpdate || (() => true),
                 specialBehavior: options.specialBehavior || false
             }
             return material;
@@ -58,8 +58,7 @@ const CoreModule = (() => {
         materialPackage.getMatColor = (id, index) => materials[id].colors[index];
 
         materialPackage.update = (pixel, row, col, pixelsArray, tick) => {
-            if (!materials[pixel.matId].isAlive(pixel, row, col, pixelsArray))
-                return false;
+            materials[pixel.matId].beforeUpdate(pixel, row, col, pixelsArray);
             if (!pixel.updated && !pixel.sleeping && (tick % materials[pixel.matId].updateFrequency == 0)) {
                 materials[pixel.matId].update(pixel, row, col, pixelsArray);
                 return true;
@@ -101,6 +100,14 @@ const CoreModule = (() => {
 
     const randomDirection = () => allDirMove[Math.floor(Math.random() * allDirMove.length)];
 
+    const randomDirectionInRadius = (radius, count) => {
+        const directions = [];
+        for (let i = 0; i < count; i++) {
+            directions.push([randNegToPos(radius), randNegToPos(radius)]);
+        }
+        return directions;
+    }
+
     const granuleMoveDir = () => {
         const chance = Math.random();
         return chance > 0.7 ? [directions.bottom] : (chance < 0.5
@@ -129,35 +136,6 @@ const CoreModule = (() => {
             }
         }
         return true
-    }
-
-    const getEmptyDirections = (x, y, pixels) => {
-        const directionsClockwise = [directions.left,
-        directions.topLeft,
-        directions.top,
-        directions.topRight,
-        directions.right,
-        directions.bottomRight,
-        directions.bottom,
-        directions.bottomLeft];
-        const emptyDirections = [];
-        for (let i = 0; i < directionsClockwise.length; i++) {
-            const prevDir = i == 0
-                ? directionsClockwise[directionsClockwise.length - 1]
-                : directionsClockwise[i - 1];
-            const dir = directionsClockwise[i];
-            const nextDir = i == directionsClockwise.length - 1
-                ? directionsClockwise[0]
-                : directionsClockwise[i + 1];
-            if (pixels[x + dir[0]] && pixels[x + prevDir[0]] && pixels[x + nextDir[0]]) {
-                if (pixels[x + dir[0]][y + dir[1]] == null
-                    && pixels[x + dir[0]][y + dir[1]] == null
-                    && pixels[x + dir[0]][y + dir[1]] == null) {
-                    emptyDirections.push(dir);
-                }
-            }
-        }
-        return emptyDirections;
     }
 
     const moveInDirection = (x, y, pixels, directions, moveHandlers) => {
@@ -215,19 +193,6 @@ const CoreModule = (() => {
         pixels[x][y].lifeTime = 0;
     }
 
-    const awakeFirstNeighbour = (x, y, pixels, directions) => {
-        for (let i = 0; i < directions.length; i++) {
-            const xDir = x + directions[i][0];
-            const yDir = y + directions[i][1];
-            if (!pixels[xDir])
-                continue;
-            if (pixels[xDir][yDir] === undefined || pixels[xDir][yDir] == null)
-                continue;
-            pixels[xDir][yDir].sleeping = false;
-            return;
-        }
-    }
-
     const awakeNeighbours = (x, y, pixels, directions) => {
         for (let i = 0; i < directions.length; i++) {
             const xDir = x + directions[i][0];
@@ -256,6 +221,7 @@ const CoreModule = (() => {
         allDirCounterClockwise: allDirCounterClockwise,
         //methods that return directions array
         getRandomDirection: randomDirection,
+        getRandomDirectionInRadius: randomDirectionInRadius,
         getGranuleMoveDir: granuleMoveDir,
         getLiquidMoveDir: liquidMoveDir,
         getGasMoveDir: gasMoveDir
@@ -264,11 +230,9 @@ const CoreModule = (() => {
     const MovingOptions = {
         //awake methods for neighbour pixels
         awakeNeighbours: awakeNeighbours,
-        awakeFirstNeighbour: awakeFirstNeighbour,
         awakeAllNeighbours: awakeAllNeighbours,
         //check if mat around
         hasMatAround: hasMatAround,
-        getEmptyDirections: getEmptyDirections,
         //move methods
         moveInDirection: moveInDirection,
         spreadInDirection: spreadInDirection,

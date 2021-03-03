@@ -15,19 +15,17 @@ const MaterialsModule = (() => {
     const getGranuleMoveDir = DirectionsOptions.getGranuleMoveDir;
     const getLiquidMoveDir = DirectionsOptions.getLiquidMoveDir;
     const getRandomDirection = DirectionsOptions.getRandomDirection;
+    const getRandomDirectionInRadius = DirectionsOptions.getRandomDirectionInRadius;
 
     const moveInDirection = MovingOptions.moveInDirection;
     const spreadInDirection = MovingOptions.spreadInDirection;
 
     const hasMatAround = MovingOptions.hasMatAround;
-    const getEmptyDirections = MovingOptions.getEmptyDirections;
 
     const swap = MovingOptions.swap;
     const transformTo = MovingOptions.transformTo;
 
     const awakeNeighbours = MovingOptions.awakeNeighbours;
-    const awakeFirstNeighbour = MovingOptions.awakeFirstNeighbour;
-    const awakeAllNeighbours = MovingOptions.awakeAllNeighbours;
 
     const pixelFactory = new CoreModule.PixelFactory;
 
@@ -41,7 +39,6 @@ const MaterialsModule = (() => {
     const SNOW_MAT = 21;
     const ASH_MAT = 22;
     const GUN_POWDER_MAT = 23;
-    const FIRE_MAT = 30;
     const SMOKE_MAT = 40;
     const STEAM_MAT = 41;
     const WATER_MAT = 50;
@@ -50,7 +47,9 @@ const MaterialsModule = (() => {
     const OIL_MAT = 53;
     const PLANT_MAT = 60;
     const BLOOM_MAT = 61;
-    const RAINBOW_MAT = 70;
+    const FIRE_MAT = 70;
+    const WIND_MAT = 71;
+    const RAINBOW_MAT = 80;
 
     const updateSolid = (currentPixel, x, y, pixels) => currentPixel.sleeping = true;
 
@@ -243,10 +242,7 @@ const MaterialsModule = (() => {
 
     const updateLava = (currentPixel, x, y, pixels) => {
         if (currentPixel.lifeTime < 100 + randNegToPos(90)) {
-            const fireSpreadDir = [];
-            for (let i = 0; i < 1; i++) {
-                fireSpreadDir.push([randNegToPos(3), randNegToPos(3)]);
-            }
+            const fireSpreadDir = getRandomDirectionInRadius(3, 1);
             const fireSpreadHandlers = [
                 {
                     conditionCheck: (pixel) => pixel == null,
@@ -319,7 +315,7 @@ const MaterialsModule = (() => {
         const spreadHandlers = [
             {
                 conditionCheck: (pixel) => pixel == null,
-                success: (newX, newY, chance) => {}
+                success: (newX, newY, chance) => { }
             },
             {
                 conditionCheck: (pixel) => pixel.matId == WATER_MAT,
@@ -403,10 +399,7 @@ const MaterialsModule = (() => {
                 }
             }
         ];
-        const fireSpreadDir = sideMoveDir.slice(0, 4);
-        for (let i = 0; i < 4; i++) {
-            fireSpreadDir.push([randNegToPos(2), randNegToPos(2)]);
-        }
+        const fireSpreadDir = sideMoveDir.slice(0, 4).concat(getRandomDirectionInRadius(2, 4));
         spreadInDirection(x, y, pixels, fireSpreadDir, spreadHandlers);
         if (currentPixel.lifeTime > 4) {
             pixels[x][y] = null;
@@ -497,67 +490,148 @@ const MaterialsModule = (() => {
     }
 
     const updateRainbow = (currentPixel, x, y, pixels) => {
-        const moveHandlers = [
+        const spreadHandlers = [
             {
                 conditionCheck: (pixel) => pixel == null,
                 success: (newX, newY, chance) => swap(x, y, newX, newY, pixels)
             },
             {
                 conditionCheck: (pixel) => pixel.matId != RAINBOW_MAT,
-                success: (newX, newY, chance) => transformTo(RAINBOW_MAT, newX, newY, pixels)
+                success: (newX, newY, chance) => {
+                    transformTo(RAINBOW_MAT, newX, newY, pixels);
+                    awakeNeighbours(newX, newY, pixels, allDirMove);
+                }
             }
         ];
-        const moved = moveInDirection(x, y, pixels, getLiquidMoveDir(), moveHandlers);
+        const spreadDirections = getRandomDirectionInRadius(3, 1);
+        const moved = moveInDirection(x, y, pixels, spreadDirections, spreadHandlers);
         if (moved) {
             awakeNeighbours(x, y, pixels, allDirMove);
-            currentPixel.updated = true;
-            currentPixel.sleeping = false;
-        } else {
-            currentPixel.sleeping = true;
+        }
+        if (currentPixel.lifeTime > 2) {
+            pixels[x][y] = null;
         }
     }
 
-    const isPlantAlive = (pixel, row, col, pixelsArray) => {
+    const updateWind = (currentPixel, x, y, pixels) => {
+        const spreadHandlers = [
+            {
+                conditionCheck: (pixel) => pixel == null,
+                success: (newX, newY, chance) => swap(x, y, newX, newY, pixels)
+            },
+            {
+                conditionCheck: (pixel) => pixel.matId == SAND_MAT
+                    || pixel.matId == GUN_POWDER_MAT
+                    || pixel.matId == ASH_MAT
+                    || pixel.matId == SNOW_MAT,
+                success: (newX, newY, chance) => {
+                    pixels[x][y] = null;
+                    const throwHandlers = [
+                        {
+                            conditionCheck: (throwPixel) => throwPixel == null,
+                            success: (throwX, throwY, chance) => {
+                                pixels[newX][newY].updated = true;
+                                pixels[newX][newY].sleeping = false;
+                                swap(newX, newY, throwX, throwY, pixels);
+                                awakeNeighbours(throwX, throwY, pixels, allDirMove);
+                            }
+                        }
+                    ];
+                    const throwDirection = getRandomDirectionInRadius(10, 4);
+                    if (moveInDirection(newX, newY, pixels, throwDirection, throwHandlers))
+                        awakeNeighbours(newX, newY, pixels, allDirMove);
+                }
+            },
+            {
+                conditionCheck: (pixel) => pixel.matId == WATER_MAT
+                    || pixel.matId == OIL_MAT
+                    || pixel.matId == ACID_MAT,
+                success: (newX, newY, chance) => {
+                    pixels[x][y] = null;
+                    const throwHandlers = [
+                        {
+                            conditionCheck: (throwPixel) => throwPixel == null,
+                            success: (throwX, throwY, chance) => {
+                                pixels[newX][newY].updated = true;
+                                pixels[newX][newY].sleeping = false;
+                                swap(newX, newY, throwX, throwY, pixels);
+                                awakeNeighbours(throwX, throwY, pixels, allDirMove);
+                            }
+                        }
+                    ];
+                    const throwDirection = getRandomDirectionInRadius(5, 4);
+                    if (moveInDirection(newX, newY, pixels, throwDirection, throwHandlers))
+                        awakeNeighbours(newX, newY, pixels, allDirMove);
+                }
+            },
+            {
+                conditionCheck: (pixel) => pixel.matId == STEAM_MAT
+                    || pixel.matId == SMOKE_MAT,
+                success: (newX, newY, chance) => {
+                    pixels[x][y] = null;
+                    const throwHandlers = [
+                        {
+                            conditionCheck: (throwPixel) => throwPixel == null,
+                            success: (throwX, throwY, chance) => {
+                                pixels[newX][newY].updated = true;
+                                pixels[newX][newY].sleeping = false;
+                                swap(newX, newY, throwX, throwY, pixels);
+                                awakeNeighbours(throwX, throwY, pixels, allDirMove);
+                            }
+                        }
+                    ];
+                    const throwDirection = getRandomDirectionInRadius(15, 4);
+                    if (moveInDirection(newX, newY, pixels, throwDirection, throwHandlers))
+                        awakeNeighbours(newX, newY, pixels, allDirMove);
+                }
+            }
+        ];
+        const spreadDirections = getRandomDirectionInRadius(5, 1);
+        if (moveInDirection(x, y, pixels, spreadDirections, spreadHandlers))
+            awakeNeighbours(x, y, pixels, allDirMove);
+    }
+
+    const isPlantAlive = (pixel, x, y, pixelsArray) => {
         if (pixel.lifeTime > 200 + randNegToPos(50)) {
             pixel.sleeping = true;
             pixel.prevSleeping = true;
             pixel.updated = true;
-            return true;
         }
-
-        return true;
     }
 
-    const isBloomAlive = (pixel, row, col, pixelsArray) => {
+    const isBloomAlive = (pixel, x, y, pixelsArray) => {
         if (pixel.lifeTime > 20) {
             pixel.sleeping = true;
             pixel.prevSleeping = true;
             pixel.updated = true;
-            return true;
         }
-
-        return true;
     }
 
-    const isGasAlive = (pixel, row, col, pixelsArray) => {
+    const isGasAlive = (pixel, x, y, pixelsArray) => {
         if (pixel.lifeTime > 1000 + randNegToPos(500)) {
-            pixelsArray[row][col] = null;
-            return true;
+            pixelsArray[x][y] = null;
         }
-
-        return true;
     }
 
-    const isLavaAlive = (pixel, row, col, pixelsArray) => {
+    const isLavaAlive = (pixel, x, y, pixelsArray) => {
         if (pixel.sleeping && pixel.lifeTime > 1000 + randNegToPos(300)) {
             pixel.lifeTime = 0;
             pixel.matId = ROCK_MAT;
             pixel.prevSleeping = false;
             pixel.sleeping = false;
-            return true;
         }
+    }
 
-        return true;
+    const isRainbowAlive = (pixel, x, y, pixelsArray) => {
+        if (pixel.lifeTime > 100) {
+            pixelsArray[x][y] = null;
+        }
+    }
+
+    const isWindAlive = (pixel, x, y, pixelsArray) => {
+        if (pixel.lifeTime > 25) {
+            pixelsArray[x][y] = null;
+        }
     }
 
     const MaterialsPack = (() => {
@@ -578,12 +652,12 @@ const MaterialsModule = (() => {
             ['#b3e1e3', '#82cfd1', '#b3e1e3', '#82cfd1', '#f7f7f7'], updateSolid);
         materialPackage.addMaterial(PLANT_MAT, 'Plant',
             ['#57a65e', '#338453', '#5fb766'], updatePlant, {
-            isAlive: isPlantAlive
+            beforeUpdate: isPlantAlive
         });
         materialPackage.addMaterial(BLOOM_MAT, 'Bloom',
-            ['#db9cbb', '#f0c4e7', '#c26392'], updateBloom, {
-                isAlive: isBloomAlive
-            });
+            ['#db9cbb', '#f0c4e7', '#c26392', '#906efd'], updateBloom, {
+            beforeUpdate: isBloomAlive
+        });
         materialPackage.addMaterial(SAND_MAT, 'Sand',
             ['#e5c69d', '#eacba4', '#e0be91', '#b3a076'], updateGranule);
         materialPackage.addMaterial(GUN_POWDER_MAT, 'Gun powder',
@@ -598,11 +672,11 @@ const MaterialsModule = (() => {
         });
         materialPackage.addMaterial(SMOKE_MAT, 'Smoke',
             ['#595656', '#696767'], updateGas, {
-            isAlive: isGasAlive
+            beforeUpdate: isGasAlive
         });
         materialPackage.addMaterial(STEAM_MAT, 'Steam',
             ['#dfe6ec', '#d9e0e5'], updateGas, {
-            isAlive: isGasAlive
+            beforeUpdate: isGasAlive
         });
         materialPackage.addMaterial(WATER_MAT, 'Water',
             ['#1ca3ec', '#1692d5'], updateWater);
@@ -610,17 +684,23 @@ const MaterialsModule = (() => {
             ['#aab919', '#c5dc14', '#84e810', '#7de208'], updateAcid);
         materialPackage.addMaterial(LAVA_MAT, 'Lava',
             ['#f72400', '#f76300', '#c90f1f', '#463a31'], updateLava, {
-            isAlive: isLavaAlive
+            beforeUpdate: isLavaAlive
         });
         materialPackage.addMaterial(OIL_MAT, 'Oil',
             ['#353834'], updateOil);
         materialPackage.addMaterial(RAINBOW_MAT, 'Rainbow',
             ['#cb39e0', '#4a058f', '#337ac7', '#23be40', '#dedc3d', '#de7800', '#c8131e'], updateRainbow, {
-            specialBehavior: true
+            specialBehavior: true,
+            beforeUpdate: isRainbowAlive
         });
         materialPackage.addMaterial(FIRE_MAT, 'Fire',
             ['#f70000', '#f75700', '#f7c800'], updateFire, {
             specialBehavior: true
+        });
+        materialPackage.addMaterial(WIND_MAT, 'Wind',
+            ['#cdcdcd', '#def9f0'], updateWind, {
+            specialBehavior: true,
+            beforeUpdate: isWindAlive
         });
 
         return materialPackage;
