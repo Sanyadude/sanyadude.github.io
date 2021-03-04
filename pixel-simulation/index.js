@@ -22,6 +22,7 @@ const spreadRadiusInput = document.querySelector('#spread');
 const spawnInSquare = document.querySelector('#spawn-in-square');
 const speedInput = document.querySelector('#speed');
 const debugCheckbox = document.querySelector('#debug');
+const scaleInput = document.querySelector('#scale');
 
 const materialPicker = document.querySelector('#material-picker');
 const materialPickerSpreadCanvas = document.querySelector('#material-picker-spread');
@@ -302,20 +303,29 @@ loadButton.addEventListener('click', (e) => {
 
 spreadRadiusInput.addEventListener('change', (e) => {
     spreadRadius = +e.currentTarget.value;
+    e.currentTarget.blur();
     updateInfo();
 });
 
 spawnInSquare.addEventListener('change', (e) => {
     spreadInSquare = e.currentTarget.checked;
+    e.currentTarget.blur();
     updateInfo();
 });
 
 speedInput.addEventListener('change', (e) => {
     pixelWorld.setSlowRate(+e.currentTarget.value);
+    e.currentTarget.blur();
 });
 
 debugCheckbox.addEventListener('change', (e) => {
     pixelWorld.toggleDebug(e.currentTarget.checked);
+    e.currentTarget.blur();
+});
+
+scaleInput.addEventListener('change', (e) => {
+    pixelWorld.setScale(+e.currentTarget.value);
+    e.currentTarget.blur();
 });
 
 materialPicker.addEventListener('click', (e) => {

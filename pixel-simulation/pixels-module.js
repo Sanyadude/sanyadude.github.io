@@ -168,20 +168,26 @@ const PixelsModule = (() => {
             canvas.height = element.offsetHeight;
             element.appendChild(canvas);
             this.context = canvas.getContext('2d');
+            this.clear();
+        }
+
+        pixelWorld.clear = function () {
+            const width = this.context.canvas.width;
+            const height = this.context.canvas.height;
+            const widthOffset = width % pixelScale;
+            const effectiveWidth = width - widthOffset;
+            const heightOffset = height % pixelScale;
+            const effectiveHeight = height - heightOffset;
             this.min = { x: 1, y: 1 };
             this.max = {
-                x: Math.floor(canvas.width / pixelScale) - 1,
-                y: Math.floor(canvas.height / pixelScale) - 1
+                x: effectiveWidth / pixelScale - 2,
+                y: effectiveHeight / pixelScale - 2
             };
             this.gridSize = {
                 rows: this.max.y - this.min.y,
                 cols: this.max.x - this.min.x
             }
-            this.clear();
-        }
-
-        pixelWorld.clear = function () {
-            this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+            this.context.clearRect(0, 0, width, height);
             this.pixelsArray = fillGrid(this.gridSize, () => null);
             this.renderedPixels = fillGrid(this.gridSize, () => 0);
             this.pixelsColors = fillGrid(this.gridSize, () => Math.floor(Math.random() * materialPackage.getMaxColors()));
@@ -198,6 +204,13 @@ const PixelsModule = (() => {
             if (typeof callbacks[name] == 'function')
                 callbacks[name](this);
         }
+
+        pixelWorld.setScale = function (value) {
+            if (value <= 0)
+                return;
+            pixelScale = value;
+            this.clear();
+        };
 
         pixelWorld.getPositionFromCoords = function (x, y) {
             return {
@@ -383,7 +396,7 @@ const PixelsModule = (() => {
                 for (let col = 0; col < this.pixelsArray[row].length; col++)
                     this.drawPixel(row, col);
             }
-            this.drawContextBounds();
+            //this.drawContextBounds();
         }
 
         pixelWorld.drawPixel = function (row, col) {
@@ -416,8 +429,11 @@ const PixelsModule = (() => {
         }
 
         pixelWorld.drawContextBounds = function () {
-            this.context.strokeStyle = '#000';
-            this.context.strokeRect(this.min.x * pixelScale, this.min.y * pixelScale, (this.max.x - this.min.x + 1) * pixelScale, (this.max.y - this.min.y + 1) * pixelScale);
+            this.context.fillStyle = '#000';
+            this.context.fillRect(pixelScale, 0, (this.gridSize.cols + 2) * pixelScale, pixelScale);
+            this.context.fillRect(0, (this.gridSize.rows + 2) * pixelScale, (this.gridSize.cols + 2) * pixelScale, pixelScale);
+            this.context.fillRect(0, 0, pixelScale, (this.gridSize.rows + 2) * pixelScale);
+            this.context.fillRect((this.gridSize.cols + 2) * pixelScale, pixelScale, pixelScale, (this.gridSize.rows + 2) * pixelScale);
         }
 
         return pixelWorld;
