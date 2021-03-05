@@ -60,14 +60,16 @@ const PixelsModule = (() => {
         const data = imgContext.getImageData(0, 0, img.width, img.height).data;
         const positions = [];
         const ratio = Math.max(Math.ceil(img.width / pixelWorld.gridSize.cols), Math.ceil(img.height / pixelWorld.gridSize.rows));
+        const withToRatio = Math.floor(img.width / ratio);
+        const leftOffset = Math.floor((pixelWorld.gridSize.cols - withToRatio) / 2);
         for (let row = 0; row < pixelWorld.gridSize.rows; row++) {
-            for (let col = 0; col < Math.floor(img.width / ratio); col++) {
+            for (let col = 0; col < withToRatio; col++) {
                 const i = (row * img.width + col) * ratio * 4;
                 if (i > data.length)
                     break;
                 if (data[i + 3] > 0) {
                     const matId = findClosestMatToRgb({ r: data[i], g: data[i + 1], b: data[i + 2] }, matColorsArray).id;
-                    positions.push([matId, row, col]);
+                    positions.push([matId, row, leftOffset + col]);
                 }
             }
         }
@@ -164,9 +166,9 @@ const PixelsModule = (() => {
             containerElement = element;
             materialPackage = materialPack;
             const canvas = document.createElement('canvas');
-            canvas.width = element.offsetWidth;
-            canvas.height = element.offsetHeight;
-            element.appendChild(canvas);
+            canvas.width = containerElement.offsetWidth;
+            canvas.height = containerElement.offsetHeight;
+            containerElement.appendChild(canvas);
             this.context = canvas.getContext('2d');
             this.clear();
         }
@@ -396,7 +398,6 @@ const PixelsModule = (() => {
                 for (let col = 0; col < this.pixelsArray[row].length; col++)
                     this.drawPixel(row, col);
             }
-            //this.drawContextBounds();
         }
 
         pixelWorld.drawPixel = function (row, col) {

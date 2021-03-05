@@ -28,23 +28,35 @@ const materialPicker = document.querySelector('#material-picker');
 const materialPickerSpreadCanvas = document.querySelector('#material-picker-spread');
 
 const textCanvas = document.querySelector('#pixel-text');
-
-const dataIndexAttr = 'data-index';
-
-const scale = 4;
 textCanvas.width = body.offsetWidth;
 textCanvas.height = controlsContainer.offsetHeight + 8;
 
-pixelWorldContainer.style.height = (window.innerHeight - textCanvas.height - 10) + 'px';
-if (window.innerWidth < 960) {
-    pixelWorldContainer.style.height = (window.innerHeight - controlsContainer.offsetHeight - 10) + 'px';
+let scale = +scaleInput.value;
+const onResize = () => {
+    const recomendedMaxPixels = 100000;
+    const recomendedMinScale = 4;
+    scaleInput.value = Math.max(recomendedMinScale, Math.floor(Math.sqrt(window.innerWidth * window.innerHeight / recomendedMaxPixels)));
+    scale = +scaleInput.value;
+    const smallScreenMaxWidth = 1200;
+    const hiddenElements = document.querySelectorAll('.small-hidden');
+    if (window.innerWidth < smallScreenMaxWidth) {
+        hiddenElements.forEach(el => el.classList.add('hidden'));
+        controlsContainer.classList.add('small-screen');
+        pixelWorldContainer.style.height = (window.innerHeight - controlsContainer.offsetHeight - 10) + 'px';
+    } else {
+        hiddenElements.forEach(el => el.classList.remove('hidden'));
+        controlsContainer.classList.remove('small-screen');
+        pixelWorldContainer.style.height = (window.innerHeight - textCanvas.height - 10) + 'px';
+    }
 }
-const textCanvasContext = textCanvas.getContext('2d');
+onResize();
 
+const textCanvasContext = textCanvas.getContext('2d');
 const materialPack = MaterialsModule.MaterialsPack;
 const colorsPerMat = materialPack.getMaxColors();
 const materialProperies = materialPack.getMaterials();
 const pixelWorld = new PixelsModule.PixelWorld(scale);
+
 pixelWorld.init(pixelWorldContainer, materialPack);
 pixelWorld.on('before-tick', () => {
     textCanvasContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
@@ -70,6 +82,7 @@ const undoData = () => {
     pixelWorld.fromBase64(prevData[lastData]);
 }
 
+const dataIndexAttr = 'data-index';
 let materials = (() => {
     const side = 40;
     const materials = [];
@@ -175,6 +188,8 @@ const changeMaterial = (prevIndex, index) => {
 }
 
 changeMaterial(currentParticleIndex, defaultMatIndex);
+
+window.addEventListener('resize', onResize);
 
 pixelCanvas.addEventListener('mousemove', (e) => {
     cursorX = e.offsetX;

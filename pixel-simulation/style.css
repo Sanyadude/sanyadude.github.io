@@ -122,14 +122,13 @@ body {
   background-color: #ffc107;
 }
 
-@media (max-width: 960px) {
-  .controls {
-    width: 100%;
-    position: relative;
-    border-left: none;
-    border-bottom-left-radius: 0;
-  }
-  .small-hidden {
-    display: none;
-  }
+.controls.small-screen {
+  width: 100%;
+  position: relative;
+  border-left: none;
+  border-bottom-left-radius: 0;
+}
+
+.hidden {
+  display: none;
 }
