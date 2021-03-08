@@ -50,7 +50,7 @@ const MaterialsModule = (() => {
     const FIRE_MAT = 70;
     const WIND_MAT = 71;
     const FLY_MAT = 72;
-    const BLOW_MAT = 73;
+    const EXPLOSION_MAT = 73;
     const RAINBOW_MAT = 80;
 
     const updateSolid = (currentPixel, x, y, pixels) => currentPixel.sleeping = true;
@@ -288,7 +288,7 @@ const MaterialsModule = (() => {
                 }
             },
             {
-                conditionCheck: (pixel) => pixel.matId == BLOW_MAT,
+                conditionCheck: (pixel) => pixel.matId == EXPLOSION_MAT,
                 success: (newX, newY, chance) => {
                     pixels[newX][newY].lifeTime = 100;
                 }
@@ -395,7 +395,7 @@ const MaterialsModule = (() => {
                 }
             },
             {
-                conditionCheck: (pixel) => pixel.matId == BLOW_MAT,
+                conditionCheck: (pixel) => pixel.matId == EXPLOSION_MAT,
                 success: (newX, newY, chance) => {
                     pixels[newX][newY].lifeTime = 100;
                 }
@@ -406,7 +406,7 @@ const MaterialsModule = (() => {
                     if (chance < 0.1)
                         return;
                     if (chance < 0.101) {
-                        transformTo(BLOW_MAT, newX, newY, pixels);
+                        transformTo(EXPLOSION_MAT, newX, newY, pixels);
                         pixels[newX][newY].lifeTime = 100;
                         return;
                     }
@@ -647,7 +647,7 @@ const MaterialsModule = (() => {
             awakeNeighbours(x, y, pixels, allDirMove);
     }
 
-    const updateBlow = (currentPixel, x, y, pixels) => {
+    const updateExplosion = (currentPixel, x, y, pixels) => {
         if (currentPixel.lifeTime < 100) {
             const moveHandlers = [
                 {
@@ -805,8 +805,8 @@ const MaterialsModule = (() => {
             ['#f70000', '#f75700', '#f7c800'], updateFire, {
             specialBehavior: true
         });
-        materialPackage.addMaterial(BLOW_MAT, 'Blow',
-            ['#f70000', '#f75700'], updateBlow, {
+        materialPackage.addMaterial(EXPLOSION_MAT, 'Explosion',
+            ['#f70000', '#f75700'], updateExplosion, {
             specialBehavior: true
         });
         materialPackage.addMaterial(WIND_MAT, 'Wind',
