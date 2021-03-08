@@ -50,6 +50,7 @@ const MaterialsModule = (() => {
     const FIRE_MAT = 70;
     const WIND_MAT = 71;
     const FLY_MAT = 72;
+    const BLOW_MAT = 73;
     const RAINBOW_MAT = 80;
 
     const updateSolid = (currentPixel, x, y, pixels) => currentPixel.sleeping = true;
@@ -287,6 +288,12 @@ const MaterialsModule = (() => {
                 }
             },
             {
+                conditionCheck: (pixel) => pixel.matId == BLOW_MAT,
+                success: (newX, newY, chance) => {
+                    pixels[newX][newY].lifeTime = 100;
+                }
+            },
+            {
                 conditionCheck: (pixel) => pixel.matId != LAVA_MAT
                     && pixel.matId != ROCK_MAT
                     && pixel.matId != RAINBOW_MAT,
@@ -388,12 +395,22 @@ const MaterialsModule = (() => {
                 }
             },
             {
+                conditionCheck: (pixel) => pixel.matId == BLOW_MAT,
+                success: (newX, newY, chance) => {
+                    pixels[newX][newY].lifeTime = 100;
+                }
+            },
+            {
                 conditionCheck: (pixel) => pixel.matId == GUN_POWDER_MAT || pixel.matId == OIL_MAT,
                 success: (newX, newY, chance) => {
                     if (chance < 0.1)
                         return;
+                    if (chance < 0.101) {
+                        transformTo(BLOW_MAT, newX, newY, pixels);
+                        pixels[newX][newY].lifeTime = 100;
+                        return;
+                    }
                     transformTo(FIRE_MAT, newX, newY, pixels);
-                    //transformTo(SMOKE_MAT, x, y, pixels);
                     if (chance < 0.6)
                         return;
                     if (pixels[x - 1]) {
@@ -630,6 +647,49 @@ const MaterialsModule = (() => {
             awakeNeighbours(x, y, pixels, allDirMove);
     }
 
+    const updateBlow = (currentPixel, x, y, pixels) => {
+        if (currentPixel.lifeTime < 100) {
+            const moveHandlers = [
+                {
+                    conditionCheck: (pixel) => pixel == null,
+                    success: (newX, newY, chance) => swap(x, y, newX, newY, pixels)
+                }
+            ];
+            const moved = moveInDirection(x, y, pixels, getGranuleMoveDir(), moveHandlers);
+            if (moved) {
+                awakeNeighbours(x, y, pixels, allDirMove);
+            }
+            return;
+        }
+        pixels[x][y] = null;
+        let radius = 15;
+        for (let dx = -radius; dx <= radius; dx++) {
+            for (let dy = -radius; dy <= radius; dy++) {
+                if (radius < Math.sqrt(dx * dx + dy * dy))
+                    continue;
+                let newX = x + dx;
+                let newY = y + dy;
+                if (pixels[newX] !== undefined
+                    && pixels[newX][newY] !== undefined) {
+                    let chance = Math.random();
+                    if (pixels[newX][newY] != null) {
+                        if (chance < 0.1) {
+                            transformTo(SMOKE_MAT, newX, newY, pixels);
+                        } else if (chance < 0.5) {
+                            transformTo(FIRE_MAT, newX, newY, pixels);
+                        }
+                    } else {
+                        if (chance < 0.5) {
+                            pixels[newX][newY] = pixelFactory.create(SMOKE_MAT);
+                        } else {
+                            pixels[newX][newY] = pixelFactory.create(WIND_MAT);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     const isPlantAlive = (pixel, x, y, pixelsArray) => {
         if (!pixel.sleeping && pixel.lifeTime > (200 + randNegToPos(50))) {
             pixel.sleeping = true;
@@ -743,6 +803,10 @@ const MaterialsModule = (() => {
         });
         materialPackage.addMaterial(FIRE_MAT, 'Fire',
             ['#f70000', '#f75700', '#f7c800'], updateFire, {
+            specialBehavior: true
+        });
+        materialPackage.addMaterial(BLOW_MAT, 'Blow',
+            ['#f70000', '#f75700'], updateBlow, {
             specialBehavior: true
         });
         materialPackage.addMaterial(WIND_MAT, 'Wind',
