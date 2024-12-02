@@ -1,0 +1,8 @@
+{
+  "name": "ui-tool-kit",
+  "version": "0.1.1",
+  "description": "JS UI Components based on UIElement wrappers for DOM elements from ui-element-kit library",
+  "main": "index.js",
+  "author": "Sanyadude",
+  "license": "MIT"
+}
