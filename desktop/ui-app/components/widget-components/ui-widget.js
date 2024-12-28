@@ -21,8 +21,6 @@ export class UIWidget {
     _configure() {
         this.container = new UIView({
             frame: this._config.frame,
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             textColor: WIDGET_TEXT_COLOR,
             font: SystemUIFont.default,

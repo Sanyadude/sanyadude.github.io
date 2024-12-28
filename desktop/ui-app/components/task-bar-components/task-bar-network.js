@@ -14,8 +14,6 @@ export class TaskBarNetwork {
 
         this.networkContainer = new UIView({
             frame: new UIRect(TASK_BAR_NETWORK_CONTAINER_RIGHT, 0, TASK_BAR_NETWORK_CONTAINER_WIDTH, TASK_BAR_NETWORK_CONTAINER_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             anchor: UIEdgeSet.topRight
         })

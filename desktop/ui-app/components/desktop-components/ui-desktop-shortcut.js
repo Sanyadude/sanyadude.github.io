@@ -130,21 +130,17 @@ export class UIDesktopShortcut {
 
         this.container = new UIView({
             frame: new UIRect(0, 0, SHORTCUT_WIDTH, SHORTCUT_HEIGHT),
-            widthMode: UISizeMode.frameSize,
+            heightMode: UISizeMode.default,
             initialPosition: false,
             border: SHORTCUT_BORDER
         })
         this.icon = new UIImageView({
             image: this._config.iconImage,
             frame: new UIRect(0, 0, SHORTCUT_ICON_WIDTH, SHORTCUT_ICON_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             padding: SHORTCUT_ICON_PADDING
         });
         this.label = new UITextLabel({
             frame: new UIRect(0, 0, SHORTCUT_LABEL_WIDTH, SHORTCUT_LABEL_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             textAlign: UITextAlign.center,
             text: getLabelText(this, SHORTCUT_LABEL_MAX_SYMBOLS),
             font: SystemUIFont.defaultWith(SHORTCUT_LABEL_LINEHEIGHT),
@@ -153,8 +149,6 @@ export class UIDesktopShortcut {
         });
         this.nameEdit = new UITextEditView({
             frame: new UIRect(SHORTCUT_NAME_EDIT_X, SHORTCUT_NAME_EDIT_Y, SHORTCUT_NAME_EDIT_WIDTH, SHORTCUT_NAME_EDIT_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             textAlign: UITextAlign.center,
             backgroundColor: UIColor.white,
@@ -171,8 +165,6 @@ export class UIDesktopShortcut {
         if (this._config.shortcutArrow) {
             this.iconArrow = new UIImageView({
                 frame: new UIRect(SHORTCUT_ARROW_X, SHORTCUT_ARROW_Y, SHORTCUT_ARROW_WIDTH, SHORTCUT_ARROW_HEIGHT),
-                widthMode: UISizeMode.frameSize,
-                heightMode: UISizeMode.frameSize,
                 initialPosition: false,
                 image: SHORTCUT_ARROW_IMAGE
             });

@@ -209,7 +209,6 @@ export class UIResizableWindow extends UIWindow {
         if (this._config.resizableEdges.includes(UIEdge.left)) {
             this._resizeLeft = new UIView({
                 frame: new UIRect(-this._config.resizableAreaWidth, 0, this._config.resizableAreaWidth, 0),
-                widthMode: UISizeMode.frameSize,
                 heightMode: UISizeMode.fullSize,
                 initialPosition: false,
                 zIndex: 1
@@ -225,7 +224,6 @@ export class UIResizableWindow extends UIWindow {
         if (this._config.resizableEdges.includes(UIEdge.right)) {
             this._resizeRight = new UIView({
                 frame: new UIRect(-this._config.resizableAreaWidth, 0, this._config.resizableAreaWidth, 0),
-                widthMode: UISizeMode.frameSize,
                 heightMode: UISizeMode.fullSize,
                 anchor: UIEdgeSet.topRight,
                 initialPosition: false,
@@ -243,7 +241,6 @@ export class UIResizableWindow extends UIWindow {
             this._resizeTop = new UIView({
                 frame: new UIRect(0, -this._config.resizableAreaWidth, 0, this._config.resizableAreaWidth),
                 widthMode: UISizeMode.fullSize,
-                heightMode: UISizeMode.frameSize,
                 initialPosition: false,
                 zIndex: 1
             });
@@ -259,7 +256,6 @@ export class UIResizableWindow extends UIWindow {
             this._resizeBottom = new UIView({
                 frame: new UIRect(0, -this._config.resizableAreaWidth, 0, this._config.resizableAreaWidth),
                 widthMode: UISizeMode.fullSize,
-                heightMode: UISizeMode.frameSize,
                 anchor: UIEdgeSet.bottomLeft,
                 initialPosition: false,
                 zIndex: 1
@@ -276,8 +272,6 @@ export class UIResizableWindow extends UIWindow {
             && this._config.resizableEdges.includes(UIEdge.top)) {
             this._resizeLeftTop = new UIView({
                 frame: new UIRect(-this._config.resizableAreaWidth, -this._config.resizableAreaWidth, this._config.resizableAreaWidth, this._config.resizableAreaWidth),
-                widthMode: UISizeMode.frameSize,
-                heightMode: UISizeMode.frameSize,
                 initialPosition: false,
                 zIndex: 1
             });
@@ -293,8 +287,6 @@ export class UIResizableWindow extends UIWindow {
             && this._config.resizableEdges.includes(UIEdge.top)) {
             this._resizeRightTop = new UIView({
                 frame: new UIRect(-this._config.resizableAreaWidth, -this._config.resizableAreaWidth, this._config.resizableAreaWidth, this._config.resizableAreaWidth),
-                widthMode: UISizeMode.frameSize,
-                heightMode: UISizeMode.frameSize,
                 anchor: UIEdgeSet.topRight,
                 initialPosition: false,
                 zIndex: 1
@@ -311,8 +303,6 @@ export class UIResizableWindow extends UIWindow {
             && this._config.resizableEdges.includes(UIEdge.bottom)) {
             this._resizeLeftBottom = new UIView({
                 frame: new UIRect(-this._config.resizableAreaWidth, -this._config.resizableAreaWidth, this._config.resizableAreaWidth, this._config.resizableAreaWidth),
-                widthMode: UISizeMode.frameSize,
-                heightMode: UISizeMode.frameSize,
                 anchor: UIEdgeSet.bottomLeft,
                 initialPosition: false,
                 zIndex: 1
@@ -329,8 +319,6 @@ export class UIResizableWindow extends UIWindow {
             && this._config.resizableEdges.includes(UIEdge.bottom)) {
             this._resizeRightBottom = new UIView({
                 frame: new UIRect(-this._config.resizableAreaWidth, -this._config.resizableAreaWidth, this._config.resizableAreaWidth, this._config.resizableAreaWidth),
-                widthMode: UISizeMode.frameSize,
-                heightMode: UISizeMode.frameSize,
                 anchor: UIEdgeSet.bottomRight,
                 initialPosition: false,
                 zIndex: 1

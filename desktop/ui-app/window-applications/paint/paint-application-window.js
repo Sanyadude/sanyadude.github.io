@@ -37,8 +37,6 @@ const fillColorsConfig = (context) => {
     CONFIG_COLORS.forEach(color => {
         const colorView = new UIView({
             frame: new UIRect(0, 0, CONFIG_PANEL_COLOR_CONTAINER_HEIGHT, CONFIG_PANEL_COLOR_CONTAINER_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             border: new UIBorder(CONFIG_PANEL_COLOR_CONTAINER_COLOR_BORDER_WIDTH, UIColor.black),
             backgroundColor: color
         })
@@ -142,21 +140,15 @@ export class PaintApplicationWindow extends ApplicationWindow {
 
         this.container = new UIView({
             frame: new UIRect(0, 0, this.window.body.frame.width, this.window.body.frame.height),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         })
 
         this.configContainer = new UIView({
             frame: new UIRect(0, 0, this.window.body.frame.width, CONFIG_PANEL_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         })
         this.configColorContainer = new UIView({
             frame: new UIRect(0, 0, this.window.body.frame.width, CONFIG_PANEL_COLOR_CONTAINER_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         })
         this.configColorContainer
@@ -164,11 +156,11 @@ export class PaintApplicationWindow extends ApplicationWindow {
             .setTextWrapNowrap()
         this.configCurrentStateContainer = new UIView({
             frame: new UIRect(0, CONFIG_PANEL_COLOR_CONTAINER_HEIGHT, this.window.body.frame.width, CONFIG_PANEL_CURRENT_STATE_CONTAINER_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         })
         this.configCurrentStateColorName = new UITextLabel({
+            widthMode: UISizeMode.default,
+            heightMode: UISizeMode.default,
             text: 'Color:',
             font: CONFIG_FONT
         })
@@ -177,12 +169,12 @@ export class PaintApplicationWindow extends ApplicationWindow {
             .setVerticalAlignTop()
         this.configCurrentStateColor = new UIView({
             frame: new UIRect(0, 0, CONFIG_PANEL_COLOR_CONTAINER_HEIGHT, CONFIG_PANEL_COLOR_CONTAINER_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             backgroundColor: PAINT_DEFAULT_COLOR,
             border: new UIBorder(CONFIG_PANEL_COLOR_CONTAINER_COLOR_BORDER_WIDTH, UIColor.black)
         })
         this.configCurrentStateSpread = new UITextLabel({
+            widthMode: UISizeMode.default,
+            heightMode: UISizeMode.default,
             text: `Spread:${PAINT_DEFAULT_SPREAD}`,
             font: CONFIG_FONT
         })
@@ -195,8 +187,6 @@ export class PaintApplicationWindow extends ApplicationWindow {
 
         this.renderer = new UIRenderer({
             frame: new UIRect(0, CONFIG_PANEL_HEIGHT, this.window.body.frame.width, this.window.body.frame.height - CONFIG_PANEL_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             contextType: UIRendererContext.context2d
         });

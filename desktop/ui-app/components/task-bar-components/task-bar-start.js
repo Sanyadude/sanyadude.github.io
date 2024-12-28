@@ -11,8 +11,6 @@ export class TaskBarStart {
     _init() {
         this.iconContainer = new UIView({
             frame: new UIRect(0, 0, TASK_BAR_START_ICON_WIDTH, TASK_BAR_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         })
         this.icon = new UIIcon({

@@ -59,8 +59,6 @@ export class GalleryApplicationWindow extends ApplicationWindow {
 
         this.container = new UIView({
             frame: new UIRect(0, 0, this.window.body.frame.width, this.window.body.frame.height),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         })
 
@@ -97,8 +95,6 @@ export class GalleryApplicationWindow extends ApplicationWindow {
 
         this.prevView = new UIView({
             frame: new UIRect(0, 0, PREV_NEXT_WIDTH, this.window.body.frame.height),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         });
         this.prevView
@@ -109,8 +105,6 @@ export class GalleryApplicationWindow extends ApplicationWindow {
 
         this.nextView = new UIView({
             frame: new UIRect(0, 0, PREV_NEXT_WIDTH, this.window.body.frame.height),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             anchor: UIEdgeSet.topRight
         });
@@ -122,8 +116,6 @@ export class GalleryApplicationWindow extends ApplicationWindow {
 
         this.imageView = new UIImageView({
             frame: new UIRect(0, 0, this.window.body.frame.width, this.window.body.frame.height - INFORMATION_BAR_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             image: new UIImage()
         });
@@ -152,22 +144,16 @@ export class GalleryApplicationWindow extends ApplicationWindow {
 
         this.informationBar = new UIView({
             frame: new UIRect(0, 0, this.window.body.frame.width, INFORMATION_BAR_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             backgroundColor: WINDOW_BACKGROUND_COLOR,
             anchor: UIEdgeSet.bottomLeft
         });
         this.zoomValueView = new UIView({
             frame: new UIRect(ZOOM_BUTTON_SIZE * 2, 0, ZOOM_BUTTON_SIZE * 2, ZOOM_BUTTON_SIZE),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         });
         this.zoomValueLabel = new UITextLabel({
             frame: new UIRect(0, 0, ZOOM_BUTTON_SIZE * 2, ZOOM_BUTTON_SIZE),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             textColor: WINDOW_TEXT_COLOR,
             initialPosition: false,
             font: SystemUIFont.defaultWith(ZOOM_BUTTON_SIZE),
@@ -176,8 +162,6 @@ export class GalleryApplicationWindow extends ApplicationWindow {
         });
         this.zoomInView = new UIView({
             frame: new UIRect(0, 0, ZOOM_BUTTON_SIZE, ZOOM_BUTTON_SIZE),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         });
         this.zoomInIcon = new UIIcon({
@@ -196,8 +180,6 @@ export class GalleryApplicationWindow extends ApplicationWindow {
 
         this.zoomOutView = new UIView({
             frame: new UIRect(ZOOM_BUTTON_SIZE, 0, ZOOM_BUTTON_SIZE, ZOOM_BUTTON_SIZE),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         });
         this.zoomOutIcon = new UIIcon({

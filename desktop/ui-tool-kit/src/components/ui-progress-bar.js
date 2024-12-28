@@ -1,6 +1,6 @@
 import { DivElement } from '../../../ui-element-kit/index.js'
 import UIView from './ui-view.js'
-import { UIRect, UIFont, UISizeMode, UIColor, UIBorder } from '../ui-graphic.js'
+import { UIRect, UIFont, UIColor, UIBorder } from '../ui-graphic.js'
 import { setBackgroundColor, setBorderRadius, setBorder } from '../ui-properties.js'
 import UIPropertyProxy from '../graphic/ui-property-proxy.js'
 
@@ -13,8 +13,6 @@ export class UIProgress extends UIView {
     static get defaultConfig() {
         return {
             frame: new UIRect(0, 0, PROGRESS_WIDTH, PROGRESS_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             trackBackgroundColor: null,
             trackBorder: new UIBorder(PROGRESS_BORDER_WIDTH, UIColor.black),
             trackBorderRadius: 0,

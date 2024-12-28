@@ -30,8 +30,6 @@ export class AudioVolumeWidget extends UIWidget {
 
         this.outputLabel = new UITextLabel({
             frame: new UIRect(0, 0, WIDGET_AUDIO_VOLUME_OUTPUT_LABEL_WIDTH, WIDGET_AUDIO_VOLUME_OUTPUT_LABEL_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             padding: new UIOffset(WIDGET_AUDIO_VOLUME_OUTPUT_LABEL_PADDING, UIEdgeSet.horizontal),
             font: SystemUIFont.xLargeWith(WIDGET_AUDIO_VOLUME_OUTPUT_LABEL_HEIGHT),
@@ -47,8 +45,6 @@ export class AudioVolumeWidget extends UIWidget {
         })
         this.slider = new UISlider({
             frame: new UIRect(WIDGET_AUDIO_VOLUME_ICON_WIDTH, WIDGET_AUDIO_VOLUME_OUTPUT_LABEL_HEIGHT, WIDGET_AUDIO_VOLUME_SLIDER_WIDTH, WIDGET_AUDIO_VOLUME_SLIDER_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             padding: WIDGET_AUDIO_VOLUME_SLIDER_PADDING,
             trackBackgroundColor: WIDGET_AUDIO_VOLUME_SLIDER_TRACK_BACKGROUND_COLOR,
@@ -61,8 +57,6 @@ export class AudioVolumeWidget extends UIWidget {
         })
         this.valueLabel = new UITextLabel({
             frame: new UIRect(WIDGET_AUDIO_VOLUME_ICON_WIDTH + WIDGET_AUDIO_VOLUME_SLIDER_WIDTH, WIDGET_AUDIO_VOLUME_OUTPUT_LABEL_HEIGHT, WIDGET_AUDIO_VOLUME_VALUE_LABEL_WIDTH, WIDGET_AUDIO_VOLUME_VALUE_LABEL_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             textAlign: UITextAlign.center,
             font: SystemUIFont.xxxxLargeWith(WIDGET_AUDIO_VOLUME_VALUE_LABEL_HEIGHT),

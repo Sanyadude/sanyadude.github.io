@@ -18,8 +18,6 @@ export class TaskBarTasks {
     _init() {
         this.tasksContainer = new UIView({
             frame: new UIRect(TASK_BAR_TASKS_CONTAINER_LEFT, 0, getTaskBarTasksContainerWidth(this.windowDesktopApplication.width), TASK_BAR_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             clipToFrame: true
         })
