@@ -15,8 +15,8 @@ export class UIView extends UIComponent {
         return {
             //size & position
             frame: new UIRect(),
-            widthMode: UISizeMode.default,
-            heightMode: UISizeMode.default,
+            widthMode: UISizeMode.frameSize,
+            heightMode: UISizeMode.frameSize,
             anchor: UIEdgeSet.topLeft,
             initialPosition: true,
             displayMode: UIDisplayMode.default,

@@ -37,14 +37,10 @@ class KeyboardLanguage {
     _init() {
         this.container = new UIView({
             frame: new UIRect(0, this.index * WIDGET_KEYBOARD_LANGUAGE_ITEM_HEIGHT, WIDGET_KEYBOARD_LANGUAGE_ITEM_WIDTH, WIDGET_KEYBOARD_LANGUAGE_ITEM_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         });
         this.shortName = new UITextLabel({
             frame: new UIRect(0, 0, WIDGET_KEYBOARD_LANGUAGE_ITEM_SHORT_NAME_WIDTH, WIDGET_KEYBOARD_LANGUAGE_ITEM_SHORT_NAME_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             padding: WIDGET_KEYBOARD_LANGUAGE_ITEM_SHORT_NAME_PADDING,
             textAlign: UITextAlign.center,
@@ -53,8 +49,6 @@ class KeyboardLanguage {
         });
         this.description = new UITextLabel({
             frame: new UIRect(WIDGET_KEYBOARD_LANGUAGE_ITEM_DESCRIPTION_X, 0, WIDGET_KEYBOARD_LANGUAGE_ITEM_DESCRIPTION_WIDTH, WIDGET_KEYBOARD_LANGUAGE_ITEM_DESCRIPTION_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             padding: WIDGET_KEYBOARD_LANGUAGE_ITEM_DESCRIPTION_PADDING,
             font: SystemUIFont.xLarge,
@@ -107,8 +101,6 @@ export class KeyboardLanguageWidget extends UIWidget {
 
         this.languagesContainer = new UIView({
             frame: new UIRect(0, WIDGET_KEYBOARD_LANGUAGE_PADDING, WIDGET_KEYBOARD_LANGUAGE_WIDTH, 0),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         });
 

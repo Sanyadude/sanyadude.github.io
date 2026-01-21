@@ -18,8 +18,6 @@ export class LibraryDisplayApplicationWindow extends ApplicationWindow {
 
         this.container = new UIView({
             frame: new UIRect(0, 0, this.window.body.frame.width, this.window.body.frame.height),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         })
         this.container
@@ -27,6 +25,8 @@ export class LibraryDisplayApplicationWindow extends ApplicationWindow {
             .setOverflowAuto();
 
         this.descriptionContainer = new UITextView({
+            widthMode: UISizeMode.default,
+            heightMode: UISizeMode.default,
             text: `Everything you see on this web page was created using components from my custom library. 
             I call it - "UIToolKit". Not a very distinct name, but who cares...
             I created it with sole purpose of doing this project. 
@@ -40,8 +40,6 @@ export class LibraryDisplayApplicationWindow extends ApplicationWindow {
 
         this.view = new UIView({
             frame: new UIRect(0, 0, 200, 50),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             backgroundColor: new UIColor(.06, .52, .98, .1),
             border: new UIBorder(1, new UIColor(.06, .52, .98))
         });
@@ -52,6 +50,8 @@ It acts as a foundational building block for creating interfaces.`;
         this.viewDisplay = new UIComponentDisplay('View', viewDescription, this.view);
 
         this.textView = new UITextView({
+            widthMode: UISizeMode.default,
+            heightMode: UISizeMode.default,
             textFormat: UITextFormat.preserved,
             text: `Text View Row 1 
         Text View Row 2
@@ -67,7 +67,11 @@ or other content that spans multiple lines.
 `;
         this.textViewDisplay = new UIComponentDisplay('Text View', textViewDescription, this.textView);
 
-        this.textLabel = new UITextLabel({ text: 'TextLabel' });
+        this.textLabel = new UITextLabel({ 
+            widthMode: UISizeMode.default,
+            heightMode: UISizeMode.default,
+            text: 'TextLabel' 
+        });
         const textLabelDescription = `UITextLabel 
 used for displaying a single line of text. 
 This component is primarily focused on presenting concise and informative textual content within a user interface. 
@@ -77,6 +81,8 @@ or any scenario where a short piece of text needs to be prominently displayed.
         this.textLabelDisplay = new UIComponentDisplay('Text Label', textLabelDescription, this.textLabel);
 
         this.button = new UIButton({
+            widthMode: UISizeMode.default,
+            heightMode: UISizeMode.default,
             title: 'Button',
             onClick: (uiComponent, uiElement, event) => {
                 console.log(uiComponent);
@@ -117,6 +123,8 @@ or any operation that takes time to complete.`;
         this.progressDisplay = new UIComponentDisplay('Progress', progressDescription, this.progress);
 
         this.stepper = new UIStepper({
+            widthMode: UISizeMode.default,
+            heightMode: UISizeMode.default,
             onValueChanged: (value, uiComponent, uiElement, event) => {
                 console.log(value);
             }
@@ -142,6 +150,8 @@ or enable users to adjust settings within an application.`;
         this.sliderDisplay = new UIComponentDisplay('Slider', sliderDescription, this.slider);
 
         this.select = new UISelect({
+            widthMode: UISizeMode.default,
+            heightMode: UISizeMode.default,
             options: ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5'],
             onValueChanged: (value, uiComponent, uiElement, event) => {
                 console.log(value);
@@ -155,6 +165,8 @@ it expands to display available choices. Users can then select a specific option
         this.selectDisplay = new UIComponentDisplay('Select', selectDescription, this.select);
 
         this.textField = new UITextField({
+            widthMode: UISizeMode.default,
+            heightMode: UISizeMode.default,
             onValueChanged: (value, uiComponent, uiElement, event) => {
                 console.log(value);
             }
@@ -170,6 +182,8 @@ or any other single-line input within an application.`;
         this.textFieldDisplay = new UIComponentDisplay('Text Input', textFieldDescription, this.textField);
 
         this.textEditView = new UITextEditView({
+            widthMode: UISizeMode.default,
+            heightMode: UISizeMode.default,
             onValueChanged: (value, uiComponent, uiElement, event) => {
                 console.log(value);
             }
@@ -205,10 +219,14 @@ such as paragraphs or comments.`;
             }
         ];
         this.tabBar = new UITabBarView({
+            widthMode: UISizeMode.default,
+            heightMode: UISizeMode.default,
             isVertical: false
         });
         tabs.forEach(tabConfig => {
             const tab = new UITab({
+                widthMode: UISizeMode.default,
+                heightMode: UISizeMode.default,
                 activeBackgroundColor: new UIColor(.06, .52, .98, .1),
                 activeBorderColor: new UIColor(.06, .52, .98),
                 inactiveBackgroundColor: null,
@@ -216,6 +234,8 @@ such as paragraphs or comments.`;
                 border: new UIBorder(1, UIColor.transparent)
             });
             const button = new UIButton({
+                widthMode: UISizeMode.default,
+                heightMode: UISizeMode.default,
                 title: tabConfig.text,
                 onClick: tabConfig.onClick.bind(window, tab),
                 padding: new UIOffset(6),
@@ -251,10 +271,14 @@ to switch between different sections or views within an application.`;
             }
         ]
         this.list = new UIListView({
+            widthMode: UISizeMode.default,
+            heightMode: UISizeMode.default,
             isVertical: true
         });
         listItems.forEach(listItem => {
             const item = new UIListItem({
+                widthMode: UISizeMode.default,
+                heightMode: UISizeMode.default,
                 backgroundColor: new UIColor(.06, .52, .98, .1),
                 border: new UIBorder(1, new UIColor(.06, .52, .98)),
                 textColor: new UIColor(.06, .52, .98),
@@ -262,6 +286,8 @@ to switch between different sections or views within an application.`;
                 maring: new UIOffset(2)
             });
             const button = new UIButton({
+                widthMode: UISizeMode.default,
+                heightMode: UISizeMode.default,
                 title: listItem.title,
                 onClick: listItem.onClick.bind(window, item)
             })

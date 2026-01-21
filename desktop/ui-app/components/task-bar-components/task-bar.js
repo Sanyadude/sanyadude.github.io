@@ -21,8 +21,6 @@ export class TaskBar {
     _init() {
         this.taskBarContainer = new UIView({
             frame: new UIRect(0, 0, this.windowDesktopApplication.width, TASK_BAR_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             anchor: UIEdgeSet.bottomLeft,
             backgroundColor: TASK_BAR_BACKGROUND_COLOR,

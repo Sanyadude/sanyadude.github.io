@@ -25,24 +25,18 @@ export class TaskBarTime {
     _init() {
         this.timeContainer = new UIView({
             frame: new UIRect(TASK_BAR_TIME_CONTAINER_RIGHT, 0, TASK_BAR_TIME_CONTAINER_WIDTH, TASK_BAR_TIME_CONTAINER_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             anchor: UIEdgeSet.topRight,
             font: SystemUIFont.defaultWith(TASK_BAR_TIME_CONTAINER_HEIGHT / 2)
         })
         this.timeLabel = new UITextLabel({
             frame: new UIRect(0, 0, TASK_BAR_TIME_CONTAINER_WIDTH, TASK_BAR_TIME_CONTAINER_HEIGHT / 2),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             textAlign: UITextAlign.center,
             text: ''
         })
         this.dateLabel = new UITextLabel({
             frame: new UIRect(0, TASK_BAR_TIME_CONTAINER_HEIGHT / 2, TASK_BAR_TIME_CONTAINER_WIDTH, TASK_BAR_TIME_CONTAINER_HEIGHT / 2),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             textAlign: UITextAlign.center,
             text: ''

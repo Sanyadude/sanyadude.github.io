@@ -1,6 +1,6 @@
 import { DivElement } from '../../../ui-element-kit/index.js'
 import UIControl from './ui-control.js'
-import { UIFont, UIColor, UIRect, UISizeMode, UIEdgeSet, UIShadow, UIBorder } from '../ui-graphic.js'
+import { UIFont, UIColor, UIRect, UIEdgeSet, UIShadow, UIBorder } from '../ui-graphic.js'
 import { setBackgroundColor, setBorder, setBorderRadius, setShadow } from '../ui-properties.js'
 import UIPropertyProxy from '../graphic/ui-property-proxy.js'
 
@@ -67,8 +67,6 @@ export class UISlider extends UIControl {
     static get defaultConfig() {
         return {
             frame: new UIRect(0, 0, SLIDER_WIDTH, SLIDER_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             paddingEdges: UIEdgeSet.vertical,
             trackBackgroundColor: null,
             trackBorder: new UIBorder(SLIDER_BORDER_WIDTH, UIColor.black),

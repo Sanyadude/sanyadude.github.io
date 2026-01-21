@@ -14,8 +14,6 @@ export class LoadingScreen {
     _init() {
         this.loadingScreenContainer = new UIView({
             frame: new UIRect(0, 0, this.windowDesktopApplication.width, this.windowDesktopApplication.height),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             backgroundColor: LOADING_SCREEN_BACKGROUND_COLOR,
             zIndex: 999
@@ -23,15 +21,11 @@ export class LoadingScreen {
 
         this.loadingScreenContentContainer = new UIView({
             frame: new UIRect((this.windowDesktopApplication.width - LOADING_SCREEN_CONTENT_WIDTH) / 2, (this.windowDesktopApplication.height - LOADING_SCREEN_CONTENT_HEIGHT) / 2, LOADING_SCREEN_CONTENT_WIDTH, LOADING_SCREEN_CONTENT_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         });
 
         this.loadingScreenWindowIcon = new UIIcon({
             frame: new UIRect((LOADING_SCREEN_CONTENT_WIDTH - LOADING_SCREEN_ICON_WIDTH) / 2, 0, LOADING_SCREEN_ICON_WIDTH, LOADING_SCREEN_ICON_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             svg: SvgSet.window,
             iconColor: LOADING_SCREEN_ICON_COLOR
@@ -39,8 +33,6 @@ export class LoadingScreen {
 
         this.loadingScreenTextLabel = new UITextLabel({
             frame: new UIRect(0, LOADING_SCREEN_ICON_HEIGHT + LOADING_SCREEN_CONTENT_MARGIN, LOADING_SCREEN_TEXT_WIDTH, LOADING_SCREEN_TEXT_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             textColor: LOADING_SCREEN_TEXT_COLOR,
             textAlign: UITextAlign.center,

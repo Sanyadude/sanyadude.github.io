@@ -12,8 +12,6 @@ export class TaskBarAllWindowControl {
     _init() {
         this.allWindowsControlContainer = new UIView({
             frame: new UIRect(0, 0, TASK_BAR_ALL_WINDOW_BUTTON_WIDTH, TASK_BAR_ALL_WINDOW_BUTTON_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             border: new UIBorder(1, TASK_BAR_ALL_WINDOW_BUTTON_BORDER_COLOR, UIEdgeSet.left),
             initialPosition: false,
             anchor: UIEdgeSet.topRight

@@ -57,8 +57,6 @@ export class DesktopWindowMaximizePlaceholder {
     _init() {
         this.desktopWindowFullScreenPlaceholder = new UIView({
             frame: new UIRect(DESKTOP_WINDOW_PLACEHOLDER_PADDING, DESKTOP_WINDOW_PLACEHOLDER_PADDING, getPlaceholderWidth(this.windowDesktopApplication.width), getPlaceholderHeight(this.windowDesktopApplication.height)),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             backgroundColor: DESKTOP_WINDOW_PLACEHOLDER_BACKGROUND_COLOR,
             border: DESKTOP_WINDOW_PLACEHOLDER_BORDER,
             shadow: WINDOW_SHADOW,
@@ -67,8 +65,6 @@ export class DesktopWindowMaximizePlaceholder {
 
         this.desktopWindowLeftScreenPlaceholder = new UIView({
             frame: new UIRect(DESKTOP_WINDOW_PLACEHOLDER_PADDING, DESKTOP_WINDOW_PLACEHOLDER_PADDING, getPlaceholderHalfWidth(this.windowDesktopApplication.width), getPlaceholderHeight(this.windowDesktopApplication.height)),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             backgroundColor: DESKTOP_WINDOW_PLACEHOLDER_BACKGROUND_COLOR,
             border: DESKTOP_WINDOW_PLACEHOLDER_BORDER,
             shadow: WINDOW_SHADOW,
@@ -77,8 +73,6 @@ export class DesktopWindowMaximizePlaceholder {
 
         this.desktopWindowRightScreenPlaceholder = new UIView({
             frame: new UIRect(getRightPlaceholderX(this.windowDesktopApplication.width), DESKTOP_WINDOW_PLACEHOLDER_PADDING, getPlaceholderHalfWidth(this.windowDesktopApplication.width), getPlaceholderHeight(this.windowDesktopApplication.height)),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             backgroundColor: DESKTOP_WINDOW_PLACEHOLDER_BACKGROUND_COLOR,
             border: DESKTOP_WINDOW_PLACEHOLDER_BORDER,
             shadow: WINDOW_SHADOW,

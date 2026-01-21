@@ -1,6 +1,6 @@
 import { DivElement, SvgElement, PathElement } from '../../../ui-element-kit/index.js'
 import UIPropertyProxy from '../graphic/ui-property-proxy.js'
-import { UIRect, UIFont, UISizeMode} from '../ui-graphic.js'
+import { UIRect, UIFont } from '../ui-graphic.js'
 import UIView from './ui-view.js'
 
 export class UIIcon extends UIView {
@@ -8,8 +8,6 @@ export class UIIcon extends UIView {
     static get defaultConfig() {
         return {
             frame: new UIRect(0, 0, UIFont.DEFAULT_UI_FONT_SIZE, UIFont.DEFAULT_UI_FONT_SIZE),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             iconColor: null,
             svg: null
         };

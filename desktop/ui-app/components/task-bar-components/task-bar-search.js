@@ -39,8 +39,6 @@ export class TaskBarSearch {
 
         this.searchContainer = new UIView({
             frame: new UIRect(TASK_BAR_START_ICON_WIDTH, 0, TASK_BAR_SEARCH_BAR_CONTAINER_WIDTH, TASK_BAR_SEARCH_BAR_CONTAINER_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             backgroundColor: TASK_BAR_SEARCH_BAR_BACKGROUND_COLOR,
             border: new UIBorder(TASK_BAR_SEARCH_BAR_BORDER_WIDTH, TASK_BAR_SEARCH_BAR_BORDER_COLOR)
@@ -54,8 +52,6 @@ export class TaskBarSearch {
         })
         this.searchPlaceholder = new UITextLabel({
             frame: new UIRect(TASK_BAR_START_ICON_WIDTH + TASK_BAR_SEARCH_BAR_ICON_WIDTH, 0, TASK_BAR_SEARCH_BAR_TEXT_FIELD_WIDTH, TASK_BAR_SEARCH_BAR_TEXT_FIELD_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             textColor: TASK_BAR_SEARCH_BAR_PLACEHOLDER_TEXT_COLOR,
             text: 'Type here to search',
@@ -63,8 +59,6 @@ export class TaskBarSearch {
         })
         this.searchTextField = new UITextField({
             frame: new UIRect(TASK_BAR_START_ICON_WIDTH + TASK_BAR_SEARCH_BAR_ICON_WIDTH, 0, TASK_BAR_SEARCH_BAR_TEXT_FIELD_WIDTH, TASK_BAR_SEARCH_BAR_TEXT_FIELD_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             padding: TASK_BAR_SEARCH_BAR_TEXT_FIELD_PADDING,
             font: SystemUIFont.large,

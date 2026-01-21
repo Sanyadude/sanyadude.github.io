@@ -1,6 +1,6 @@
 import { DivElement } from '../../../ui-element-kit/index.js'
 import UIControl from './ui-control.js'
-import { UIColor, UIRect, UISizeMode, UIFont, UIState, UIDisplayMode, UIShadow, UIBorder } from '../ui-graphic.js'
+import { UIColor, UIRect, UIFont, UIState, UIDisplayMode, UIShadow, UIBorder } from '../ui-graphic.js'
 import { setBackgroundColor, setBorder, setBorderRadius, setShadow } from '../ui-properties.js'
 import UIPropertyProxy from '../graphic/ui-property-proxy.js'
 
@@ -25,8 +25,6 @@ export class UIToggle extends UIControl {
     static get defaultConfig() {
         return {
             frame: new UIRect(0, 0, TOGGLE_WIDTH, TOGGLE_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             displayMode: UIDisplayMode.flex,
             border: new UIBorder(TOGGLE_BORDER_WIDTH, UIColor.black),
             thumbFrame: new UIRect(0, 0, TOGGLE_HEIGHT - TOGGLE_BORDER_WIDTH * 2, TOGGLE_HEIGHT - TOGGLE_BORDER_WIDTH * 2),

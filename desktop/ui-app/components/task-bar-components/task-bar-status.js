@@ -23,8 +23,6 @@ export class TaskBarStatus {
     _init() {
         this.statusContainer = new UIView({
             frame: new UIRect(0, 0, TASK_BAR_STATUS_WIDTH, TASK_BAR_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             anchor: UIEdgeSet.topRight
         })

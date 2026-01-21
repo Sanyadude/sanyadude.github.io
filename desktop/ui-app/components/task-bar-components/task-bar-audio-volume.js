@@ -29,8 +29,6 @@ export class TaskBarAudioVolume {
 
         this.audioVolumeContainer = new UIView({
             frame: new UIRect(TASK_BAR_AUDIO_VOLUME_CONTAINER_RIGHT, 0, TASK_BAR_AUDIO_VOLUME_CONTAINER_WIDTH, TASK_BAR_AUDIO_VOLUME_CONTAINER_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             anchor: UIEdgeSet.topRight
         })

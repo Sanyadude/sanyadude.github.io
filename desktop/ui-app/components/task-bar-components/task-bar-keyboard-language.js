@@ -28,15 +28,11 @@ export class TaskBarKeyboardLanguage {
     _init() {
         this.keyboardLanguageContainer = new UIView({
             frame: new UIRect(TASK_BAR_KEYBOARD_LANGUAGE_CONTAINER_RIGHT, 0, TASK_BAR_KEYBOARD_LANGUAGE_CONTAINER_WIDTH, TASK_BAR_KEYBOARD_LANGUAGE_CONTAINER_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             anchor: UIEdgeSet.topRight
         })
         this.keyboardLanguageLabel = new UITextLabel({
             frame: new UIRect(0, 0, TASK_BAR_KEYBOARD_LANGUAGE_CONTAINER_WIDTH, TASK_BAR_KEYBOARD_LANGUAGE_CONTAINER_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             textAlign: UITextAlign.center,
             font: SystemUIFont.defaultWith(TASK_BAR_KEYBOARD_LANGUAGE_CONTAINER_HEIGHT),

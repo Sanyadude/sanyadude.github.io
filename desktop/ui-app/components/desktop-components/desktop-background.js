@@ -12,8 +12,6 @@ export class DesktopBackground {
     _init() {
         this.background = new UIImageView({
             frame: new UIRect(0, 0, this.windowDesktopApplication.width, this.windowDesktopApplication.height),
-            widthMode: UISizeMode.frameSize, 
-            heightMode: UISizeMode.frameSize, 
             initialPosition: false
         });
 

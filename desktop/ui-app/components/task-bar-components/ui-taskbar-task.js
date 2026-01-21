@@ -73,21 +73,15 @@ export class UITaskbarTask {
     _configure() {
         this.container = new UIView({
             frame: new UIRect(0, 0, TASK_BAR_TASK_WIDTH, TASK_BAR_TASK_HEIGHT),
-            heightMode: UISizeMode.frameSize,
-            widthMode: UISizeMode.frameSize,
             initialPosition: false
         })
         this.icon = new UIImageView({
             image: this._config.iconImage,
             frame: new UIRect(0, 0, TASK_BAR_TASK_ICON_WIDTH, TASK_BAR_TASK_ICON_HEIGHT),
-            heightMode: UISizeMode.frameSize,
-            widthMode: UISizeMode.frameSize,
             padding: new UIOffset(TASK_BAR_TASK_ICON_PADDING)
         });
         this.label = new UITextLabel({
             frame: new UIRect(TASK_BAR_TASK_ICON_WIDTH, 0, TASK_BAR_TASK_LABEL_WIDTH, TASK_BAR_TASK_LABEL_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             text: this._config.text,
             font: SystemUIFont.defaultWith(TASK_BAR_TASK_ICON_HEIGHT),
@@ -96,8 +90,6 @@ export class UITaskbarTask {
         });
         this.bottomBorder = new UIView({
             frame: TASK_BAR_TASK_BOTTOM_BORDER_FRAME,
-            heightMode: UISizeMode.frameSize,
-            widthMode: UISizeMode.frameSize,
             initialPosition: false,
             anchor: UIEdgeSet.bottomLeft,
             backgroundColor: TASK_BAR_TASK_BOTTOM_BORDER_COLOR

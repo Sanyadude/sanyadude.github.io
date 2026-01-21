@@ -93,15 +93,11 @@ const close = (context) => {
 
 const iconConfig = (iconSize) => ({
     frame: new UIRect(0, 0, iconSize, iconSize),
-    widthMode: UISizeMode.frameSize,
-    heightMode: UISizeMode.frameSize,
     padding: new UIOffset(WINDOW_ACTION_ICON_PADDING)
 })
 
 const iconContainerConfig = (iconSize) => ({
     frame: new UIRect(0, 0, iconSize + WINDOW_ACTION_ICON_PADDING * 2, iconSize),
-    widthMode: UISizeMode.frameSize,
-    heightMode: UISizeMode.frameSize,
     padding: new UIOffset(WINDOW_ACTION_ICON_PADDING, UIEdgeSet.horizontal),
     backgroundColor: null
 })
@@ -134,8 +130,6 @@ export class UIWindow {
         this.container = new UIView({
             frame: this._config.frame,
             initialPosition: false,
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             backgroundColor: WINDOW_BACKGROUND_COLOR,
             border: WINDOW_BORDER,
             shadow: WINDOW_SHADOW,
@@ -146,8 +140,6 @@ export class UIWindow {
         const headerHeight = this._config.font.fontSize + 2 * WINDOW_HEADER_PADDING;
         this.header = new UIView({
             frame: new UIRect(0, 0, headerWidth, headerHeight),
-            heightMode: UISizeMode.frameSize,
-            widthMode: UISizeMode.frameSize,
             initialPosition: false,
             padding: new UIOffset(WINDOW_HEADER_PADDING),
             clipToFrame: true
@@ -155,16 +147,12 @@ export class UIWindow {
         const headerActionsWidth = (1 + (this._config.minimizable ? 1 : 0) + (this._config.maximizable ? 1 : 0)) * (headerHeight + 2 * WINDOW_ACTION_ICON_PADDING);
         this.headerActions = new UIView({
             frame: new UIRect(0, 0, headerActionsWidth, headerHeight),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             anchor: UIEdgeSet.topRight
         });
         const headerIconWidth = this._config.showIcon ? headerHeight : 0;
         this.headerIcon = new UIImageView({
             frame: new UIRect(0, 0, headerIconWidth, headerHeight),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             padding: new UIOffset(6),
             image: this._config.icon
@@ -172,8 +160,6 @@ export class UIWindow {
         const headerTextLabelWidth = this.container.frame.width - this.headerActions.frame.width - this.headerIcon.frame.width;
         this.headerTextLabel = new UITextLabel({
             frame: new UIRect(this.headerIcon.frame.width, 0, headerTextLabelWidth, headerHeight),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             font: this._config.font.copy().setLineHeight(headerHeight),
             text: this._config.name,
@@ -213,8 +199,6 @@ export class UIWindow {
 
         this.body = new UIView({
             frame: new UIRect(0, this.header.frame.height, this.container.frame.width - 2 * WINDOW_BORDER_WIDTH, this.container.frame.height - this.header.frame.height - 2 * WINDOW_BORDER_WIDTH),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             clipToFrame: true
         });

@@ -1,12 +1,10 @@
 import ApplicationWindow from '../../components/application-components/application-window.js'
-import { UIButton, UIColor, UIIcon, UIRect, UIEdgeSet, UISize, UISizeMode, UIState, UITextField, UIView, UIWebView, UIDisplayMode, UIOffset, UIBorder } from '../../../ui-tool-kit/index.js'
-import { APP_ROOT_PATH } from '../../config/config.js'
+import { UIButton, UIColor, UIIcon, UIRect, UIEdgeSet, UISize, UIState, UITextField, UIView, UIWebView, UIDisplayMode, UIOffset, UIBorder } from '../../../ui-tool-kit/index.js'
 import { WINDOW_RESIZABLE_MIN_HEIGHT } from '../../config/desktop-config.js'
 import { KEYBOARD_BUTTONS_NAME_CODE_MAP } from '../../config/keyboard-buttons.js'
 import { SvgSet } from '../../config/svg-set.js'
 
-const BROWSER_APP_PATH = `${APP_ROOT_PATH}/window-applications/browser`;
-const CUSTOM_WEB_SITE_URL = `${location.origin}${BROWSER_APP_PATH}/web-site/index.html`;
+const CUSTOM_WEB_SITE_URL = `${location.origin}/home-web-site/index.html`;
 const SEARCH_BAR_HEIGHT = 50;
 const SEARCH_BAR_ELEMENTS_HEIGHT = 40;
 const SEARCH_BAR_BACKGROUND_COLOR = new UIColor(.93, .93, .93);
@@ -29,8 +27,6 @@ const resize = (context) => {
 const createButton = () => {
     return new UIButton({
         frame: new UIRect(0, 0, SEARCH_BAR_ELEMENTS_HEIGHT, SEARCH_BAR_ELEMENTS_HEIGHT),
-        widthMode: UISizeMode.frameSize,
-        heightMode: UISizeMode.frameSize,
         borderRadius: 20,
         maring: new UIOffset(5, UIEdgeSet.horizontal),
         states: {
@@ -77,6 +73,12 @@ const onLoad = (context, uiElement) => {
     context.window.headerTextLabel.text = text;
     context.task.label.text = text;
     context.search.value = url;
+    if (context.webView._url != url) {
+        context.history = context.history.slice(0, context.historyCurrentIndex + 1);
+        context.history.push(url);
+        context.historyCurrentIndex = context.history.length - 1;
+        updatePrevNextButtonsState(context);
+    }
     context.webView._url = url;
 }
 
@@ -96,14 +98,10 @@ export class BrowserApplicationWindow extends ApplicationWindow {
 
         this.container = new UIView({
             frame: new UIRect(0, 0, this.window.body.frame.width, this.window.body.frame.height),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         })
         this.searchBar = new UIView({
             frame: new UIRect(0, 0, this.window.body.frame.width, SEARCH_BAR_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false,
             displayMode: UIDisplayMode.flex,
             padding: new UIOffset(SEARCH_BAR_PADDING)
@@ -138,8 +136,6 @@ export class BrowserApplicationWindow extends ApplicationWindow {
         })
         this.search = new UITextField({
             frame: new UIRect(0, 0, this.window.body.frame.width - 2 * SEARCH_BAR_PADDING - 4 * SEARCH_BAR_ELEMENTS_HEIGHT, SEARCH_BAR_ELEMENTS_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             backgroundColor: SEARCH_BAR_BACKGROUND_COLOR,
             borderRadius: 20,
             border: new UIBorder(2, UIColor.transparent),
@@ -157,14 +153,10 @@ export class BrowserApplicationWindow extends ApplicationWindow {
             });
         this.webView = new UIWebView({
             frame: new UIRect(0, SEARCH_BAR_HEIGHT, this.window.body.frame.width, this.window.body.frame.height - SEARCH_BAR_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         })
         this.webViewOverlay = new UIView({
             frame: new UIRect(0, SEARCH_BAR_HEIGHT, this.window.body.frame.width, this.window.body.frame.height - SEARCH_BAR_HEIGHT),
-            widthMode: UISizeMode.frameSize,
-            heightMode: UISizeMode.frameSize,
             initialPosition: false
         })
         this.webViewOverlay.hide();
