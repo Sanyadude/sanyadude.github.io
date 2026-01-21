@@ -1,0 +1,62 @@
+form {
+    max-width: 640px;
+    margin: auto;
+    margin-top: 2*$baseline;
+    @include mqxs {
+        margin-top: $baseline;
+    }
+    .form-group {
+        margin-bottom: 0;
+        label {
+            @include titi;
+            font-weight: 300;
+            padding-left: $baseline/2;
+            margin: 0;
+            height: $baseline;
+            position: relative;
+            bottom: -$baseline/2;
+        }
+        .form-control {
+            border: none;
+            border-radius: $radius;
+            background-color: #f5f5f5;
+            font-size: 18px;
+            height: 1.5*$baseline;
+            line-height: 1.5*$baseline;
+            margin: 0;
+            padding: 0 0 0 $baseline/2;
+            @include boxshadow(0, 15px, 20px, 0, #000, .05);
+            &:focus {
+                @include boxshadow(0, 15px, 20px, 0, #000, .10);
+                outline: none;
+            }
+        }
+        textarea {
+            &.form-control {
+                height: auto;
+                resize: none;
+                padding-top: $baseline/2;
+                line-height: 24px;
+            }
+        }
+    }
+    .btn {
+        margin-top: 1.5*$baseline;
+    }
+}
+
+::-webkit-input-placeholder {
+    color: #ddd !important;
+}
+
+::-moz-placeholder {
+    color: #ddd !important;
+}
+
+:-ms-input-placeholder {
+    color: #ddd !important;
+}
+
+:-moz-placeholder {
+    color: #ddd !important;
+}

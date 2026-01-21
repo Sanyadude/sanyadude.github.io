@@ -1,0 +1,20 @@
+/* font-family: "Open Sans"; */
+@font-face {
+	font-family: 'Open Sans';
+	src: local('Open Sans Light'), local('OpenSans-Light'), url('../fonts/OpenSans/opensanslight.woff2') format('woff2'), url('../fonts/OpenSans/opensanslight.woff') format('woff'), url('../fonts/OpenSans/opensanslight.ttf') format('truetype');
+	font-weight: 300;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Open Sans';
+	src: local('Open Sans'), local('OpenSans'), url('../fonts/OpenSans/opensans.woff2') format('woff2'), url('../fonts/OpenSans/opensans.woff') format('woff'), url('../fonts/OpenSans/opensans.ttf') format('truetype');
+	font-weight: 400;
+	font-style: normal;
+}
+/* font-family: "Myriad Pro Regular"; */
+@font-face {
+font-family: 'Myriad Pro Regular';
+font-style: normal;
+font-weight: normal;
+src: local('Myriad Pro Regular'), url('../fonts/MyriadPro/MYRIADPRO-REGULAR.woff') format('woff');
+}

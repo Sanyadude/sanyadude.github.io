@@ -4,22 +4,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Some websites</title>
+    <title>Some Webpages</title>
     <link rel="icon" type="image/x-icon" href="favicon.png">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .link-container {
+            background-color: #fff;
+            padding: 2em 3em;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .link-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .link-list a {
+            display: inline-block;
+            text-decoration: none;
+            color: #2980b9;
+            font-weight: 500;
+            padding: 0.5em 1em;
+            border-radius: 5px;
+        }
+
+        .link-list a:hover {
+            background-color: #2980b9;
+            color: #fff;
+        }
+    </style>
 </head>
 
 <body>
-    <h2>Some websites I created a long time ago when I was just starting out</h2>
-    <h3>First websites:</h3>
-    <div><a href="task-web-site-apdf/index.html">apdf-task-web-site</a></div>
-    <div><a href="task-web-site-ios/index.html">ios-task-web-site</a></div>
-    <h3>Early websites:</h3>
-    <div><a href="advertisement-web-site/index.html">advertisement-web-site</a></div>
-    <div><a href="flower-shop-web-site/index.html">flower-shop-web-site</a></div>
-    <div><a href="stanislaw-jewelry/index.html">stanislaw-jewelry</a></div>
-    <h3>Most recent but still early websites:</h3>
-    <div><a href="gearlab-web/index.html">gearlab-web</a></div>
-    <div><a href="pocketmal-web/index.html">pocketmal-web</a></div>
+    <div class="container">
+        <div class="link-container">
+            <h2>Here are some webpages I made when I was just getting started</h2>
+            <ul class="link-list">
+                <li><a href="task-web-site-apdf/index.html">Webpage 1 (test task)</a></li>
+                <li><a href="task-web-site-ios/index.html">Webpage 2 (test task)</a></li>
+                <li><a href="gearlab-web/index.html">Gearlab Website</a></li>
+                <li><a href="pocketmal-web/index.html">PocketMAL donate page</a></li>
+            </ul>
+        </div>
+    </div>
 </body>
 
 </html>

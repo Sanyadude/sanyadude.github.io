@@ -1,0 +1,93 @@
+/* Typography */
+
+@mixin titi {
+    font-family: 'Titillium Web', Arial, sans-serif;
+}
+
+@mixin opensans {
+    font-family: 'Open Sans', Arial, sans-serif;
+}
+
+
+/* Responsive */
+
+@mixin mqlg {
+    @media only screen and (max-width: $lg) {
+        @content;
+    }
+}
+
+@mixin mqmd {
+    @media only screen and (max-width: $md) {
+        @content;
+    }
+}
+
+@mixin mqsm {
+    @media only screen and (max-width: $sm) {
+        @content;
+    }
+}
+
+@mixin mqxs {
+    @media only screen and (max-width: $xs) {
+        @content;
+    }
+}
+
+@mixin boxshadow($x, $y, $blur, $spread, $color, $opacity) {
+    -webkit-box-shadow: $x $y $blur $spread rgba($color, $opacity);
+    -moz-box-shadow: $x $y $blur $spread rgba($color, $opacity);
+    box-shadow: $x $y $blur $spread rgba($color, $opacity);
+}
+
+
+/* Animation and effects */
+
+@mixin transition($property, $duration, $function) {
+    -webkit-transition: $property $duration $function;
+    -moz-transition: $property $duration $function;
+    -ms-transition: $property $duration $function;
+    -o-transition: $property $duration $function;
+    transition: $property $duration $function;
+}
+
+@mixin keyframes($animation-name) {
+    @-webkit-keyframes #{$animation-name} {
+        @content;
+    }
+    @-moz-keyframes #{$animation-name} {
+        @content;
+    }
+    @-ms-keyframes #{$animation-name} {
+        @content;
+    }
+    @-o-keyframes #{$animation-name} {
+        @content;
+    }
+    @keyframes #{$animation-name} {
+        @content;
+    }
+}
+
+@mixin animation($str, $fill-mode) {
+    -webkit-animation: #{$str};
+    -moz-animation: #{$str};
+    -ms-animation: #{$str};
+    -o-animation: #{$str};
+    animation: #{$str};
+    -webkit-animation-fill-mode: $fill-mode;
+    -moz-animation-fill-mode: $fill-mode;
+    -ms-animation-fill-mode: $fill-mode;
+    -o-animation-fill-mode: $fill-mode;
+    animation-fill-mode: $fill-mode;
+}
+
+
+/* Before/After */
+
+@mixin pseudo {
+    content: '';
+    display: block;
+    position: absolute;
+}
