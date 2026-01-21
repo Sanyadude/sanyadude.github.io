@@ -1,0 +1,143 @@
+.flex-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    @include mqsm {
+        justify-content: center;
+    }
+}
+
+.card {
+    @include transition(all, .2s, ease-in);
+    @include boxshadow(0, 10px, 20px, 0, #000, .05);
+    border-radius: $radius;
+    cursor: pointer;
+    position: relative;
+    text-align: center;
+    h3 {
+        margin: 0;
+        text-transform: uppercase;
+        font-size: 24px;
+        font-weight: 700;
+        color: $primary;
+    }
+    .subheader {
+        @include titi;
+        font-size: 24px;
+        font-weight: 300;
+        text-transform: none;
+    }
+}
+
+.portfolio-grid {
+    @extend .flex-grid;
+    justify-content: center;
+    padding-top: $baseline;
+    .project {
+        @extend .card;
+        text-align: center;
+        width: 150px;
+        height: auto;
+        margin: $baseline;
+        padding: $baseline/2;
+        @include mqxs {
+            width: 100%;
+            margin: $baseline/2 0 0 0;
+        }
+        &:hover {
+            @include boxshadow(0, 15px, 20px, 0, #000, .10);
+        }
+        a {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .icon {
+            margin: 0 auto;
+            @include mqxs {
+                max-width: 114px;
+            }
+        }
+    }
+}
+
+.team-grid {
+    @extend .flex-grid;
+    .member {
+        @extend .card;
+        padding: 2*$baseline $baseline $baseline;
+        margin-top: 5*$baseline;
+        width: 32%;
+        @include mqmd {
+            width: 48%;
+        }
+        @include mqsm {
+            width: 80%;
+        }
+        @include mqxs {
+            width: 100%;
+            margin-top: 3*$baseline;
+        }
+        img {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            margin-left: -40px;
+        }
+        &:hover {
+            .more_info {
+                opacity: 1;
+                padding-top: $baseline;
+            }
+        }
+        .more_info {
+            @include transition(all, .2s, ease-in);
+            @include titi;
+            color: $icons;
+            height: 2*$baseline;
+            display: inline-block;
+            position: absolute;
+            width: 100%;
+            left: 0;
+            bottom: -2*$baseline;
+            opacity: 0;
+            padding-top: 12px;
+            @include mqxs {
+                display: none;
+            }
+        }
+        .glyphicon {
+            width: $baseline;
+            height: $baseline;
+            position: absolute;
+            top: auto;
+            bottom: -$baseline/2;
+            left: 50%;
+            margin-left: -$baseline/2;
+            line-height: $baseline;
+            border-radius: 50%;
+            color: $icons;
+            background-color: #f5f5f5;
+            @include boxshadow(0, 10px, 20px, 0, #000, .1);
+        }
+        &.collapsed {
+            .glyphicon-chevron-down:before {
+                content: "\e114";
+                color: $icons;
+            }
+        }
+        &:not(.collapsed) {
+            .more_info {
+                display: none;
+            }
+            .glyphicon-chevron-down:before {
+                content: "\e113";
+                color: $primary;
+            }
+        }
+    }
+}

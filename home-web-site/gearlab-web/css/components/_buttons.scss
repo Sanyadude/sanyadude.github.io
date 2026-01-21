@@ -1,0 +1,48 @@
+.btn {
+    @include titi;
+    @include transition(all, .3s, ease-in);
+    border: none;
+    border-radius: $radius;
+    font-size: 24px;
+    font-weight: 600;
+    text-transform: uppercase;
+    line-height: 1.5*$baseline;
+    padding: 0 2*$baseline;
+    outline: none !important;
+    display: inline-block;
+    vertical-align: middle;
+    -webkit-transform: perspective(1px) translateZ(0);
+    transform: perspective(1px) translateZ(0);
+    box-shadow: 0 0 1px transparent;
+    @include boxshadow(0, 10px, 20px, 0, #000, .05);
+    position: relative;
+    @include mqxs {
+        width: 100%;
+        padding: 0 $baseline/2;
+    }
+    &.btn-primary {
+        background-color: $primary;
+        &:hover {
+            background-color: $textColor;
+        }
+    }
+}
+
+
+.btn-lg {
+    line-height: 68px;
+    margin-top: $baseline;
+    padding: 0 2.5*$baseline;
+    @media (orientation: landscape) and (max-width: $sm) {
+        margin-top: 0;
+    }
+    @include mqxs {
+        padding: 0 $baseline/2;
+        line-height: 2*$baseline;
+        border-radius: 0;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+    }
+}

@@ -1,0 +1,124 @@
+section {
+    padding: 4*$baseline 0;
+    z-index: 1;
+    @include mqxs {
+        padding: 2*$baseline 0;
+    }
+    &:after {
+        z-index: -1;
+        @include pseudo;
+        height: 11*$baseline;
+        width: 100%;
+        bottom: 0;
+        background: #f5f5f5;
+        background: -moz-linear-gradient(top, $white000 0%, $white100 100%);
+        background: -webkit-linear-gradient(top, $white000 0%, $white100 100%);
+        background: linear-gradient(to bottom, $white000 0%, $white100 100%);
+    }
+    &.landing {
+        z-index: 0;
+        height: 100vh;
+        padding: 0;
+        background-color: #f1f1f1;
+        &:after {
+            background: none;
+        }
+        .stretch {
+            z-index: 2;
+            height: 100%;
+            @media (orientation: landscape) and (max-width: $xs) {
+                min-height: 12*$baseline;
+            }
+            @media (orientation: landscape) and (max-width: $xs) {
+                min-height: initial;
+            }
+            .slogan {
+                margin-left: 8%;
+                @include mqlg {
+                    margin-left: 0;
+                }
+                @media (orientation: landscape) and (max-width: $md) {
+                    margin-left: 5%;
+                }
+                @include mqmd {
+                    width: 100%;
+                    text-align: center;
+                    h1 {
+                        text-align: center;
+                        white-space: normal;
+                    }
+                }
+            }
+            .device {
+                margin: $baseline;
+                padding-top: 36px;
+                @include mqmd {
+                    display: none;
+                }
+                @include mqxs {
+                    display: block;
+                    margin: 0 $baseline/2;
+                    padding: 0;
+                }
+                @media (orientation: landscape) and (max-device-width: 767px) {
+                    display: none;
+                }
+            }
+            .slogan:before {
+                @include pseudo;
+                height: 6*$baseline;
+                width: 4px;
+                background-color: $element;
+                left: 16px;
+                @include mqlg {
+                    display: none;
+                }
+            }
+        }
+        .content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            @include mqxs {
+                justify-content: center;
+                flex-direction: column-reverse;
+            }
+        }
+    }
+    &.about {
+        position: relative;
+        p {
+            text-align: center;
+            font-size: 24px;
+            line-height: 48px;
+            @include mqxs {
+                font-size: 18px;
+                line-height: 36px;
+            }
+            a {
+                font-weight: 400;
+            }
+        }
+        h3 {
+            margin: 2*$baseline 0 0 0;
+            padding: 0 $baseline/2;
+            @include mqxs {
+                margin-top: $baseline;
+            }
+        }
+    }
+    &.portfolio {
+        position: relative;
+    }
+    &.team {
+        position: relative;
+        @include mqxs {
+            padding-bottom: 3*$baseline;
+        }
+    }
+    &.contact {
+        position: relative;
+        @include boxshadow(0, 10px, 20px, 0, #000, .25);
+        z-index: 5;
+    }
+}
