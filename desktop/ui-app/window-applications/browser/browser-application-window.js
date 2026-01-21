@@ -73,6 +73,12 @@ const onLoad = (context, uiElement) => {
     context.window.headerTextLabel.text = text;
     context.task.label.text = text;
     context.search.value = url;
+    if (context.webView._url != url) {
+        context.history = context.history.slice(0, context.historyCurrentIndex + 1);
+        context.history.push(url);
+        context.historyCurrentIndex = context.history.length - 1;
+        updatePrevNextButtonsState(context);
+    }
     context.webView._url = url;
 }
 
