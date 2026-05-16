@@ -44,7 +44,16 @@ app.addShortcut({
     name: 'My Pixel Simulation Game',
     iconImage: browser.icon,
     action: () => {
-        const PIXEL_SIMULATION_URL = 'https://sanyadude.github.io/pixel-simulation/index.html';
+        const PIXEL_SIMULATION_URL = 'https://sanyadude.github.io/pixel-simulation/';
+        window.open(PIXEL_SIMULATION_URL);
+    }
+});
+
+app.addShortcut({
+    name: 'Terminal',
+    iconImage: browser.icon,
+    action: () => {
+        const PIXEL_SIMULATION_URL = 'https://sanyadude.github.io/terminal/';
         window.open(PIXEL_SIMULATION_URL);
     }
 });
