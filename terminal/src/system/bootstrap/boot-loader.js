@@ -13,7 +13,7 @@ import {
     README_FILE, LICENSES_FILE 
 } from '../../config/file-system-config.js'
 import { CLI_APPS } from '../../config/cli-apps.js'
-import { Terminal } from '../../application/terminal/terminal-v3.js'
+import { TerminalResolver } from '../../application/terminal/terminal-resolver.js'
 
 /**
  * BootLoader - Represents the boot loader for the OS
@@ -46,7 +46,7 @@ export class BootLoader {
     /**
      * Loads the OS
      */
-    boot(rootContainerElement) {
+    async boot(rootContainerElement) {
         this.rootContainerElement = rootContainerElement;
         this.serviceProvider.add('systemUser', this.settingsProvider.getUser());
         this.serviceProvider.add('systemHost', this.settingsProvider.getHost());
@@ -73,6 +73,8 @@ export class BootLoader {
         this.shell = new Shell(this.serviceProvider, this.settingsProvider);
         this.serviceProvider.add('shell', this.shell);
 
+        const terminalResolver = new TerminalResolver();
+        const Terminal = await terminalResolver.resolve();
         this.terminal = new Terminal(this.rootContainerElement, this.serviceProvider);
         this.serviceProvider.add('terminal', this.terminal.api());
 
