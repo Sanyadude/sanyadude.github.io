@@ -65,21 +65,7 @@ export class Terminal {
      * @returns {Application[]} The CLI programs
      */
     getCliApplications() {
-        return [new TerminalClear({
-            clear: () => this.reset()
-        }), new TerminalHistory({
-            getHistory: () => this.getHistoryByType('input').map(entry => entry.content)
-        }), new TerminalSettings({
-            toggleScrollbarUseTheme: () => {},
-            toggleDebug: () => {},
-            setLinuxPrompt: () => {},
-            setWindowsPrompt: () => {},
-            getThemes: () => Object.values(this.getThemes()),
-            getTheme: () => this.theme,
-            setTheme: (themeName) => this.setTheme(themeName),
-            setNextTheme: () => {},
-            setPreviousTheme: () => {},
-        })];
+        return [new TerminalClear(), new TerminalHistory(), new TerminalSettings()];
     }
 
     /**
@@ -94,6 +80,9 @@ export class Terminal {
         this.setTheme(DEFAULT_THEME_NAME);
 
         this.reset();
+        // Add initial lines
+        this.output(`Command Line Interface v${this.info.version}`);
+        this.output('');
         this._focusInput();
     }
 
@@ -166,45 +155,6 @@ export class Terminal {
             this._handleResize();
         });
         resizeObserver.observe(this._containerElement);
-    }
-
-    /**
-     * Registers the commands for the terminal
-     */
-    _registerCommands() {
-        this.shell.registerProgram('theme')
-            .setDescription('Sets the theme of the terminal')
-            .addOption('-l, --list', 'Lists all available themes')
-            .addOption('-d, --default', 'Sets the default theme')
-            .addOption('-n, --next', 'Sets the next theme')
-            .addArgument('<theme>', 'The theme name')
-            .setAction((commandLine) => {
-                const options = commandLine.getOptions();
-                const themes = this.getThemes();
-                if (options.list) {
-                    return Object.keys(themes).join(',');
-                }
-                if (options.default) {
-                    this.setTheme(DEFAULT_THEME_NAME);
-                    return 'Theme set to default';
-                }
-                if (options.next) {
-                    const themeNames = Object.keys(themes);
-                    const currentIndex = themeNames.indexOf(this.theme.name);
-                    const nextIndex = (currentIndex + 1) % themeNames.length;
-                    const nextThemeName = themeNames[nextIndex];
-                    this.setTheme(nextThemeName);
-                    return `Theme set to ${nextThemeName}`;
-                }
-                const args = commandLine.getArguments();
-                if (args.length === 0) {
-                    return `Current theme: ${this.theme.name}`;
-                }
-                const themeName = args.join(' ');
-                if (!themes[themeName]) return `Invalid theme: ${themeName}`;
-                this.setTheme(themeName);
-                return `Theme set to ${themeName}`;
-            });
     }
 
     /**
@@ -964,9 +914,14 @@ export class Terminal {
         this._historyContainerElement.innerHTML = '';
         this._setText();
         this._moveCaret();
-        // Add initial lines
-        this.output(`Command Line Interface v${this.info.version}`);
-        this.output('');
+    }
+
+    /**
+     * Returns the terminal API
+     * @returns {Terminal} - The terminal instance
+     */
+    api() {
+        return this;
     }
 
     /**
@@ -974,7 +929,7 @@ export class Terminal {
      * @param {string} theme - The theme to set
      */
     setTheme(themeName) {
-        const theme = this.getThemes()[themeName];
+        const theme = THEMES[themeName];
         if (!theme) return;
         this.theme = theme;
         this._containerElement.style.backgroundColor = theme.background;
@@ -987,19 +942,58 @@ export class Terminal {
     }
 
     /**
+     * Returns the current theme of the terminal
+     * @returns {object} - The current theme
+     */
+    getTheme() {
+        return this.theme;
+    }
+
+    /**
      * Returns all available themes
      * @returns {Object} - An object with the theme names as keys and the theme objects as values
      */
     getThemes() {
-        return THEMES;
+        return Object.values(THEMES);
+    }
+
+    setNextTheme() {
+        //Do nothing
+    }
+
+    setPreviousTheme() {
+        //Do nothing
     }
 
     /**
-     * Returns the terminal API
-     * @returns {Terminal} - The terminal instance
+     * Clears the terminal
      */
-    api() {
-        return this;
+    clear() {
+        this.reset();
+    }
+
+    /**
+     * Returns the history of the terminal lines
+     * @returns {string[]} - An array of the history entries
+     */
+    getInputHistory() {
+        return this.getHistoryByType('input').map(entry => entry.content);
+    }
+
+    toggleScrollbarUseTheme() {
+        //Do nothing
+    }
+
+    toggleDebug() {
+        //Do nothing
+    }
+
+    setLinuxPrompt() {
+        //Do nothing
+    }
+
+    setWindowsPrompt() {
+        //Do nothing
     }
 }
 
