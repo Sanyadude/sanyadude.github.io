@@ -92,7 +92,6 @@ export class TerminalEventHandler {
             reader.onload = (event) => {
                 const content = new Uint8Array(event.target.result);
                 this._context.fileSystemExplorer.createFile(file.name, content, true);
-                this._context.inputCompletion.setOptions(this._context.shell.getCwdCompletionList());
             };
             reader.readAsArrayBuffer(file);
         }
