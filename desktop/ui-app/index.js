@@ -41,19 +41,20 @@ app.addApplicationShortcut(libraryDisplay.id, libraryDisplay.appName, (process) 
 });
 
 app.addShortcut({
-    name: 'My Pixel Simulation Game',
+    name: 'Pixel Simulation',
     iconImage: browser.icon,
     action: () => {
-        const PIXEL_SIMULATION_URL = 'https://sanyadude.github.io/pixel-simulation/';
+        const PIXEL_SIMULATION_URL = '/pixel-simulation/';
         window.open(PIXEL_SIMULATION_URL);
     }
 });
 
+const terminalIcon = new UIImage('terminal.ico', '/desktop/ui-app/assets/icons/terminal.ico');
 app.addShortcut({
     name: 'Terminal',
-    iconImage: browser.icon,
+    iconImage: terminalIcon,
     action: () => {
-        const PIXEL_SIMULATION_URL = 'https://sanyadude.github.io/terminal/';
+        const PIXEL_SIMULATION_URL = '/terminal/';
         window.open(PIXEL_SIMULATION_URL);
     }
 });
