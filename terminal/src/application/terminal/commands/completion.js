@@ -14,6 +14,7 @@ export class CompletionCommand {
      */
     execute(context) {
         context.textSelection.reset();
+        context.inputCompletion.setOptions(context.shell.getCwdCompletionList());
         const text = context.textBuffer.getInputText();
         const index = context.textBuffer.getCursorIndex();
         const reverse = false;

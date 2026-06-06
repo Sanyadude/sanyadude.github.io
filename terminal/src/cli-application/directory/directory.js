@@ -22,46 +22,114 @@ export class Directory extends Application {
     main(commandLine, context) {
         const options = commandLine.getOptions();
         const cwd = context.fileSystemExplorer.getCurrentPath();
-        const directories = context.fileSystemManager.getDirectoriesAt(cwd);
-        const files = context.fileSystemManager.getFilesAt(cwd);
-        if (files.length === 0 && directories.length === 0) return 'Directory is empty';
-        const lines = this._getDirectoryInfo(directories, files, options);
+        const entries = context.fileSystemManager.getEntriesAt(cwd);
+        if (entries.length === 0) return '';
+        const lines = this._getDirectoryInfo(entries, options);
         return lines.join('\n');
     }
 
     /**
      * Gets the directory information
-     * @param {Array} directories - The directories
-     * @param {Array} files - The files
+     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
      * @param {object} options - The options
      * @returns {Array} - The directory information
      */
-    _getDirectoryInfo(directories, files, options) {
-        const showList = options['list'] || false;
-        const showHidden = options['all'] || false;
-        const spaceString = ' ';
-        const padValue = (value, length) => value.toString().padStart(length, spaceString);
-        const filteredDirectories = showHidden ? directories : directories.filter(dir => !dir.getMetadataField('hidden'));
-        const filteredFiles = showHidden ? files : files.filter(file => !file.getMetadataField('hidden'));
+    _getDirectoryInfo(entries, options) {
+        let filteredEntries = entries;
+        filteredEntries = this._applyHiddenFilter(filteredEntries, options);
+        filteredEntries = this._applyTypeFilter(filteredEntries, options);
+        filteredEntries = this._applySort(filteredEntries, options);
+        const lines = this._getLines(filteredEntries, options);
+        return lines;
+    }
+
+    /**
+     * Applies the hidden filter to the entries
+     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
+     * @param {object} options - The options
+     * @returns {Array<DirectoryEntry|FileEntry>} - The filtered entries
+     */
+    _applyHiddenFilter(entries, options) {
+        const showHidden = options['hidden'] || false;
+        if (showHidden) return entries;
+        return entries.filter(entry => !entry.getMetadataField('hidden'));
+    }
+
+    /**
+     * Applies the type filter to the entries
+     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
+     * @param {object} options - The options
+     * @returns {Array<DirectoryEntry|FileEntry>} - The filtered entries
+     */
+    _applyTypeFilter(entries, options) {
+        const showDirectories = options['directories'] || false;
+        const showFiles = options['files'] || false;
+        if (showDirectories && showFiles) return entries;
+        if (showDirectories) return entries.filter(entry => entry.isDirectory());
+        if (showFiles) return entries.filter(entry => !entry.isDirectory());
+        return entries;
+    }
+
+    /**
+     * Applies the sort option to the entries
+     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
+     * @param {object} options - The options
+     * @returns {Array<DirectoryEntry|FileEntry>} - The sorted entries
+     */
+    _applySort(entries, options) {
+        const sortField = options['sort'];
+        if (typeof sortField !== 'string' || sortField.length === 0) return entries;
+        const field = sortField[0];
+        const order = sortField[1] === 'd' ? 'desc' : 'asc';
+        return entries.sort((a, b) => {
+            const itemA = order === 'asc' ? a : b;
+            const itemB = order === 'asc' ? b : a;
+            if (field === 'n') return itemA.getName().localeCompare(itemB.getName());
+            if (field === 's') return itemA.getSize() - itemB.getSize();
+            if (field === 'd') return itemA.getCreated() - itemB.getCreated();
+            return 0;
+        });
+    }
+
+    /**
+     * Gets the lines of the directory information
+     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
+     * @param {object} options - The options
+     * @returns {Array} - The lines of the directory information
+     */
+    _getLines(entries, options) {
+        const showBare = options['bare'] || false;
         const lines = [];
-        if (showList) {
-            for (const dir of filteredDirectories) {
-                lines.push(`${dir.getName()}/`);
-            }
-            for (const file of filteredFiles) {
-                lines.push(`${file.getName()}`);
-            }
-        } else {
-            for (const dir of filteredDirectories) {
-                lines.push(`${this._formatDate(dir.getCreated())} [DIR]${spaceString.repeat(2)}[${padValue(dir.getSize(), 12)}] ${dir.getName()}/`);
-            }
-            for (const file of filteredFiles) {
-                lines.push(`${this._formatDate(file.getCreated())} [FILE]${spaceString}[${padValue(file.getSize(), 12)}] ${file.getName()}`);
-            }
-            lines.push(`${filteredFiles.length} File(s)`);
-            lines.push(`${filteredDirectories.length} Dir(s)`);
+        for (const entry of entries) {
+            lines.push(this._formatEntry(entry, options));
+        }
+        if (!showBare) {
+            lines.push(`${entries.filter(entry => entry.isDirectory()).length} Dir(s)`);
+            lines.push(`${entries.filter(entry => !entry.isDirectory()).length} File(s)`);
         }
         return lines;
+    }
+
+    /**
+     * Formats the entry
+     * @param {DirectoryEntry|FileEntry} entry - The entry
+     * @param {object} options - The options
+     * @returns {string} - The formatted entry
+     */
+    _formatEntry(entry, options) {
+        const spaceString = ' ';
+        const padValue = (value, length) => value.toString().padStart(length, spaceString);
+        const showBare = options['bare'] || false;
+        const thousandSeparator = options['thousand-separator'] ? ' ' : '';
+        const useLowerCase = options['lowercase'] || false;
+        if (showBare) return entry.getName();
+        const entryDate = this._formatDate(entry.getCreated());
+        const entryName = useLowerCase ? entry.getName().toLowerCase() : entry.getName();
+        const entrySize = padValue(String(entry.getSize()).replace(/\B(?=(\d{3})+(?!\d))/g, thousandSeparator), 16);
+        if (entry.isDirectory()) {
+            return `${entryDate} [DIR]${spaceString.repeat(2)} ${entrySize} ${entryName}`;
+        }
+        return `${entryDate} [FILE]${spaceString} ${entrySize} ${entryName}`;
     }
 
     /**

@@ -8,13 +8,33 @@ export const DIRECTORY_MANIFEST = {
         name: 'dir',
         options: [
             {
-                name: '-l, --list',
-                description: 'Show as short list',
+                name: '-h, --hidden',
+                description: 'Display hidden files and directories',
             },
             {
-                name: '-a, --all',
-                description: 'Show all entries (including hidden)',
+                name: '-d, --directories',
+                description: 'Display directories only',
             },
+            {
+                name: '-f, --files',
+                description: 'Display files only',
+            },
+            {
+                name: '-c, --thousand-separator',
+                description: 'Display the thousand separator in file sizes',
+            },
+            {
+                name: '-b, --bare',
+                description: 'Use bare format',
+            },
+            {
+                name: '-l, --lowercase',
+                description: 'Use lowercase names',
+            },
+            {
+                name: '-s, --sort <field>',
+                description: 'Sort the entries by name, size, or date',
+            }
         ]
     }]
 }
