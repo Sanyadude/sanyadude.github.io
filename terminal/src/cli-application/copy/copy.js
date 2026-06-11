@@ -21,12 +21,14 @@ export class Copy extends Application {
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();
+        const options = commandLine.getOptions();
         if (args.length < 2) return 'Source and destination paths should be specified';
+        const force = options['force'] || false;
         const sourcePath = args[0];
         const destinationPath = args[1];
         const fullSourcePath = context.fileSystemExplorer.getAbsolutePath(sourcePath);
         const fullDestinationPath = context.fileSystemExplorer.getAbsolutePath(destinationPath);
-        context.fileSystemManager.copyEntry(fullSourcePath, fullDestinationPath);
+        context.fileSystemManager.copy(fullSourcePath, fullDestinationPath, force);
         return `Copied: ${sourcePath} to ${destinationPath}`;
     }
 

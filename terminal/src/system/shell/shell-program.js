@@ -16,7 +16,6 @@ export class ShellProgram {
             throw new Error('Program name must be a non-empty string');
         }
         this._name = name;
-        this._handler = null;
         this._description = '';
         this._version = '';
 
@@ -128,19 +127,6 @@ export class ShellProgram {
     setHelpText(text) {
         this._helpText = text || '';
         this._useDefaultHelp = false;
-        return this;
-    }
-
-    /**
-     * Sets the action of the program
-     * @param {function} handler - The action of the program
-     * @returns {ShellProgram} - The program instance
-     */
-    setAction(handler) {
-        if (typeof handler !== 'function') {
-            throw new Error('Handler must be a function');
-        }
-        this._handler = handler;
         return this;
     }
 

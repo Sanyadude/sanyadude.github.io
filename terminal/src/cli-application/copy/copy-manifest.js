@@ -6,6 +6,12 @@ export const COPY_MANIFEST = {
     dependencies: ['fileSystemManager', 'fileSystemExplorer'],
     programs: [{
         name: 'copy',
+        options: [
+            {
+                name: '-f, --force',
+                description: 'Force the copy even if the destination file or directory already exists'
+            },
+        ],
         arguments: [
             {
                 name: '<source_path>',

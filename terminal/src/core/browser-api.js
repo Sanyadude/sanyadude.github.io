@@ -30,6 +30,7 @@ export class BrowserAPI {
      * Loads a file
      * @param {URL} url - The URL of the file
      * @returns {Promise<ArrayBuffer>} - The content of the file
+     * @throws {Error} If the file fails to load
      */
     async loadFile(url) {
         const response = await fetch(url);

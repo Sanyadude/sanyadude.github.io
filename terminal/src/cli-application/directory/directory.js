@@ -21,8 +21,10 @@ export class Directory extends Application {
      */
     main(commandLine, context) {
         const options = commandLine.getOptions();
+        const args = commandLine.getArguments();
+        const path = args.join(' ');
         const cwd = context.fileSystemExplorer.getCurrentPath();
-        const entries = context.fileSystemManager.getEntriesAt(cwd);
+        const entries = context.fileSystemManager.getEntriesAt(path ? path : cwd);
         if (entries.length === 0) return '';
         const lines = this._getDirectoryInfo(entries, options);
         return lines.join('\n');

@@ -1,4 +1,5 @@
 import Entry from './entry.js'
+import Path from './path.js'
 
 /**
  * FileEntry - Represents a file in the file system
@@ -33,7 +34,7 @@ export class FileEntry extends Entry {
      * @returns {string} The name part of the file
      */
     getNamePart() {
-        return FileEntry.getNamePart(this.name);
+        return Path.getNamePart(this.name);
     }
 
     /**
@@ -41,7 +42,7 @@ export class FileEntry extends Entry {
      * @returns {string} The extension part of the file
      */
     getExtensionPart() {
-        return FileEntry.getExtensionPart(this.name);
+        return Path.getExtensionPart(this.name);
     }
 
     /**

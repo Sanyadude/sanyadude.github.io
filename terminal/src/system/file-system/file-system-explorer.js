@@ -103,7 +103,6 @@ export class FileSystemExplorer {
      * Supports relative paths (../, ../../, ./dir, etc.) and absolute paths
      * @param {string} path - Path to navigate to (relative or absolute)
      * @returns {boolean} True if navigation was successful, false otherwise
-     * @throws {Error} If path format is invalid
      */
     changeDirectory(path) {
         if (!path || typeof path !== 'string') return false;
@@ -169,7 +168,7 @@ export class FileSystemExplorer {
     canGoBack() {
         return this.historyIndex > 0;
     }
-    
+
     /**
      * Checks if can navigate forward
      * @returns {boolean} True if forward navigation is possible
@@ -195,57 +194,57 @@ export class FileSystemExplorer {
     }
 
     /**
-     * Gets all entries (files and directories) in the current directory
-     * @returns {Array<DirectoryEntry|FileEntry>} Array of entries in current directory
-     */
-    getEntries() {
-        return this.fileSystemManager.getEntriesAt(this.currentPath);
-    }
-
-    /**
-     * Gets only files in the current directory
-     * @returns {FileEntry[]} Array of file entries
-     */
-    getFiles() {
-        return this.fileSystemManager.getFilesAt(this.currentPath);
-    }
-
-    /**
-     * Gets only directories in the current directory
-     * @returns {DirectoryEntry[]} Array of directory entries
-     */
-    getDirectories() {
-        return this.fileSystemManager.getDirectoriesAt(this.currentPath);
-    }
-
-    /**
-     * Gets information about the current directory
-     * @returns {Object} Directory information object
-     */
-    getCurrentDirectoryInfo() {
-        const directory = this.getCurrentDirectory();
-        if (!directory) return null;
-        const files = this.getFiles();
-        const directories = this.getDirectories();
-        return {
-            path: this.currentPath || '/',
-            name: directory.getName(),
-            entries: files.length + directories.length,
-            files: files.length,
-            directories: directories.length,
-            empty: directory.isEmpty(),
-            size: directory.getSize(),
-            depth: Path.getDepth(this.currentPath)
-        };
-    }
-
-    /**
      * Checks if a path exists relative to current directory
      * @param {string} path - Path to check (relative or absolute)
      * @returns {boolean} True if path exists
      */
     exists(path) {
         return this.fileSystemManager.exists(this.getAbsolutePath(path));
+    }
+
+    /**
+     * Checks if a path points to a directory relative to current directory
+     * @param {string} path - Path to check (relative or absolute)
+     * @returns {boolean} True if path points to a directory
+     */
+    directoryExists(path) {
+        return this.fileSystemManager.directoryExists(this.getAbsolutePath(path));
+    }
+
+    /**
+     * Checks if a path points to a file relative to current directory
+     * @param {string} path - Path to check (relative or absolute)
+     * @returns {boolean} True if path points to a file
+     */
+    fileExists(path) {
+        return this.fileSystemManager.fileExists(this.getAbsolutePath(path));
+    }
+
+    /**
+     * Gets all entries (files and directories) in the current directory
+     * @param {string} path - Path to the directory (default: '' for current directory)
+     * @returns {Array<DirectoryEntry|FileEntry>} Array of entries in current directory
+     */
+    getEntries(path = '') {
+        return this.fileSystemManager.getEntriesAt(this.getAbsolutePath(path));
+    }
+
+    /**
+     * Gets only files in the current directory
+     * @param {string} path - Path to the directory (default: '' for current directory)
+     * @returns {FileEntry[]} Array of file entries
+     */
+    getFiles(path = '') {
+        return this.fileSystemManager.getFilesAt(this.getAbsolutePath(path));
+    }
+
+    /**
+     * Gets only directories in the current directory
+     * @param {string} path - Path to the directory (default: '' for current directory)
+     * @returns {DirectoryEntry[]} Array of directory entries
+     */
+    getDirectories(path = '') {
+        return this.fileSystemManager.getDirectoriesAt(this.getAbsolutePath(path));
     }
 
     /**
@@ -276,24 +275,24 @@ export class FileSystemExplorer {
     }
 
     /**
-     * Creates a file at the specified path with the given content
-     * @param {string} path - Path to the file
-     * @param {string} content - Content of the file
-     * @param {boolean} overwrite - If true, overwrites existing file
-     * @returns {FileEntry} The created file entry
+     * Gets information about the current directory
+     * @returns {Object} Directory information object
      */
-    createFile(path, content = '', overwrite = false) {
-        return this.fileSystemManager.createFile(this.getAbsolutePath(path), content, overwrite);
-    }
-
-    /**
-     * Creates a directory at the specified path relative to the current directory
-     * @param {string} path - Path to the directory
-     * @param {boolean} overwrite - If true, overwrites existing directory
-     * @returns {DirectoryEntry} The created directory entry
-     */
-    createDirectory(path, overwrite = false) {
-        return this.fileSystemManager.createDirectory(this.getAbsolutePath(path), overwrite);
+    getCurrentDirectoryInfo() {
+        const directory = this.getCurrentDirectory();
+        if (!directory) return null;
+        const files = this.getFiles();
+        const directories = this.getDirectories();
+        return {
+            path: this.currentPath || '/',
+            name: directory.getName(),
+            entries: files.length + directories.length,
+            files: files.length,
+            directories: directories.length,
+            empty: directory.isEmpty(),
+            size: directory.getSize(),
+            depth: Path.getDepth(this.currentPath)
+        };
     }
 }
 

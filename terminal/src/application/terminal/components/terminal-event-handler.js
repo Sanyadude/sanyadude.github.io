@@ -91,7 +91,8 @@ export class TerminalEventHandler {
             const reader = new FileReader();
             reader.onload = (event) => {
                 const content = new Uint8Array(event.target.result);
-                this._context.fileSystemExplorer.createFile(file.name, content, true);
+                const path = this._context.fileSystemExplorer.getCurrentPath() + '/' + file.name;
+                this._context.fileSystemManager.createFile(path, content, true);
             };
             reader.readAsArrayBuffer(file);
         }

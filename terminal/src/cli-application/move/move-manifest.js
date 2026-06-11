@@ -6,6 +6,12 @@ export const MOVE_MANIFEST = {
     dependencies: ['fileSystemManager', 'fileSystemExplorer'],
     programs: [{
         name: 'move',
+        options: [
+            {
+                name: '-f, --force',
+                description: 'Force the move even if the destination file or directory already exists'
+            },
+        ],
         arguments: [
             {
                 name: '<source_path>',

@@ -93,7 +93,7 @@ export class FileSystemManager {
      * @param {string} path - Path where the directory should be created
      * @param {boolean} overwrite - If true, removes existing entry at path before creating (default: false)
      * @returns {DirectoryEntry} The created directory entry
-     * @throws {Error} If path is invalid, file exists at path (and overwrite=false), or directory name is empty
+     * @throws {Error} If creating the directory fails
      */
     createDirectory(path, overwrite = false) {
         this._validatePath(path);
@@ -135,7 +135,7 @@ export class FileSystemManager {
      * Creates multiple directories at once
      * @param {string[]} paths - Array of paths where directories should be created
      * @returns {DirectoryEntry[]} Array of created directory entries
-     * @throws {Error} If paths is not an array
+     * @throws {Error} If creating the directories fails
      */
     createDirectories(paths) {
         if (!Array.isArray(paths)) {
@@ -151,7 +151,7 @@ export class FileSystemManager {
      * @param {string} content - Initial file content (default: '')
      * @param {boolean} overwrite - If true, overwrites existing file or removes directory at path (default: false)
      * @returns {FileEntry} The created file entry
-     * @throws {Error} If path is invalid, directory exists at path (and overwrite=false), or file name is empty
+     * @throws {Error} If creating the file fails
      */
     createFile(path, content = '', overwrite = false) {
         this._validatePath(path);
@@ -197,7 +197,7 @@ export class FileSystemManager {
      * @param {string[]} paths - Array of paths where files should be created
      * @param {string} content - Initial content for all files (default: '')
      * @returns {FileEntry[]} Array of created file entries
-     * @throws {Error} If paths is not an array
+     * @throws {Error} If creating the files fails
      */
     createFiles(paths, content = '') {
         if (!Array.isArray(paths)) {
@@ -294,7 +294,7 @@ export class FileSystemManager {
      * @param {string} path - Path to the directory to remove
      * @param {boolean} recursive - If true, removes directory and all its contents (default: false)
      * @returns {DirectoryEntry|null} The removed directory entry, or null if not found
-     * @throws {Error} If directory is not empty and recursive=false
+     * @throws {Error} If directory is not empty
      */
     removeDirectory(path, recursive = false) {
         this._validatePath(path);
@@ -308,7 +308,7 @@ export class FileSystemManager {
         const directoryToRemove = currentDirectory.getEntry(parts[parts.length - 1]);
         if (!directoryToRemove || !(directoryToRemove instanceof DirectoryEntry)) return null;
         if (!recursive && !directoryToRemove.isEmpty(path)) {
-            throw new Error(`Directory is not empty: ${path}. Use recursive=true to remove non-empty directories`);
+            throw new Error(`Directory is not empty: ${path}`);
         }
         if (recursive) {
             const removeChildren = (dir) => {
@@ -376,7 +376,7 @@ export class FileSystemManager {
      * Removes any entry (file or directory) at the specified path
      * @param {string} path - Path to the entry to remove
      * @returns {DirectoryEntry|FileEntry|null} The removed entry, or null if not found
-     * @throws {Error} If entry is a non-empty directory
+     * @throws {Error} If directory is not empty
      */
     removeEntry(path) {
         this._validatePath(path);
@@ -390,7 +390,7 @@ export class FileSystemManager {
         const entryToRemove = currentDirectory.getEntry(parts[parts.length - 1]);
         if (!entryToRemove) return null;
         if (entryToRemove instanceof DirectoryEntry && !entryToRemove.isEmpty(path)) {
-            throw new Error(`Directory is not empty: ${path}. Use removeDirectory with recursive=true`);
+            throw new Error(`Directory is not empty: ${path}`);
         }
         currentDirectory.removeEntry(entryToRemove.getName());
         return entryToRemove;
@@ -400,6 +400,7 @@ export class FileSystemManager {
      * Removes multiple entries (files or directories) by their paths
      * @param {...string} paths - Variable number of paths to remove entries from
      * @returns {Array<DirectoryEntry|FileEntry>} Array of removed entries (null entries are filtered out)
+     * @throws {Error} If removing the entries fails
      */
     removeEntries(...paths) {
         return paths.map(path => this.removeEntry(path)).filter(entry => entry != null);
@@ -462,17 +463,6 @@ export class FileSystemManager {
         };
         calculateDepth(directory);
         return maxDepth;
-    }
-
-    /**
-     * Gets all entry names in a directory as strings
-     * @param {string} path - Path to the directory (default: '' for root)
-     * @returns {string[]} Array of entry names
-     */
-    getEntryNames(path = '') {
-        const directory = path === '' ? this.rootDirectory : this.getDirectory(path);
-        if (!directory) return [];
-        return directory.getEntries().map(entry => entry.getName());
     }
 
     /**
@@ -589,216 +579,131 @@ export class FileSystemManager {
     }
 
     /**
-     * Moves a directory from source path to destination path
-     * @param {string} sourcePath - Current path of the directory
-     * @param {string} destinationPath - New path for the directory
-     * @param {boolean} overwrite - If true, replaces existing entry at destination (default: false)
-     * @returns {DirectoryEntry} The moved directory entry
-     * @throws {Error} If source doesn't exist or trying to move into itself
-     */
-    moveDirectory(sourcePath, destinationPath, overwrite = false) {
-        this._validatePath(sourcePath);
-        this._validatePath(destinationPath);
-        if (Path.trim(sourcePath) === Path.trim(destinationPath)) {
-            throw new Error('Cannot move directory into itself');
-        }
-        const sourceDirectory = this.getDirectory(sourcePath);
-        if (!sourceDirectory) {
-            throw new Error(`Source directory does not exist: ${sourcePath}`);
-        }
-        const sourceParentDirectory = this._getParentDirectory(sourcePath);
-        if (!sourceParentDirectory) {
-            throw new Error('Parent directory for source does not exist');
-        }
-        const sourceDirectoryName = Path.getName(sourcePath);
-        const destinationDirectoryPath = Path.create(destinationPath, sourceDirectoryName);
-        const existingDestinationDirectory = this.getDirectory(destinationDirectoryPath);
-        if (existingDestinationDirectory && !overwrite) {
-            throw new Error(`Directory already exists in destination: ${destinationPath}. Use overwrite=true to replace`);
-        }
-        if (existingDestinationDirectory && overwrite) {
-            this.removeDirectory(destinationDirectoryPath, true);
-        }
-        const destinationDirectory = destinationPath === ''
-            ? this.rootDirectory
-            : this.createDirectory(destinationPath);
-        sourceParentDirectory.removeEntry(sourceDirectory.getName());
-        destinationDirectory.addEntry(sourceDirectory);
-        return sourceDirectory;
-    }
-
-    /**
-     * Moves a file from source path to destination path
-     * Creates a new file entry if the name changes, otherwise moves the existing entry
-     * @param {string} sourcePath - Current path of the file
-     * @param {string} destinationPath - New path for the file
-     * @param {boolean} overwrite - If true, replaces existing entry at destination (default: false)
-     * @returns {FileEntry} The moved file entry
-     * @throws {Error} If source doesn't exist
-     */
-    moveFile(sourcePath, destinationPath, overwrite = false) {
-        this._validatePath(sourcePath);
-        this._validatePath(destinationPath);
-        const sourceFile = this.getFile(sourcePath);
-        if (!sourceFile) {
-            throw new Error(`Source file does not exist: ${sourcePath}`);
-        }
-        const sourceParentDirectory = this._getParentDirectory(sourcePath);
-        if (!sourceParentDirectory) {
-            throw new Error('Parent directory for source does not exist');
-        }
-        const sourceFileName = Path.getName(sourcePath);
-        const destinationFilePath = Path.create(destinationPath, sourceFileName);
-        const destinationFile = this.getFile(destinationFilePath);
-        if (destinationFile && !overwrite) {
-            throw new Error(`File already exists in destination: ${destinationPath}. Use overwrite=true to replace`);
-        }
-        if (destinationFile && overwrite) {
-            this.removeFile(destinationFilePath);
-        }
-        const destinationDirectory = destinationPath === ''
-            ? this.rootDirectory
-            : this.createDirectory(destinationPath);
-        sourceParentDirectory.removeEntry(sourceFile.getName());
-        destinationDirectory.addEntry(sourceFile);
-        return sourceFile;
-    }
-
-    /**
      * Moves any entry (file or directory) from source path to destination path
      * Automatically determines entry type and calls appropriate move method
      * @param {string} sourcePath - Current path of the entry
      * @param {string} destinationPath - New path for the entry
      * @param {boolean} overwrite - If true, replaces existing entry at destination (default: false)
-     * @returns {DirectoryEntry|FileEntry|null} The moved entry, or null if entry type is unknown
-     * @throws {Error} If source doesn't exist
+     * @returns {DirectoryEntry|FileEntry} The moved entry
+     * @throws {Error} If moving the entry fails
      */
-    moveEntry(sourcePath, destinationPath, overwrite = false) {
+    move(sourcePath, destinationPath, overwrite = false) {
+        this._validatePath(sourcePath);
+        this._validatePath(destinationPath);
+        if (sourcePath === '') {
+            throw new Error('Source path cannot be empty');
+        }
         const entry = this.getEntry(sourcePath);
         if (!entry) {
             throw new Error(`Source entry does not exist: ${sourcePath}`);
         }
-        if (entry instanceof DirectoryEntry) {
-            return this.moveDirectory(sourcePath, destinationPath, overwrite);
+        if (this.rootDirectory === entry) {
+            throw new Error('Cannot move root directory');
         }
-        if (entry instanceof FileEntry) {
-            return this.moveFile(sourcePath, destinationPath, overwrite);
+        const sourceParentDirectory = this._getParentDirectory(sourcePath);
+        if (!sourceParentDirectory) {
+            throw new Error('Parent directory for source does not exist');
         }
-        return null;
-    }
-
-    /**
-     * Recursively copies a directory and all its contents from source to destination
-     * @param {string} sourcePath - Path of the source directory
-     * @param {string} destinationPath - Path of the destination directory where the source directory should be copied into
-     * @param {boolean} overwrite - If true, replaces existing entry at destination (default: false)
-     * @returns {DirectoryEntry} The copied directory entry
-     * @throws {Error} If source doesn't exist, destination exists (and overwrite=false), or trying to copy into itself
-     */
-    copyDirectory(sourcePath, destinationPath, overwrite = false) {
-        this._validatePath(sourcePath);
-        this._validatePath(destinationPath);
-        const sourceDirectory = this.getDirectory(sourcePath);
-        if (!sourceDirectory) {
-            throw new Error(`Source directory does not exist: ${sourcePath}`);
-        }
-        const sourceDirectoryName = Path.getName(sourcePath);
-        const destinationDirectoryPath = Path.create(destinationPath, sourceDirectoryName);
-        if (Path.trim(sourcePath) === Path.trim(destinationDirectoryPath)) {
-            throw new Error('Cannot copy directory into itself');
-        }
-        const destinationDirectory = this.getDirectory(destinationDirectoryPath);
-        if (destinationDirectory && !overwrite) {
-            throw new Error(`Destination already exists: ${destinationDirectoryPath}. Use overwrite=true to replace.`);
-        }
-        if (destinationDirectory && overwrite) {
-            const existing = this.getEntry(destinationDirectoryPath);
-            if (existing instanceof DirectoryEntry) {
-                this.removeDirectory(destinationDirectoryPath, true);
-            } else {
-                this.removeFile(destinationDirectoryPath);
+        if (entry.isDirectory()) {
+            const normalizedSource = Path.trim(sourcePath);
+            const normalizedDest = Path.trim(destinationPath);
+            if (normalizedDest === normalizedSource) {
+                throw new Error('Cannot move directory into itself');
+            }
+            if (normalizedDest.startsWith(normalizedSource + '/')) {
+                throw new Error('Cannot move directory into its own subdirectory');
             }
         }
-        const newDirectory = this.createDirectory(destinationDirectoryPath, overwrite);
-        const copyEntries = (sourceDir, destDir) => {
-            for (const entry of sourceDir.getEntries()) {
-                const entryName = entry.getName();
-                const existingEntry = destDir.getEntry(entryName);
-                if (existingEntry) {
-                    if (existingEntry instanceof DirectoryEntry && entry instanceof DirectoryEntry) {
-                        copyEntries(entry, existingEntry);
-                        continue;
-                    } else if (existingEntry instanceof FileEntry && entry instanceof FileEntry) {
-                        destDir.removeEntry(entryName);
-                    } else {
-                        destDir.removeEntry(entryName);
-                    }
-                }
-                if (entry instanceof DirectoryEntry) {
-                    const newSubDir = new DirectoryEntry(entry.getName());
-                    destDir.addEntry(newSubDir);
-                    copyEntries(entry, newSubDir);
-                } else if (entry instanceof FileEntry) {
-                    const newFile = new FileEntry(entry.getName(), entry.read());
-                    destDir.addEntry(newFile);
-                }
-            }
-        };
-        copyEntries(sourceDirectory, newDirectory);
-        return newDirectory;
-    }
-
-    /**
-     * Copies a file from source path to destination path
-     * @param {string} sourcePath - Path of the source file
-     * @param {string} destinationPath - Path where the file should be copied
-     * @param {boolean} overwrite - If true, replaces existing entry at destination (default: false)
-     * @returns {FileEntry} The copied file entry
-     * @throws {Error} If source doesn't exist or destination exists (and overwrite=false)
-     */
-    copyFile(sourcePath, destinationPath, overwrite = false) {
-        this._validatePath(sourcePath);
-        this._validatePath(destinationPath);
-        const sourceFile = this.getFile(sourcePath);
-        if (!sourceFile) {
-            throw new Error(`Source file does not exist: ${sourcePath}`);
+        const sourceName = Path.getName(sourcePath);
+        const destinationEntry = this.getEntry(destinationPath);
+        const finalDestinationPath = destinationEntry && destinationEntry.isDirectory()
+            ? Path.create(destinationPath, sourceName)
+            : destinationPath;
+        const destinationParentDirectory = this._getParentDirectory(finalDestinationPath);
+        if (!destinationParentDirectory) {
+            throw new Error('Parent directory for destination does not exist');
         }
-        const sourceFileName = Path.getName(sourcePath);
-        const destinationFilePath = Path.create(destinationPath, sourceFileName);
-        const destinationFile = this.getFile(destinationFilePath);
-        if (destinationFile && !overwrite) {
-            throw new Error(`File already exists in destination: ${destinationPath}. Use overwrite=true to replace`);
+        const finalDestinationEntry = this.getEntry(finalDestinationPath);
+        if (finalDestinationEntry && !overwrite) {
+            throw new Error(`Destination already exists: ${finalDestinationPath}`);
         }
-        if (destinationFile && overwrite) {
-            this.removeFile(destinationFilePath);
+        if (finalDestinationEntry && overwrite) {
+            this.removeEntry(finalDestinationPath);
         }
-        const destinationDirectory = destinationPath === ''
-            ? this.rootDirectory
-            : this.createDirectory(destinationPath);
-        const copiedFile = new FileEntry(sourceFile.getName(), sourceFile.read());
-        destinationDirectory.addEntry(copiedFile);
-        return copiedFile;
+        const entryName = entry.getName();
+        sourceParentDirectory.removeEntry(entryName);
+        const newName = Path.getName(finalDestinationPath);
+        if (newName !== entryName) {
+            entry.rename(newName);
+        }
+        destinationParentDirectory.addEntry(entry);
+        return entry;
     }
 
     /**
      * Copies an entry (file or directory) from source path to destination path
      * @param {string} sourcePath - Path of the source entry
      * @param {string} destinationPath - Path where the entry should be copied
-     * @returns {DirectoryEntry|FileEntry|null} The copied entry, or null if entry type is unknown
-     * @throws {Error} If source doesn't exist
+     * @returns {DirectoryEntry|FileEntry} The copied entry
+     * @throws {Error} If copying the entry fails
      */
-    copyEntry(sourcePath, destinationPath) {
+    copy(sourcePath, destinationPath, overwrite = false) {
+        this._validatePath(sourcePath);
+        this._validatePath(destinationPath);
+        if (sourcePath === '') {
+            throw new Error('Source path cannot be empty');
+        }
         const entry = this.getEntry(sourcePath);
         if (!entry) {
             throw new Error(`Source entry does not exist: ${sourcePath}`);
         }
-        if (entry instanceof DirectoryEntry) {
-            return this.copyDirectory(sourcePath, destinationPath);
+        if (this.rootDirectory === entry) {
+            throw new Error('Cannot copy root directory');
         }
-        if (entry instanceof FileEntry) {
-            return this.copyFile(sourcePath, destinationPath);
+        const sourceParentDirectory = this._getParentDirectory(sourcePath);
+        if (!sourceParentDirectory) {
+            throw new Error('Parent directory for source does not exist');
         }
-        return null;
+        if (entry.isDirectory()) {
+            const normalizedSource = Path.trim(sourcePath);
+            const normalizedDest = Path.trim(destinationPath);
+            if (normalizedDest === normalizedSource) {
+                throw new Error('Cannot copy directory into itself');
+            }
+            if (normalizedDest.startsWith(normalizedSource + '/')) {
+                throw new Error('Cannot copy directory into its own subdirectory');
+            }
+        }
+        const sourceName = Path.getName(sourcePath);
+        const destinationEntry = this.getEntry(destinationPath);
+        const finalDestinationPath = destinationEntry && destinationEntry.isDirectory()
+            ? Path.create(destinationPath, sourceName)
+            : destinationPath;
+        const destinationParentDirectory = this._getParentDirectory(finalDestinationPath);
+        if (!destinationParentDirectory) {
+            throw new Error('Parent directory for destination does not exist');
+        }
+        const finalDestinationEntry = this.getEntry(finalDestinationPath);
+        if (finalDestinationEntry && !overwrite) {
+            throw new Error(`Destination already exists: ${finalDestinationPath}`);
+        }
+        if (finalDestinationEntry && overwrite) {
+            this.removeEntry(finalDestinationPath);
+        }
+        const cloneEntry = (entryToCopy, name) => {
+            if (entryToCopy instanceof DirectoryEntry) {
+                const directory = new DirectoryEntry(name);
+                for (const childEntry of entryToCopy.getEntries()) {
+                    directory.addEntry(cloneEntry(childEntry, childEntry.getName()));
+                }
+                return directory;
+            }
+            return new FileEntry(name, new Uint8Array(entryToCopy.read()));
+        };
+        const newName = Path.getName(finalDestinationPath);
+        const copiedEntry = cloneEntry(entry, newName);
+        destinationParentDirectory.addEntry(copiedEntry);
+        return copiedEntry;
     }
 
     /**
@@ -806,7 +711,7 @@ export class FileSystemManager {
      * @param {string} path - Path to the entry
      * @param {string} name - New name for the entry
      * @returns {DirectoryEntry|FileEntry} The renamed entry
-     * @throws {Error} If entry doesn't exist or new name is invalid
+     * @throws {Error} If entry does not exist
      */
     rename(path, name) {
         this._validatePath(path);
@@ -888,7 +793,7 @@ export class FileSystemManager {
     }
 
     /**
-     * Finds entries matching a pattern with advanced options
+     * Finds entry paths matching a pattern with advanced options
      * @param {string} pattern - Pattern to search for
      * @param {object} options - Search options
      * @param {string} options.type - Filter by type: 'all', 'file', or 'directory' (default: 'all')
@@ -896,7 +801,7 @@ export class FileSystemManager {
      * @param {boolean} options.useRegex - Whether pattern is a regex (default: false)
      * @param {string} path - Path to the directory (default: '' for root)
      * @returns {EntryPath[]} Array of EntryPath objects matching the pattern
-     * @throws {Error} If pattern is invalid regex when useRegex=true
+     * @throws {Error} If the pattern is invalid
      */
     find(pattern, options = {}, path = '') {
         if (typeof pattern !== 'string') return [];
@@ -932,81 +837,91 @@ export class FileSystemManager {
     }
 
     /**
-     * Finds only files matching a pattern
+     * Finds entries matching a pattern
      * @param {string} pattern - Pattern to search for
      * @param {object} options - Search options (see find() for details)
      * @param {string} path - Path to the directory (default: '' for root)
-     * @returns {FileEntry[]} Array of FileEntry objects for matching files
+     * @returns {Array<FileEntry|DirectoryEntry>} Array of file or directory entries matching the pattern
      */
-    findFiles(pattern, options = {}, path = '') {
-        return this.find(pattern, { ...options, type: 'file' }, path).map(ep => ep.getEntry());
+    findEntries(pattern, options = {}, path = '') {
+        return this.find(pattern, options, path).map(ep => ep.getEntry());
     }
 
     /**
-     * Finds only files matching a pattern
-     * @param {string} pattern - Pattern to search for
-     * @param {object} options - Search options (see find() for details)
-     * @param {string} path - Path to the directory (default: '' for root)
-     * @returns {EntryPath[]} Array of EntryPath objects for matching files
-     */
-    findFilesEntryPaths(pattern, options = {}, path = '') {
-        return this.find(pattern, { ...options, type: 'file' }, path);
-    }
-
-    /**
-     * Finds only directories matching a pattern
-     * @param {string} pattern - Pattern to search for
-     * @param {object} options - Search options (see find() for details)
-     * @param {string} path - Path to the directory (default: '' for root)
-     * @returns {DirectoryEntry[]} Array of DirectoryEntry objects for matching directories
-     */
-    findDirectories(pattern, options = {}, path = '') {
-        return this.find(pattern, { ...options, type: 'directory' }, path).map(ep => ep.getEntry());
-    }
-
-    /**
-     * Finds only directories matching a pattern
-     * @param {string} pattern - Pattern to search for
-     * @param {object} options - Search options (see find() for details)
-     * @param {string} path - Path to the directory (default: '' for root)
-     * @returns {EntryPath[]} Array of EntryPath objects for matching directories
-     */
-    findDirectoriesEntryPaths(pattern, options = {}, path = '') {
-        return this.find(pattern, { ...options, type: 'directory' }, path);
-    }
-
-    /**
-     * Finds entries matching a pattern and returns their paths as strings
+     * Finds paths of entries matching a pattern
      * @param {string} pattern - Pattern to search for
      * @param {object} options - Search options (see find() for details)
      * @param {string} path - Path to the directory (default: '' for root)
      * @returns {string[]} Array of path strings matching the pattern
      */
     findPaths(pattern, options = {}, path = '') {
-        const results = this.find(pattern, options, path);
-        return results.map(ep => ep.getPath());
+        return this.find(pattern, options, path).map(ep => ep.getPath());
     }
 
     /**
-     * Finds directories matching a pattern and returns their paths as strings
+     * Finds file entry paths matching a pattern
      * @param {string} pattern - Pattern to search for
      * @param {object} options - Search options (see find() for details)
      * @param {string} path - Path to the directory (default: '' for root)
-     * @returns {string[]} Array of directory path strings matching the pattern
+     * @returns {EntryPath[]} Array of EntryPath objects for matching files
      */
-    findDirectoryPaths(pattern, options = {}, path = '') {
-        return this.findDirectories(pattern, options, path).map(ep => ep.getPath());
+    findFileEntryPaths(pattern, options = {}, path = '') {
+        return this.find(pattern, { ...options, type: 'file' }, path);
     }
 
     /**
-     * Finds files matching a pattern and returns their paths as strings
+     * Finds file entries matching a pattern
+     * @param {string} pattern - Pattern to search for
+     * @param {object} options - Search options (see find() for details)
+     * @param {string} path - Path to the directory (default: '' for root)
+     * @returns {FileEntry[]} Array of FileEntry objects for matching files
+     */
+    findFiles(pattern, options = {}, path = '') {
+        return this.findFileEntryPaths(pattern, options, path).map(ep => ep.getEntry());
+    }
+
+    /**
+     * Finds paths of file entries matching a pattern
      * @param {string} pattern - Pattern to search for
      * @param {object} options - Search options (see find() for details)
      * @param {string} path - Path to the directory (default: '' for root)
      * @returns {string[]} Array of file path strings matching the pattern
      */
     findFilePaths(pattern, options = {}, path = '') {
-        return this.findFiles(pattern, options, path).map(ep => ep.getPath());
+        return this.findFileEntryPaths(pattern, options, path).map(ep => ep.getPath());
+    }
+
+    /**
+     * Finds directory entry paths matching a pattern
+     * @param {string} pattern - Pattern to search for
+     * @param {object} options - Search options (see find() for details)
+     * @param {string} path - Path to the directory (default: '' for root)
+     * @returns {EntryPath[]} Array of EntryPath objects for matching directories
+     */
+    findDirectoryEntryPaths(pattern, options = {}, path = '') {
+        return this.find(pattern, { ...options, type: 'directory' }, path);
+    }
+
+    /**
+     * Finds directory entries matching a pattern
+     * @param {string} pattern - Pattern to search for
+     * @param {object} options - Search options (see find() for details)
+     * @param {string} path - Path to the directory (default: '' for root)
+     * @returns {DirectoryEntry[]} Array of DirectoryEntry objects for matching directories
+     */
+    findDirectories(pattern, options = {}, path = '') {
+        return this.findDirectoryEntryPaths(pattern, options, path).map(ep => ep.getEntry());
+    }
+
+    /**
+     * Finds paths of directory entries matching a pattern
+     * @param {string} pattern - Pattern to search for
+     * @param {object} options - Search options (see find() for details)
+     * @param {string} path - Path to the directory (default: '' for root)
+     * @returns {string[]} Array of directory path strings matching the pattern
+     */
+    findDirectoryPaths(pattern, options = {}, path = '') {
+        return this.findDirectoryEntryPaths(pattern, options, path).map(ep => ep.getPath());
     }
 
     /**
@@ -1078,7 +993,7 @@ export class FileSystemManager {
      * @static
      * @param {object} json - JSON object representing the filesystem structure
      * @returns {FileSystemManager} New FileSystemManager instance with deserialized filesystem
-     * @throws {Error} If JSON structure is invalid
+     * @throws {Error} If the JSON structure is invalid
      */
     static fromJSON(json) {
         if (!json || !json.root) {
