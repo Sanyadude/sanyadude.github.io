@@ -6,7 +6,7 @@ export const DECLARE_MANIFEST = {
     dependencies: ['shell'],
     programs: [{
         name: 'declare',
-        description: 'Declares a variable for shell',
+        description: 'Declares a variable for shell commands',
         arguments: [
             {
                 name: '<name_value_pair>',

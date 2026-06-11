@@ -22,6 +22,7 @@ export class EventEmitter {
      * @param {Function} callback - The callback to call when the event is emitted
      * @param {object} options - The options for the event
      * @returns {EventEmitter} The EventEmitter
+     * @throws {Error} If the event name is not a non-empty string or the callback is not a function
      */
     subscribe(name, callback, options = {}) {
         if (typeof name !== 'string' || name === '') {

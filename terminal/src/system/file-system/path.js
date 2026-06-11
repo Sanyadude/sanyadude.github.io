@@ -35,9 +35,8 @@ export class Path {
         if (params.length === 0) return '';
         const isAbsolute = params[0].startsWith('/');
         const parts = params
-            .map(p => p.trim())
-            .filter(p => p !== '')
-            .map(p => p.replace(/^\/+|\/+$/g, ''));
+            .map(p => p.trim().replace(/^\/+|\/+$/g, ''))
+            .filter(p => p !== '');
         const result = parts.join('/');
         return isAbsolute ? '/' + result : result;
     }

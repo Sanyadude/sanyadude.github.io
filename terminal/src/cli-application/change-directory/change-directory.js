@@ -25,7 +25,8 @@ export class ChangeDirectory extends Application {
         if (args.length === 0) return cwd || '/';
         const path = args.join(' ');
         if (context.fileSystemExplorer.changeDirectory(path)) {
-            return `Directory changed to: ${cwd || '/'}`;
+            const newCwd = context.fileSystemExplorer.getCurrentPath();
+            return `Directory changed to: ${newCwd || '/'}`;
         }
         return `Directory not found: ${path}`;
     }
