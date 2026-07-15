@@ -1,3 +1,6 @@
+import { Database } from './database/database.js'
+import { IndexedDatabaseAdapter } from './database/indexed-database-adapter.js'
+
 /**
  * BrowserAPI - A class for interacting with the browser API
  */
@@ -9,6 +12,15 @@ export class BrowserAPI {
     constructor(options = {}) {
         const defaultOptions = {};
         this._options = { ...defaultOptions, ...(options || {}) };
+    }
+
+    /**
+     * Creates a new database
+     * @param {object} options - The options for the database
+     * @returns {Database} The database
+     */
+    createDatabase(options = {}) {
+        return new Database(new IndexedDatabaseAdapter(options));
     }
 
     /**
@@ -27,14 +39,14 @@ export class BrowserAPI {
     }
 
     /**
-     * Loads a file
+     * Fetches a file
      * @param {URL} url - The URL of the file
      * @returns {Promise<ArrayBuffer>} - The content of the file
-     * @throws {Error} If the file fails to load
+     * @throws {Error} If the file fails to fetch
      */
-    async loadFile(url) {
+    async fetchFile(url) {
         const response = await fetch(url);
-        if (!response.ok) throw new Error('Failed to load file');
+        if (!response.ok) throw new Error('Failed to fetch file');
         return response.arrayBuffer();
     }
 }

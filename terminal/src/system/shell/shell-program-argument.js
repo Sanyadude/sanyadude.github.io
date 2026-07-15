@@ -62,6 +62,14 @@ export class ShellProgramArgument {
     }
 
     /**
+     * Returns all argument names (supports multi-name definitions)
+     * @returns {string[]} - The argument names
+     */
+    getNames() {
+        return [...this._names];
+    }
+
+    /**
      * Returns the description of the argument
      * @returns {string} - The description of the argument
      */
@@ -75,14 +83,6 @@ export class ShellProgramArgument {
      */
     isOptional() {
         return this._isOptional;
-    }
-
-    /**
-     * Returns a string representation of the argument
-     * @returns {string} - A string representation of the argument
-     */
-    toString() {
-        return this._isOptional ? this._names.map(name => `[<${name}>]`).join(' ') : this._names.map(name => `<${name}>`).join(' ');
     }
 }
 

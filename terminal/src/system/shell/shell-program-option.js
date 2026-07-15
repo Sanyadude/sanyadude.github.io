@@ -155,41 +155,6 @@ export class ShellProgramOption {
     hasDefault() {
         return this._defaultValue !== null;
     }
-
-    /**
-     * Returns a verbose name of the option
-     * @returns {string} - A verbose name of the option
-     */
-    getVerboseName() {
-        const parts = [];
-        if (this._short && this._long) {
-            parts.push(`-${this._short}, --${this._long}`);
-        } else if (this._short) {
-            parts.push(`-${this._short}`);
-        } else if (this._long) {
-            parts.push(`--${this._long}`);
-        }
-        if (this._valueName) {
-            parts.push(this.isValueRequired() ? `<${this._valueName}>` : `[<${this._valueName}>]`);
-        }
-        return parts.join(' ');
-    }
-
-    /**
-     * Returns a verbose description of the option
-     * @returns {string} - A verbose description of the option
-     */
-    getVerboseDescription() {
-        return `${this._description}${this.hasDefault() ? ` [default: ${this._defaultValue}]` : ''}`;
-    }
-
-    /**
-     * Returns a string representation of the option
-     * @returns {string} - A string representation of the option
-     */
-    toString() {
-        return this.isLong() ? `--${this._long}` : `-${this._short}`;
-    }
 }
 
 export default ShellProgramOption

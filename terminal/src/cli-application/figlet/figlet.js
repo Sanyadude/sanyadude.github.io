@@ -71,7 +71,7 @@ export class Figlet extends Application {
      */
     async _loadFont(fileName) {
         const path = `${this._fontFilesPath}/${fileName}`;
-        const response = await BrowserAPI.loadFile(new URL(path, import.meta.url));
+        const response = await BrowserAPI.fetchFile(new URL(path, import.meta.url));
         return new TextDecoder().decode(response);
     }
 

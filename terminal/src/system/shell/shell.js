@@ -1,5 +1,7 @@
 import { ShellProgram } from './shell-program.js'
 import { ShellCommandContext } from './shell-command-context.js'
+import { PosixShellCommandParser } from './parsers/posix-shell-command-parser.js'
+import { DosShellCommandParser } from './parsers/dos-shell-command-parser.js'
 import { VARIABLES, ALIASES_DEPTH_MAX } from './shell-config.js'
 
 /**
@@ -24,6 +26,8 @@ export class Shell {
         this._programs = new Map();
         this._aliases = new Map();
         this._variables = new Map();
+
+        this._parser = new PosixShellCommandParser();
 
         this._info = {
             version: '0.1.0',
@@ -202,6 +206,46 @@ export class Shell {
     }
 
     /**
+     * Gets the command line parser used to parse commands
+     * @returns {ShellCommandParser} The parser
+     */
+    getParser() {
+        return this._parser;
+    }
+
+    /**
+     * Sets the command line parser used to parse commands
+     * Use this to switch the command line syntax (e.g. POSIX/Unix vs Windows/DOS)
+     * @param {ShellCommandParser} parser - The parser to use
+     * @returns {Shell} The shell instance
+     */
+    setParser(parser) {
+        if (!parser || typeof parser.parse !== 'function') {
+            throw new Error('Parser must implement a parse(program, commandLine) method');
+        }
+        this._parser = parser;
+        return this;
+    }
+
+    /**
+     * Uses the POSIX/Unix command line syntax
+     * @returns {Shell} The shell instance
+     */
+    usePosixSyntax() {
+        this._parser = new PosixShellCommandParser();
+        return this;
+    }
+
+    /**
+     * Uses the Windows/DOS command line syntax
+     * @returns {Shell} The shell instance
+     */
+    useDosSyntax() {
+        this._parser = new DosShellCommandParser();
+        return this;
+    }
+
+    /**
      * Registers a program with the Shell instance
      * @param {string} name - The name of the program to register
      * @param {ShellProgram} - The registered program
@@ -330,28 +374,16 @@ export class Shell {
     }
 
     /**
-     * Returns the name of the program from the input text
-     * @param {string} text - The input text
-     * @returns {string} - The name of the program
-     */
-    _getProgramNameFromInput(text) {
-        if (!text || typeof text !== 'string') return null;
-        const parts = text.trim().split(/\s+/);
-        if (parts.length === 0) return null;
-        return parts[0];
-    }
-
-    /**
      * Executes the program with the given command, arguments, and options
      * @param {string} command - The command to execute
      * @param {string} stdin - The stdin to pass to the program
      * @returns {Promise<any>} - A promise that resolves to the result of the program execution
      */
     async _executeProgram(command, stdin = '') {
-        const name = this._getProgramNameFromInput(command);
+        const name = this._parser.getProgramName(command);
         const program = this._programs.get(name);
         if (!program) return `Command not found: ${name || '(empty)'}. Use 'help' to see available commands.`;
-        const shellCommandLine = program.parse(command);
+        const shellCommandLine = this._parser.parse(program, command);
         shellCommandLine.setStdin(stdin);
         const result = await this._processManager.run(name, shellCommandLine);
         return result;

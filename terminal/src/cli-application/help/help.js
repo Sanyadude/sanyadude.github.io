@@ -21,15 +21,18 @@ export class Help extends Application {
      */
     async main(commandLine, context) {
         const args = commandLine.getArguments();
-            const programName = args[0] || '';
-            if (programName) {
-                const program = context.shell.getProgram(programName);
-                if (program) return program.getHelp();
-                return `Command not found: ${programName}. Use 'help' to see available commands.`;
-            }
-            const programs = context.shell.getPrograms();
-            if (programs.length === 0) return 'No commands registered.';
-            return `Available commands:\n ${programs.map(program => `- ${program.getName()} - ${program.getDescription()}`).join('\n ')}`;
+        const programName = args[0] || '';
+        if (programName) {
+            const program = context.shell.getProgram(programName);
+            const helpText = program.getHelpText();
+            if (helpText) return helpText;
+            const parser = context.shell.getParser();
+            if (program) return parser.getHelp(program);
+            return `Command not found: ${programName}. Use 'help' to see available commands.`;
+        }
+        const programs = context.shell.getPrograms();
+        if (programs.length === 0) return 'No commands registered.';
+        return `Available commands:\n ${programs.map(program => `- ${program.getName()} - ${program.getDescription()}`).join('\n ')}`;
     }
 }
 
