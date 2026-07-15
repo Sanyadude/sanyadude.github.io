@@ -58,14 +58,6 @@ export class ShellProgramCommand {
     isOptional() {
         return this._isOptional;
     }
-
-    /**
-     * Returns a string representation of the argument
-     * @returns {string} - A string representation of the argument
-     */
-    toString() {
-        return this._isOptional ? `[${this._name}]` : this._name;
-    }
 }
 
 export default ShellProgramCommand

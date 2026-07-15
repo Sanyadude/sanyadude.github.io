@@ -46,6 +46,14 @@ export class TerminalSettings extends Application {
             api.setCursorStyleUnderline();
             return 'Cursor is underline';
         }
+        if (options['posix-syntax']) {
+            api.setShellSyntaxPosix();
+            return 'Shell syntax set to POSIX/Unix';
+        }
+        if (options['dos-syntax']) {
+            api.setShellSyntaxDos();
+            return 'Shell syntax set to Windows/DOS';
+        }
         if (options['theme']) {
             const themes = api.getThemes();
             if (options['theme'] === 'list') {

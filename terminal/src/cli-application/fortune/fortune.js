@@ -140,7 +140,7 @@ export class Fortune extends Application {
      */
     async _loadFortune(filename) {
         const path = `${this._fortuneFilesPath}/${filename}`;
-        const response = await BrowserAPI.loadFile(new URL(path, import.meta.url));
+        const response = await BrowserAPI.fetchFile(new URL(path, import.meta.url));
         return new TextDecoder().decode(response);
     }
 

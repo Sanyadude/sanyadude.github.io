@@ -109,6 +109,24 @@ export class TerminalApi {
     }
 
     /**
+     * Sets the shell syntax to POSIX/Unix
+     * @returns {TerminalApi} - The instance of the TerminalApi
+     */
+    setShellSyntaxPosix() {
+        this._context.shell.usePosixSyntax();
+        return this;
+    }
+
+    /**
+     * Sets the shell syntax to Windows/DOS
+     * @returns {TerminalApi} - The instance of the TerminalApi
+     */
+    setShellSyntaxDos() {
+        this._context.shell.useDosSyntax();
+        return this;
+    }
+
+    /**
      * Toggles the scrollbar use theme
      * @returns {TerminalApi} - The instance of the TerminalApi
      */

@@ -7,10 +7,12 @@ export const TERMINAL_SETTINGS_MANIFEST = {
     programs: [{
         name: 'terminal',
         options: [
-            { name: '-l, --linux-prompt', description: 'Set the prompt to linux style' },
-            { name: '-w, --windows-prompt', description: 'Set the prompt to windows style' },
-            { name: '-c, --cursor-caret', description: 'Set the cursor to caret' },
-            { name: '-u, --cursor-underline', description: 'Set the cursor to underline' },
+            { name: '-L, --linux-prompt', description: 'Set the prompt to linux style' },
+            { name: '-W, --windows-prompt', description: 'Set the prompt to windows style' },
+            { name: '-C, --cursor-caret', description: 'Set the cursor to caret' },
+            { name: '-U, --cursor-underline', description: 'Set the cursor to underline' },
+            { name: '-P, --posix-syntax', description: 'Set the shell syntax to POSIX/Unix' },
+            { name: '-D, --dos-syntax', description: 'Set the shell syntax to Windows/DOS' },
             { name: '-t, --theme <option>', description: 'Set the theme or show info; options: list|test|current|default|<theme_name>' },
             { name: '-p, --prev-theme', description: 'Sets the previous theme' },
             { name: '-n, --next-theme', description: 'Sets the next theme' },

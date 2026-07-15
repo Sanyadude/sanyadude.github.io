@@ -20,6 +20,6 @@ And some fonts from https://www.figlet.org/
 
 Each font retains its original license as stated in its header.
 
-#fortune
+# fortune
 
 This project includes fortune files from repo (https://github.com/Distrotech/fortune-mod/)

@@ -3,28 +3,29 @@ export const DEFAULT_USERS_FOLDER = 'Users';
 export const DEFAULT_PUBLIC_FOLDER = 'Public';
 export const DEFAULT_USERS_FOLDERS = Object.freeze(['Desktop', 'Documents', 'Downloads', 'Music', 'Pictures', 'Videos']);
 
-export const DEFAULT_FOLDERS = Object.freeze([{
-    type: 'directory',
-    name: DEFAULT_USERS_FOLDER,
-    entries: [
-        {
-            type: 'directory',
-            name: DEFAULT_PUBLIC_FOLDER,
-            entries: DEFAULT_USERS_FOLDERS.map(folder => {
-                return {
-                    type: 'directory',
-                    name: folder,
-                    entries: []
-                }
-            })
-        },
-    ]
-},
-{
-    type: 'directory',
-    name: DEFAULT_PROGRAM_FOLDER,
-    entries: []
-}
+export const DEFAULT_FOLDERS = Object.freeze([
+    {
+        type: 'directory',
+        name: DEFAULT_USERS_FOLDER,
+        entries: [
+            {
+                type: 'directory',
+                name: DEFAULT_PUBLIC_FOLDER,
+                entries: DEFAULT_USERS_FOLDERS.map(folder => {
+                    return {
+                        type: 'directory',
+                        name: folder,
+                        entries: []
+                    }
+                })
+            },
+        ]
+    },
+    {
+        type: 'directory',
+        name: DEFAULT_PROGRAM_FOLDER,
+        entries: []
+    }
 ]);
 export const DEFAULT_ROOT_DIRECTORY_NAME = 'root';
 export const DEFAULT_USER_NAME = 'root';
@@ -85,6 +86,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. `
 });
 
+export const FILE_SYSTEM_STORE_NAME = 'file-system';
+export const FILE_SYSTEM_STORE_VALUE_KEY = 'file-system';
+
 export default {
     DEFAULT_USER_NAME,
     DEFAULT_HOST_NAME,
@@ -94,5 +98,7 @@ export default {
     DEFAULT_USERS_FOLDER,
     DEFAULT_PUBLIC_FOLDER,
     DEFAULT_USERS_FOLDERS,
-    DEFAULT_FOLDERS
+    DEFAULT_FOLDERS,
+    FILE_SYSTEM_STORE_NAME,
+    FILE_SYSTEM_STORE_VALUE_KEY
 };

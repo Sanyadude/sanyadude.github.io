@@ -214,7 +214,7 @@ export class Cowsay extends Application {
      */
     async _loadCow(cowName) {
         const path = `${this._cowFilesPath}/${cowName}.cow`;
-        const response = await BrowserAPI.loadFile(new URL(path, import.meta.url));
+        const response = await BrowserAPI.fetchFile(new URL(path, import.meta.url));
         return new TextDecoder().decode(response);
     }
 
