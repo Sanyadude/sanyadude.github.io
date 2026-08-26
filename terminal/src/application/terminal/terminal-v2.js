@@ -3,8 +3,7 @@ import { THEMES } from './config/themes.js'
 import { TerminalClear } from './cli-applications/terminal-clear/terminal-clear.js'
 import { TerminalHistory } from './cli-applications/terminal-history/terminal-history.js'
 import { TerminalSettings } from './cli-applications/terminal-settings/terminal-settings.js'
-
-export const DEFAULT_THEME_NAME = 'pastel-dark';
+import { TERMINAL_CONFIG_THEME_KEY, TERMINAL_CONFIG_SYNTAX_KEY, TERMINAL_WELCOME_MESSAGE_LINES, TERMINAL_DEFAULT_THEME_NAME } from './config/config.js'
 
 /**
  * Terminal class - represents a interface for the shell
@@ -23,6 +22,7 @@ export class Terminal {
         this.shell = this.serviceProvider.get('shell');
         this.fileSystemExplorer = this.serviceProvider.get('fileSystemExplorer');
         this.fileSystemManager = this.serviceProvider.get('fileSystemManager');
+        this.configProvider = this.serviceProvider.get('configProvider');
 
         this.history = [];
         this.historyIndex = null;
@@ -33,6 +33,7 @@ export class Terminal {
             name: 'terminal',
             type: 'myterm',
             version: '0.2.0',
+            colorMode: 'truecolor'
         };
         this.theme = { name: 'none' };
 
@@ -77,12 +78,11 @@ export class Terminal {
         this._initElements();
         this._initListeners();
 
-        this.setTheme(DEFAULT_THEME_NAME);
-
+        this.setTheme(TERMINAL_DEFAULT_THEME_NAME);
+        this.applyConfig();
         this.reset();
         // Add initial lines
-        this.output(`Command Line Interface v${this.info.version}`);
-        this.output('');
+        TERMINAL_WELCOME_MESSAGE_LINES.forEach(line => this.output(line));
         this._focusInput();
     }
 
@@ -583,27 +583,48 @@ export class Terminal {
      */
     _handleCtrlInputKey(event) {
         event.preventDefault();
-        switch (event.key) {
-            case 'c':
-                this._copyToClipboard();
-                break;
-            case 'v':
-                this._pasteFromClipboard();
-                break;
+        if (event.key.toLowerCase() === 'c' && !event.shiftKey) {
+            this._handleInterrupt(event);
+            return;
         }
+        if (event.key.toLowerCase() === 'c' && event.shiftKey) {
+            this._copyToClipboard();
+            return;
+        }
+        if (event.key.toLowerCase() === 'v' && event.shiftKey) {
+            this._pasteFromClipboard();
+            return;
+        }
+    }
+
+    /**
+     * Handles the interrupt key event
+     * @param {KeyboardEvent} event - The interrupt key event
+     */
+    _handleInterrupt(event) {
+        event.preventDefault();
+        if (this.shell.isProcessing()) {
+            this.shell.abortCurrentJob();
+        }
+        this.output(`${this.currentPromptText}${this.currentText}^C`);
+        this.historyIndex = null;
+        this.currentPromptText = this._getPromptText();
+        this._setText();
+        this._moveCaret();
     }
 
     /**
      * Handles the enter key event
      * @param {KeyboardEvent} event - The enter key event
      */
-    _handleEnterKey(event) {
+    async _handleEnterKey(event) {
         event.preventDefault();
-        this.input(this.currentText);
-        this.historyIndex = null;
-        this.currentPromptText = this._getPromptText();
+        const text = this.currentText;
         this._setText();
         this._moveCaret();
+        await this.input(text);
+        this.historyIndex = null;
+        this.currentPromptText = this._getPromptText();
     }
 
     /**
@@ -843,11 +864,29 @@ export class Terminal {
     }
 
     /**
+     * Writes a line to the terminal
+     * @param {string} text - The text to write
+     */
+    writeOutputLine(text = '') {
+        this.output(text);
+    }
+
+    /**
+     * Removes an output line from the terminal
+     * @param {number} index - The index of the output line to remove
+     */
+    removeOutputLine(index = null) {
+        const removeIndex = index || this._historyContainerElement.children.length - 1;
+        if (removeIndex < 0) return;
+        this._historyContainerElement.removeChild(this._historyContainerElement.children[removeIndex]);
+    }
+
+    /**
      * Inputs text into the terminal
      * @param {string} text - The text to input
      */
-    input(text = '') {
-        this.shell.input(text)
+    async input(text = '') {
+        await this.shell.input(text)
     }
 
     /**
@@ -925,6 +964,22 @@ export class Terminal {
     }
 
     /**
+     * Applies the config to the terminal
+     */
+    applyConfig() {
+        const themeName = this.configProvider.get(TERMINAL_CONFIG_THEME_KEY);
+        if (themeName) {
+            this.setTheme(themeName);
+        }
+        const syntax = this.configProvider.get(TERMINAL_CONFIG_SYNTAX_KEY);
+        if (syntax === 'posix') {
+            this.setShellSyntaxPosix();
+        } else if (syntax === 'dos') {
+            this.setShellSyntaxDos();
+        }
+    }
+
+    /**
      * Sets the theme of the terminal
      * @param {string} theme - The theme to set
      */
@@ -939,6 +994,7 @@ export class Terminal {
             child.style.backgroundColor = theme.selectionBackground;
             child.style.color = theme.background;
         });
+        this.configProvider.set(TERMINAL_CONFIG_THEME_KEY, themeName);
     }
 
     /**
@@ -980,12 +1036,20 @@ export class Terminal {
         return this.getHistoryByType('input').map(entry => entry.content);
     }
 
-    toggleScrollbarUseTheme() {
-        //Do nothing
+    /**
+     * Sets the shell syntax to Windows/DOS
+     */
+    setShellSyntaxDos() {
+        this.shell.useDosSyntax();
+        this.configProvider.set(TERMINAL_CONFIG_SYNTAX_KEY, 'dos');
     }
 
-    toggleDebug() {
-        //Do nothing
+    /**
+     * Sets the shell syntax to POSIX/Unix
+     */
+    setShellSyntaxPosix() {
+        this.shell.usePosixSyntax();
+        this.configProvider.set(TERMINAL_CONFIG_SYNTAX_KEY, 'posix');
     }
 
     setLinuxPrompt() {
@@ -993,6 +1057,22 @@ export class Terminal {
     }
 
     setWindowsPrompt() {
+        //Do nothing
+    }
+
+    toggleDebug() {
+        //Do nothing
+    }
+
+    isDebugEnabled() {
+        return false;
+    }
+
+    isScrollbarUseThemeEnabled() {
+        return false;
+    }
+
+    toggleScrollbarUseTheme() {
         //Do nothing
     }
 }

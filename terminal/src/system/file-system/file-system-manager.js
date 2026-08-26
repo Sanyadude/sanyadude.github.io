@@ -312,7 +312,7 @@ export class FileSystemManager {
         }
         if (recursive) {
             const removeChildren = (dir) => {
-                const entries = [...dir.getEntries()];
+                const entries = dir.getEntries();
                 for (const entry of entries) {
                     if (entry instanceof DirectoryEntry) {
                         removeChildren(entry);

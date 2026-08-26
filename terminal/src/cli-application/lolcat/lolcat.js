@@ -1,6 +1,6 @@
 import { Application } from '../../system/application/application.js'
 import { LOLCAT_MANIFEST } from './lolcat-manifest.js'
-import { DEFAULT_SPREAD, DEFAULT_FREQ, DEFAULT_SEED, DEFAULT_INVERT_MODE } from './config.js'
+import { DEFAULT_SPREAD, DEFAULT_FREQ, DEFAULT_SEED, DEFAULT_INVERT_MODE, DEFAULT_ANIMATION_DURATION, DEFAULT_ANIMATION_SPEED } from './config.js'
 
 /**
  * Lolcat - Application for coloring text in rainbow colors
@@ -33,7 +33,55 @@ export class Lolcat extends Application {
             text = file ? file.readAsString() : stdin;
         }
         const plainText = text.replace(/\x1b\[[0-9;]+m/g, '');
+        if (options['animate']) {
+            return this._colorizeTextWithAnimation(plainText, options, context);
+        }
         return this._colorizeText(plainText, options);
+    }
+
+    /**
+     * Colorizes text with animation
+     * @param {string} text - The text to animate
+     * @param {object} options - The options object
+     * @param {object} context - The context object
+     * @returns {Promise<string>} - The animated text
+     * Deprecated: needs render to not cache lines
+     */
+    async _colorizeTextWithAnimation(text, options = {}, context = {}) {
+        const spread = options['spread'] !== undefined && !isNaN(options['spread']) ? Number(options['spread']) : DEFAULT_SPREAD;
+        const freq = options['freq'] !== undefined && !isNaN(options['freq']) ? Number(options['freq']) : DEFAULT_FREQ;
+        const seed = options['seed'] !== undefined && !isNaN(options['seed']) ? Number(options['seed']) : DEFAULT_SEED;
+        const invert = Boolean(options['invert']);
+        const duration = options['duration'] !== undefined && !isNaN(options['duration']) ? Number(options['duration']) : DEFAULT_ANIMATION_DURATION;
+        const speed = options['speed'] !== undefined && !isNaN(options['speed']) ? Number(options['speed']) : DEFAULT_ANIMATION_SPEED;
+        const lines = text.split(/\r?\n/);
+        const runtime = context.getRuntime();
+        const maxFrames = duration;
+        const frameDelay = 1000 / speed;
+        const colorizedTextResult = this._colorizeText(text, options);
+        const finalLines = colorizedTextResult.split(/\r?\n/);
+        let animationSeed = seed;
+        for (let i = 0; i < lines.length; i++) {
+            if (runtime.isAborted()) break;
+            const line = lines[i];
+            let firstFrame = true;
+            for (let frame = 0; frame < maxFrames; frame++) {
+                if (runtime.isAborted()) break;
+                if (!firstFrame) {
+                    context.terminal.removeOutputLine();
+                }
+                firstFrame = false;
+                animationSeed = animationSeed + spread;
+                const frameSeed = animationSeed % 360;
+                const coloredLine = this._colorizeSineWaveMode(line, spread, freq, frameSeed, invert);
+                context.terminal.writeOutputLine(coloredLine);
+                await new Promise(resolve => setTimeout(resolve, frameDelay));
+            }
+            if (runtime.isAborted()) break;
+            context.terminal.removeOutputLine();
+            context.terminal.writeOutputLine(finalLines[i]);
+        }
+        return '';
     }
 
     /**
@@ -46,7 +94,7 @@ export class Lolcat extends Application {
         const spread = options['spread'] !== undefined && !isNaN(options['spread']) ? Number(options['spread']) : DEFAULT_SPREAD;
         const freq = options['freq'] !== undefined && !isNaN(options['freq']) ? Number(options['freq']) : DEFAULT_FREQ;
         const seed = options['seed'] !== undefined && !isNaN(options['seed']) ? Number(options['seed']) : DEFAULT_SEED;
-        const invert = options['invert'] ? true : false;
+        const invert = Boolean(options['invert']);
         return this._colorizeSineWaveMode(text, spread, freq, seed, invert);
     }
 

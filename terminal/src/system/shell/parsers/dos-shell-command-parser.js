@@ -69,16 +69,6 @@ export class DosShellCommandParser extends ShellCommandParser {
     }
 
     /**
-     * Checks whether a token is a switch (e.g. /S, /F:value)
-     * A lone slash is treated as a positional argument
-     * @param {string} token - The token to test
-     * @returns {boolean} - True if the token is a switch
-     */
-    _isSwitchToken(token) {
-        return typeof token === 'string' && token.length > 1 && token.startsWith('/');
-    }
-
-    /**
      * Parses a command line into a ShellCommandLine object
      * @param {ShellProgram} program - The program whose options/commands define the grammar
      * @param {string} commandLine - The command line to parse
@@ -109,10 +99,19 @@ export class DosShellCommandParser extends ShellCommandParser {
             if (optionShortName) parsedOptions[optionShortName] = value;
             if (optionLongName) parsedOptions[optionLongName] = value;
         }
+        const resolveSwitchValue = (option, value) => {
+            if (!option) return value !== null ? value : true;
+            if (option.isFlag()) return true;
+            if (value !== null) return value;
+            return option.hasDefault() ? option.getDefaultValue() : null;
+        }
+        const isSwitchToken = (token) => {
+            return typeof token === 'string' && token.length > 1 && token.startsWith('/');
+        }
         while (currentIndex < tokens.length) {
             const currentArg = tokens[currentIndex];
             //handle non-switch arguments (first matching registered command becomes the subcommand)
-            if (!this._isSwitchToken(currentArg)) {
+            if (!isSwitchToken(currentArg)) {
                 if (!commandName && commands.has(currentArg)) {
                     commandName = currentArg;
                 } else {
@@ -127,13 +126,8 @@ export class DosShellCommandParser extends ShellCommandParser {
             const switchName = separatorIndex === -1 ? switchBody : switchBody.slice(0, separatorIndex);
             const switchValue = separatorIndex === -1 ? null : switchBody.slice(separatorIndex + 1);
             const option = getOption(switchName);
-            const resolveValue = () => {
-                if (!option) return switchValue !== null ? switchValue : true;
-                if (option.isFlag()) return true;
-                if (switchValue !== null) return switchValue;
-                return option.hasDefault() ? option.getDefaultValue() : null;
-            }
-            setOption(option, resolveValue());
+            const resolvedValue = resolveSwitchValue(option, switchValue);
+            setOption(option, resolvedValue);
             currentIndex++;
         }
         return new ShellCommandLine(commandLine)
@@ -237,7 +231,7 @@ export class DosShellCommandParser extends ShellCommandParser {
         }
         let optionsHelp = '';
         if (hasOptions) {
-            optionsHelp += `\n\nOptions:`;
+            optionsHelp += `\n\nSwitches:`;
             for (const programOption of programOptions.values()) {
                 optionsHelp += `\n ${this._formatOptionName(programOption).padEnd(leftPartNameMaxLength)}${programOption.getDescription() ? ` - ${this._formatOptionDescription(programOption)}` : ''}`;
             }

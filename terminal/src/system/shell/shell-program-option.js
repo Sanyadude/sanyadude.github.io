@@ -14,7 +14,7 @@ export class ShellProgramOption {
         }
         this._definition = definition;
         this._description = description || '';
-        this._defaultValue = defaultValue || null;
+        this._defaultValue = defaultValue !== null ? defaultValue : null;
 
         this._short = null;
         this._long = null;
@@ -36,7 +36,7 @@ export class ShellProgramOption {
         const parts = definition.split(',').map(p => p.trim());
         for (const part of parts) {
             // Match short flag: -s
-            const shortMatch = part.match(/^-([a-zA-Z])(?:\s|$)/);
+            const shortMatch = part.match(/^-([a-zA-Z0-9])(?:\s|$)/);
             if (shortMatch && !this._short) {
                 this._short = shortMatch[1];
                 // Remove the short flag from the part for further processing
@@ -44,7 +44,7 @@ export class ShellProgramOption {
                 continue;
             }
             // Match long flag: --long
-            const longMatch = part.match(/^--([a-zA-Z][\w-]*)/);
+            const longMatch = part.match(/^--([a-zA-Z0-9][\w-]*)/);
             if (longMatch && !this._long) {
                 this._long = longMatch[1];
                 // Get the rest after the long flag for value parsing

@@ -115,8 +115,8 @@ export const KEYBOARD_BUTTONS_NAME_CODE_MAP = Object.freeze({
 
 export const KEYBOARD_BUTTONS_CODE_NAME_MAP = (() => {
     const reversed = {};
-    for (const key in KEYBOARD_BUTTONS_NAME_CODE_MAP) {
-        reversed[KEYBOARD_BUTTONS_NAME_CODE_MAP[key]] = key;
+    for (const [key, value] of Object.entries(KEYBOARD_BUTTONS_NAME_CODE_MAP)) {
+        reversed[value] = key;
     }
     return Object.freeze(reversed);
 })();

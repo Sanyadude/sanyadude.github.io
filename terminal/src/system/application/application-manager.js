@@ -1,5 +1,6 @@
 import { ApplicationRegistry } from './application-registry.js'
 import { Application } from './application.js'
+import { ApplicationExecutionContext } from './application-execution-context.js'
 
 /**
  * ApplicationManager - A class for managing applications
@@ -53,7 +54,7 @@ export class ApplicationManager {
      * @returns {ApplicationManager} - The application manager instance
      */
     uninstall(application) {
-        if (!this._applicationRegistry.getApplication(application.getName())) return this;
+        if (!this._applicationRegistry.has(application.getName())) return this;
         if (application.onUninstall) {
             application.onUninstall(this);
         }
@@ -68,22 +69,40 @@ export class ApplicationManager {
     }
 
     /**
+     * Resolves a program name to an installed application
+     * @param {string} programName - The program name
+     * @returns {Application|null} - The application or null if not found
+     */
+    resolve(programName) {
+        const applicationName = this._programApplicationMap.get(programName);
+        if (!applicationName) return null;
+        return this._applicationRegistry.getApplication(applicationName);
+    }
+
+    /**
+     * Resolves the services of an application
+     * @param {Application} application - The application to resolve the services of
+     * @returns {Object} - The services
+     */
+    resolveServices(application) {
+        if (!application) return null;
+        const dependencies = this._applicationRegistry.getDependencies(application.getName());
+        return Object.fromEntries(dependencies.map((name) => [name, this._serviceProvider.get(name)]));
+    }
+
+    /**
      * Executes a program
      * @param {string} programName - The name of the program to execute
      * @param {ShellCommandLine} commandLine - The command line to execute
+     * @param {ExecutionRuntime} runtime - The runtime of the run
      * @returns {Promise<string|null>} - The result of the program execution or null if the program was not found
      */
-    async execute(programName, commandLine) {
-        const applicationName = this._programApplicationMap.get(programName);
-        if (!applicationName) return null;
-        const application = this._applicationRegistry.getApplication(applicationName);
+    async execute(programName, commandLine, runtime) {
+        const application = this.resolve(programName);
         if (!application) return null;
-        const context = {};
-        const dependencies = this._applicationRegistry.getDependencies(applicationName);
-        for (const dependency of dependencies) {
-            context[dependency] = this._serviceProvider.get(dependency);
-        }
-        return await application.main(commandLine, context);
+        const services = this.resolveServices(application);
+        const context = new ApplicationExecutionContext(services, runtime);
+        return application.main(commandLine, context);
     }
 }
 

@@ -10,11 +10,31 @@ export class ApplicationRegistry {
     }
 
     /**
-     * Gets all applications
-     * @returns {Application[]} - The applications
+     * Gets a registry entry by name
+     * @param {string} name - The name of the registry entry
+     * @returns {Object<Application, string[]>} - The registry entry
      */
-    getApplications() {
-        return Array.from(this._registry.values()).map(entry => entry.application);
+    get(name) {
+        const entry = this._registry.get(name);
+        if (!entry) return null;
+        return entry;
+    }
+
+    /**
+     * Checks if an application is registered by name
+     * @param {string} name - The name of the application
+     * @returns {boolean} - True if the application is registered, false otherwise
+     */
+    has(name) {
+        return this._registry.has(name);
+    }
+
+    /**
+     * Gets all applications and their dependencies
+     * @returns {Object<Application, string[]>} - The applications and their dependencies
+     */
+    values() {
+        return [...this._registry.values()];
     }
 
     /**
@@ -35,8 +55,8 @@ export class ApplicationRegistry {
      */
     getDependencies(name) {
         const applicationEntry = this._registry.get(name);
-        if (!applicationEntry) return null;
-        return applicationEntry.dependencies;
+        if (!applicationEntry) return [];
+        return [...applicationEntry.dependencies];
     }
 
     /**
@@ -44,9 +64,14 @@ export class ApplicationRegistry {
      * @param {Application} application - The application to register
      * @param {string[]} dependencies - The dependencies of the application
      * @returns {ApplicationRegistry} - The application registry instance
+     * @throws {Error} - If the application is already registered
      */
     register(application, dependencies = []) {
-        this._registry.set(application.getName(), {
+        const name = application.getName();
+        if (this._registry.has(name)) {
+            throw new Error(`Application "${name}" is already registered`);
+        }
+        this._registry.set(name, {
             application,
             dependencies,
         });

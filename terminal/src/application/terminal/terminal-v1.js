@@ -3,8 +3,7 @@ import { THEMES } from './config/themes.js'
 import { TerminalClear } from './cli-applications/terminal-clear/terminal-clear.js'
 import { TerminalHistory } from './cli-applications/terminal-history/terminal-history.js'
 import { TerminalSettings } from './cli-applications/terminal-settings/terminal-settings.js'
-
-export const DEFAULT_THEME_NAME = 'pastel-dark';
+import { TERMINAL_CONFIG_THEME_KEY, TERMINAL_CONFIG_SYNTAX_KEY, TERMINAL_WELCOME_MESSAGE_LINES, TERMINAL_DEFAULT_THEME_NAME } from './config/config.js'
 
 /**
  * Terminal class - represents a interface for the shell
@@ -23,6 +22,7 @@ export class Terminal {
         this.shell = this.serviceProvider.get('shell');
         this.fileSystemExplorer = this.serviceProvider.get('fileSystemExplorer');
         this.fileSystemManager = this.serviceProvider.get('fileSystemManager');
+        this.configProvider = this.serviceProvider.get('configProvider');
 
         this.history = [];
         this.historyIndex = null;
@@ -33,6 +33,7 @@ export class Terminal {
             name: 'terminal',
             type: 'myterm',
             version: '0.1.0',
+            colorMode: 'truecolor'
         };
         this.theme = { name: 'none' };
 
@@ -74,11 +75,11 @@ export class Terminal {
 
         this._render();
 
-        this.setTheme(DEFAULT_THEME_NAME);
+        this.setTheme(TERMINAL_DEFAULT_THEME_NAME);
+        this.applyConfig();
         this.reset();
         // Add initial lines
-        this.output(`Command Line Interface v${this.info.version}`);
-        this.output('');
+        TERMINAL_WELCOME_MESSAGE_LINES.forEach(line => this.output(line));
     }
 
     /**
@@ -322,6 +323,20 @@ export class Terminal {
     }
 
     /**
+     * Handles the ctrl + c key event
+     * @param {KeyboardEvent} event - The ctrl + c key event
+     */
+    _handleCtrlCKey(event) {
+        event.preventDefault();
+        if (this.shell.isProcessing()) {
+            this.shell.abortCurrentJob();
+        }
+        this.output(`${this.promptElement.textContent}${this.inputElement.textContent}^C`);
+        this.inputElement.textContent = '';
+        this.historyIndex = null;
+    }
+
+    /**
      * Handles the key down event for the input element
      * @param {KeyboardEvent} event - The key down event
      */
@@ -339,6 +354,10 @@ export class Terminal {
         }
         if (event.key === 'ArrowDown') {
             this._handleArrowDownKey(event);
+        }
+        if (event.key === 'c' && event.ctrlKey) {
+            this._handleCtrlCKey(event);
+            return;
         }
         this.fileSuggestionIndex = -1;
     }
@@ -416,6 +435,24 @@ export class Terminal {
      */
     writeLine(text = '') {
         this.output(text);
+    }
+
+    /**
+     * Writes a line to the terminal
+     * @param {string} text - The text to write
+     */
+    writeOutputLine(text = '') {
+        this.output(text);
+    }
+
+    /**
+     * Removes an output line from the terminal
+     * @param {number} index - The index of the output line to remove
+     */
+    removeOutputLine(index = null) {
+        const removeIndex = index || this.historyContainerElement.children.length - 1;
+        if (removeIndex < 0) return;
+        this.historyContainerElement.removeChild(this.historyContainerElement.children[removeIndex]);
     }
 
     /**
@@ -499,6 +536,22 @@ export class Terminal {
     }
 
     /**
+     * Applies the config to the terminal
+     */
+    applyConfig() {
+        const themeName = this.configProvider.get(TERMINAL_CONFIG_THEME_KEY);
+        if (themeName) {
+            this.setTheme(themeName);
+        }
+        const syntax = this.configProvider.get(TERMINAL_CONFIG_SYNTAX_KEY);
+        if (syntax === 'posix') {
+            this.setShellSyntaxPosix();
+        } else if (syntax === 'dos') {
+            this.setShellSyntaxDos();
+        }
+    }
+
+    /**
      * Sets the theme of the terminal
      * @param {string} theme - The theme to set
      */
@@ -508,6 +561,7 @@ export class Terminal {
         this.theme = theme;
         this.containerElement.style.backgroundColor = theme.background;
         this.containerElement.style.color = theme.foreground;
+        this.configProvider.set(TERMINAL_CONFIG_THEME_KEY, themeName);
     }
 
     /**
@@ -549,12 +603,20 @@ export class Terminal {
         return this.getHistoryByType('input').map(entry => entry.content);
     }
 
-    toggleScrollbarUseTheme() {
-        //Do nothing
+    /**
+     * Sets the shell syntax to Windows/DOS
+     */
+    setShellSyntaxDos() {
+        this.shell.useDosSyntax();
+        this.configProvider.set(TERMINAL_CONFIG_SYNTAX_KEY, 'dos');
     }
 
-    toggleDebug() {
-        //Do nothing
+    /**
+     * Sets the shell syntax to POSIX/Unix
+     */
+    setShellSyntaxPosix() {
+        this.shell.usePosixSyntax();
+        this.configProvider.set(TERMINAL_CONFIG_SYNTAX_KEY, 'posix');
     }
 
     setLinuxPrompt() {
@@ -562,6 +624,22 @@ export class Terminal {
     }
 
     setWindowsPrompt() {
+        //Do nothing
+    }
+
+    toggleDebug() {
+        //Do nothing
+    }
+
+    isDebugEnabled() {
+        return false;
+    }
+
+    isScrollbarUseThemeEnabled() {
+        return false;
+    }
+
+    toggleScrollbarUseTheme() {
         //Do nothing
     }
 }

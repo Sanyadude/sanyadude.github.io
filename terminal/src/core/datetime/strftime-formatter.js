@@ -1,4 +1,7 @@
-import { DAYS_FULL, DAYS_SHORT, MONTHS_FULL, MONTHS_SHORT } from './config.js'
+const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const pad = (number, length = 2) => String(number).padStart(length, '0');
 const padSpace = (number, length = 2) => String(number).padStart(length, ' ');
@@ -119,9 +122,9 @@ const getTokenValue = (date, token, utc = false) => {
 };
 
 /**
- * DateFormatter - Formats a date according to the given format
+ * StrftimeFormatter - Formats a date according to the given format
  */
-export class DateFormatter {
+export class StrftimeFormatter {
     /**
      * Formats the date according to the given format
      * @param {Date} date - The date to format
@@ -156,4 +159,4 @@ export class DateFormatter {
     }
 }
 
-export default DateFormatter
+export default StrftimeFormatter

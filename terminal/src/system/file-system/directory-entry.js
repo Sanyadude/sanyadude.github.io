@@ -20,7 +20,7 @@ export class DirectoryEntry extends Entry {
      */
     getEntries() {
         this.metadata.accessed = Date.now();
-        return this.entries;
+        return [...this.entries];
     }
 
     /**

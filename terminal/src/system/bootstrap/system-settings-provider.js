@@ -69,6 +69,15 @@ export class SystemSettingsProvider {
     get(name) {
         return this._settings.get(name);
     }
+
+    /**
+     * Checks if a setting is registered by name
+     * @param {string} name - The name of the setting
+     * @returns {boolean} - True if the setting is registered, false otherwise
+     */
+    has(name) {
+        return this._settings.has(name);
+    }
 }
 
 export default SystemSettingsProvider

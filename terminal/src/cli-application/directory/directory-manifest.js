@@ -35,6 +35,12 @@ export const DIRECTORY_MANIFEST = {
                 name: '-s, --sort <field>',
                 description: 'Sort the entries by name, size, or date',
             }
+        ],
+        arguments: [
+            {
+            name: '[<path>]',
+                description: 'The path to directory',
+            }
         ]
     }]
 }

@@ -3,6 +3,13 @@ import { OffsetMeasurement } from './offset-measurement.js'
 import { TerminalLayout } from './terminal-layout.js'
 import { TextFormat } from './text-format.js'
 import { LayoutProvider } from './layout-provider.js'
+import { 
+    TERMINAL_DEFAULT_COLORS,
+    TERMINAL_ARROW_SCROLL_LINES_AMOUNT, TERMINAL_WHEEL_SCROLL_LINES_AMOUNT,
+    TERMINAL_CLICK_DETECTION_TIME_THRESHOLD, TERMINAL_CLICK_DETECTION_MOVE_THRESHOLD,
+    TERMINAL_DEFAULT_FONT_SIZE, TERMINAL_DEFAULT_PADDING, TERMINAL_DEFAULT_SCROLL_BAR_SIZE,
+    TERMINAL_CONFIG_FONT_SIZE_KEY, TERMINAL_CONFIG_PADDING_KEY, TERMINAL_CONFIG_SCROLL_BAR_SIZE_KEY 
+} from '../config/config.js'
 
 /**
  * TerminalViewport class - represents a terminal UI for the terminal
@@ -11,20 +18,22 @@ export class TerminalViewport {
     /**
      * Creates a new TerminalViewport instance
      * @param {HTMLElement} container - The container element for the terminal
+     * @param {ConfigProvider} configProvider - The config provider
      */
-    constructor(container) {
+    constructor(container, configProvider) {
         this._container = container;
+        this._configProvider = configProvider;
         this._layoutProvider = new LayoutProvider();
 
-        this._fontSize = 16;
-        this._padding = 10;
-        this._scrollBarWidth = 16;
-        this._arrowScrollLinesAmount = 1;
-        this._wheelScrollLinesAmount = 4;
+        this._fontSize = TERMINAL_DEFAULT_FONT_SIZE;
+        this._padding = TERMINAL_DEFAULT_PADDING;
+        this._scrollBarSize = TERMINAL_DEFAULT_SCROLL_BAR_SIZE;
+        this._arrowScrollLinesAmount = TERMINAL_ARROW_SCROLL_LINES_AMOUNT;
+        this._wheelScrollLinesAmount = TERMINAL_WHEEL_SCROLL_LINES_AMOUNT;
 
         this._clickingState = null;
-        this._clickDetectionTimeThreshold = 200;
-        this._clickDetectionMoveThreshold = 5;
+        this._clickDetectionTimeThreshold = TERMINAL_CLICK_DETECTION_TIME_THRESHOLD;
+        this._clickDetectionMoveThreshold = TERMINAL_CLICK_DETECTION_MOVE_THRESHOLD;
 
         this._isScrolling = false;
         this._scrollingState = null;
@@ -33,12 +42,6 @@ export class TerminalViewport {
         this._selectionState = null;
 
         this._applyThemeToScrollContainer = false;
-
-        this._defaultColors = {
-            primary: '#eee',
-            secondary: '#ccc',
-            accent: '#666',
-        }
 
         this._charSizeCache = new Map();
 
@@ -50,6 +53,7 @@ export class TerminalViewport {
      * Initializes the terminal UI
      */
     _init() {
+        this._applyConfig();
         // Add style element
         this._addStyleElement();
         // Create container
@@ -68,8 +72,30 @@ export class TerminalViewport {
         // Create viewport container
         this._viewportContainerElement = this._createViewportContainer();
         this._containerElement.appendChild(this._viewportContainerElement);
+        // Create input element
+        this._inputElement = this._createInputElement();
+        this._containerElement.appendChild(this._inputElement);
+        this._inputElement.focus();
         // Compute the layout
         this._layoutProvider.setLayout(this.computeLayout());
+    }
+
+    /**
+     * Applies the config to the terminal
+     */
+    _applyConfig() {
+        const fontSize = this._configProvider.get(TERMINAL_CONFIG_FONT_SIZE_KEY);
+        if (fontSize && !isNaN(fontSize)) {
+            this._fontSize = Number(fontSize);
+        }
+        const padding = this._configProvider.get(TERMINAL_CONFIG_PADDING_KEY);
+        if (padding && !isNaN(padding)) {
+            this._padding = Number(padding);
+        }
+        const scrollBarSize = this._configProvider.get(TERMINAL_CONFIG_SCROLL_BAR_SIZE_KEY);
+        if (scrollBarSize && !isNaN(scrollBarSize)) {
+            this._scrollBarSize = Number(scrollBarSize);
+        }
     }
 
     /**
@@ -97,10 +123,11 @@ export class TerminalViewport {
             cursor: 'default',
             userSelect: 'none',
             padding: `${this._padding}px`,
-            paddingRight: `${this._scrollBarWidth + this._padding}px`,
+            paddingRight: `${this._scrollBarSize + this._padding}px`,
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-all',
             outline: 'none',
+            touchAction: 'none',
         });
         containerElement.setAttribute('tabindex', '0');
         return containerElement;
@@ -127,9 +154,9 @@ export class TerminalViewport {
             position: 'absolute',
             top: '0',
             right: '0',
-            width: `${this._scrollBarWidth}px`,
+            width: `${this._scrollBarSize}px`,
             height: '100%',
-            backgroundColor: this._defaultColors.primary,
+            backgroundColor: TERMINAL_DEFAULT_COLORS.PRIMARY,
         });
         return scrollContainerElement;
     }
@@ -141,12 +168,12 @@ export class TerminalViewport {
         const scrollThumbElement = document.createElement('div');
         Object.assign(scrollThumbElement.style, {
             position: 'absolute',
-            top: `${this._scrollBarWidth}px`,
+            top: `${this._scrollBarSize}px`,
             left: '0px',
-            width: `${this._scrollBarWidth}px`,
-            height: `${this._scrollBarWidth + 2}px`,
-            backgroundColor: this._defaultColors.secondary,
-            border: `1px solid ${this._defaultColors.primary}`,
+            width: `${this._scrollBarSize}px`,
+            height: `${this._scrollBarSize + 2}px`,
+            backgroundColor: TERMINAL_DEFAULT_COLORS.SECONDARY,
+            border: `1px solid ${TERMINAL_DEFAULT_COLORS.PRIMARY}`,
             boxSizing: 'border-box',
             cursor: 'pointer',
         });
@@ -162,13 +189,13 @@ export class TerminalViewport {
             position: 'absolute',
             top: '0',
             left: '0',
-            width: `${this._scrollBarWidth}px`,
-            height: `${this._scrollBarWidth}px`,
-            fontSize: `${this._scrollBarWidth}px`,
-            lineHeight: `${this._scrollBarWidth}px`,
-            color: this._defaultColors.accent,
-            backgroundColor: this._defaultColors.primary,
-            border: `1px solid ${this._defaultColors.primary}`,
+            width: `${this._scrollBarSize}px`,
+            height: `${this._scrollBarSize}px`,
+            fontSize: `${this._scrollBarSize}px`,
+            lineHeight: `${this._scrollBarSize}px`,
+            color: TERMINAL_DEFAULT_COLORS.ACCENT,
+            backgroundColor: TERMINAL_DEFAULT_COLORS.PRIMARY,
+            border: `1px solid ${TERMINAL_DEFAULT_COLORS.PRIMARY}`,
             boxSizing: 'border-box',
             cursor: 'pointer',
             display: 'flex',
@@ -188,13 +215,13 @@ export class TerminalViewport {
             position: 'absolute',
             bottom: '0',
             left: '0',
-            width: `${this._scrollBarWidth}px`,
-            height: `${this._scrollBarWidth}px`,
-            fontSize: `${this._scrollBarWidth}px`,
-            lineHeight: `${this._scrollBarWidth}px`,
-            color: this._defaultColors.accent,
-            backgroundColor: this._defaultColors.primary,
-            border: `1px solid ${this._defaultColors.primary}`,
+            width: `${this._scrollBarSize}px`,
+            height: `${this._scrollBarSize}px`,
+            fontSize: `${this._scrollBarSize}px`,
+            lineHeight: `${this._scrollBarSize}px`,
+            color: TERMINAL_DEFAULT_COLORS.ACCENT,
+            backgroundColor: TERMINAL_DEFAULT_COLORS.PRIMARY,
+            border: `1px solid ${TERMINAL_DEFAULT_COLORS.PRIMARY}`,
             boxSizing: 'border-box',
             cursor: 'pointer',
             display: 'flex',
@@ -203,6 +230,34 @@ export class TerminalViewport {
         });
         scrollArrowDownElement.textContent = '▼';
         return scrollArrowDownElement;
+    }
+
+    /**
+     * Creates the input element for listening to keyboard events (for touch devices)
+     */
+    _createInputElement() {
+        const inputElement = document.createElement('textarea');
+        Object.assign(inputElement.style, {
+            position: 'absolute',
+            left: '0',
+            top: '0',
+            width: '1px',
+            height: '1px',
+            opacity: '0',
+            padding: '0',
+            border: '0',
+            outline: 'none',
+            resize: 'none',
+            overflow: 'hidden',
+            pointerEvents: 'none',
+            background: 'transparent',
+            color: 'transparent',
+        });
+        inputElement.setAttribute('autocapitalize', 'off');
+        inputElement.setAttribute('autocomplete', 'off');
+        inputElement.setAttribute('autocorrect', 'off');
+        inputElement.setAttribute('spellcheck', 'false');
+        return inputElement;
     }
 
     /**
@@ -218,20 +273,23 @@ export class TerminalViewport {
         this._containerElement.addEventListener('drop', (event) => {
             this._handleDrop(event);
         });
-        this._containerElement.addEventListener('mousedown', (event) => {
-            this._handleMouseDown(event);
+        this._containerElement.addEventListener('pointerdown', (event) => {
+            this._handlePointerDown(event);
         });
-        this._containerElement.addEventListener('mousemove', (event) => {
-            this._handleMouseMove(event);
+        this._containerElement.addEventListener('pointermove', (event) => {
+            this._handlePointerMove(event);
         });
-        this._containerElement.addEventListener('mouseup', (event) => {
-            this._handleMouseUp(event);
+        this._containerElement.addEventListener('pointerup', (event) => {
+            this._handlePointerUp(event);
         });
         this._containerElement.addEventListener('wheel', (event) => {
             this._handleWheel(event);
         });
         this._containerElement.addEventListener('keydown', (event) => {
             this._handleKeyDown(event);
+        });
+        this._inputElement.addEventListener('input', (event) => {
+            this._handleInput(event);
         });
         const resizeObserver = new ResizeObserver((entries) => {
             this._handleResize();
@@ -280,10 +338,10 @@ export class TerminalViewport {
     }
 
     /**
-     * Handles the mouse down event for container
-     * @param {MouseEvent} event - The mouse down event
+     * Handles the pointer down event for container
+     * @param {PointerEvent} event - The pointer down event
      */
-    _handleMouseDown(event) {
+    _handlePointerDown(event) {
         if (event.target === this._scrollContainerElement) {
             this._scrollToClick(event);
             return;
@@ -307,10 +365,10 @@ export class TerminalViewport {
     }
 
     /**
-     * Handles the mouse move event for container
-     * @param {MouseEvent} event - The mouse move event
+     * Handles the pointer move event for container
+     * @param {PointerEvent} event - The pointer move event
      */
-    _handleMouseMove(event) {
+    _handlePointerMove(event) {
         if (this._isScrolling) {
             this._scrollingUpdate(event);
             return;
@@ -331,10 +389,10 @@ export class TerminalViewport {
     }
 
     /**
-     * Handles the mouse up event for container
-     * @param {MouseEvent} event - The mouse up event
+     * Handles the pointer up event for container
+     * @param {PointerEvent} event - The pointer up event
      */
-    _handleMouseUp(event) {
+    _handlePointerUp(event) {
         if (event.button === 0 && this._isScrolling) {
             this._stopScrolling();
             return;
@@ -353,6 +411,7 @@ export class TerminalViewport {
                 });
             }
             this._clickingState = null;
+            this._inputElement.focus();
         }
     }
 
@@ -366,7 +425,7 @@ export class TerminalViewport {
 
     /**
      * Handles the key down event for container
-     * @param {KeyboardEvent|MouseEvent} event - The key down event
+     * @param {KeyboardEvent|PointerEvent} event - The key down event
      */
     _handleKeyDown(event) {
         this.onKeyDown?.({
@@ -375,8 +434,18 @@ export class TerminalViewport {
     }
 
     /**
+     * Handles the input event for container
+     * @param {InputEvent} event - The input event
+     */
+    _handleInput(event) {
+        const value = this._inputElement.value;
+        if (!value) return;
+        this._inputElement.value = '';
+    }
+
+    /**
      * Handles the selection start event for container
-     * @param {MouseEvent} event - The selection start event
+     * @param {PointerEvent} event - The selection start event
      */
     _selectionStart(event) {
         this._isSelecting = true;
@@ -394,7 +463,7 @@ export class TerminalViewport {
 
     /**
      * Handles the selection update event for container
-     * @param {MouseEvent} event - The selection update event
+     * @param {PointerEvent} event - The selection update event
      */
     _selectionUpdate(event) {
         if (!this._isSelecting) return;
@@ -408,7 +477,7 @@ export class TerminalViewport {
 
     /**
      * Handles the selection end event for container
-     * @param {MouseEvent} event - The selection end event
+     * @param {PointerEvent} event - The selection end event
      */
     _selectionEnd(event) {
         this._isSelecting = false;
@@ -422,7 +491,7 @@ export class TerminalViewport {
 
     /**
      * Handles the scroll step event for container
-     * @param {MouseEvent} event - The mouse event
+     * @param {PointerEvent} event - The pointer event
      * @param {number} scrollStep - The scroll step
      */
     _scrollStep(event, scrollStep) {
@@ -434,13 +503,13 @@ export class TerminalViewport {
 
     /**
      * Handles the scroll to click event
-     * @param {MouseEvent} event - The mouse event
+     * @param {PointerEvent} event - The pointer event
      */
     _scrollToClick(event) {
         const scrollContainerRect = this._scrollContainerElement.getBoundingClientRect();
         const scrollThumbRect = this._scrollThumbElement.getBoundingClientRect();
-        const maxScrollHeight = scrollContainerRect.height - scrollThumbRect.height - 2 * this._scrollBarWidth;
-        const scrollThumbPosition = (event.clientY - scrollThumbRect.height / 2 - scrollContainerRect.top - this._scrollBarWidth) * 100 / maxScrollHeight;
+        const maxScrollHeight = scrollContainerRect.height - scrollThumbRect.height - 2 * this._scrollBarSize;
+        const scrollThumbPosition = (event.clientY - scrollThumbRect.height / 2 - scrollContainerRect.top - this._scrollBarSize) * 100 / maxScrollHeight;
         this.setScrollThumbPosition(scrollThumbPosition);
         this.onScroll?.({
             uiEvent: event,
@@ -450,7 +519,7 @@ export class TerminalViewport {
 
     /**
      * Starts the scrolling
-     * @param {MouseEvent} event - The mouse event
+     * @param {PointerEvent} event - The pointer event
      */
     _startScrolling(event) {
         this._isScrolling = true;
@@ -467,7 +536,7 @@ export class TerminalViewport {
 
     /**
      * Handles the scrolling
-     * @param {MouseEvent} event - The mouse event
+     * @param {PointerEvent} event - The pointer event
      */
     _scrollingUpdate(event) {
         const thumbPositionTop = event.clientY - this._scrollingState.containerRect.top - this._scrollingState.offset;
@@ -493,7 +562,7 @@ export class TerminalViewport {
 
     /**
      * Returns the coordinates of the event in the viewport container
-     * @param {MouseEvent} event - The event
+     * @param {PointerEvent} event - The event
      * @returns {object} - The coordinates of the event in the viewport container
      */
     _getViewportPosition(event) {
@@ -570,15 +639,15 @@ export class TerminalViewport {
             this._scrollArrowDownElement.style.borderColor = theme.selectionBackground;
             this._scrollArrowDownElement.style.backgroundColor = theme.background;
         } else {
-            this._scrollContainerElement.style.backgroundColor = this._defaultColors.primary;
-            this._scrollThumbElement.style.backgroundColor = this._defaultColors.secondary;
-            this._scrollThumbElement.style.borderColor = this._defaultColors.primary;
-            this._scrollArrowUpElement.style.color = this._defaultColors.accent;
-            this._scrollArrowUpElement.style.borderColor = this._defaultColors.primary;
-            this._scrollArrowUpElement.style.backgroundColor = this._defaultColors.primary;
-            this._scrollArrowDownElement.style.color = this._defaultColors.accent;
-            this._scrollArrowDownElement.style.borderColor = this._defaultColors.primary;
-            this._scrollArrowDownElement.style.backgroundColor = this._defaultColors.primary;
+            this._scrollContainerElement.style.backgroundColor = TERMINAL_DEFAULT_COLORS.PRIMARY;
+            this._scrollThumbElement.style.backgroundColor = TERMINAL_DEFAULT_COLORS.SECONDARY;
+            this._scrollThumbElement.style.borderColor = TERMINAL_DEFAULT_COLORS.PRIMARY;
+            this._scrollArrowUpElement.style.color = TERMINAL_DEFAULT_COLORS.ACCENT;
+            this._scrollArrowUpElement.style.borderColor = TERMINAL_DEFAULT_COLORS.PRIMARY;
+            this._scrollArrowUpElement.style.backgroundColor = TERMINAL_DEFAULT_COLORS.PRIMARY;
+            this._scrollArrowDownElement.style.color = TERMINAL_DEFAULT_COLORS.ACCENT;
+            this._scrollArrowDownElement.style.borderColor = TERMINAL_DEFAULT_COLORS.PRIMARY;
+            this._scrollArrowDownElement.style.backgroundColor = TERMINAL_DEFAULT_COLORS.PRIMARY;
         }
         return this;
     }
@@ -590,9 +659,9 @@ export class TerminalViewport {
     setScrollThumbPosition(position) {
         const scrollContainerRect = this._scrollContainerElement.getBoundingClientRect();
         const scrollThumbRect = this._scrollThumbElement.getBoundingClientRect();
-        const maxScrollHeight = scrollContainerRect.height - scrollThumbRect.height - 2 * this._scrollBarWidth;
-        const thumbPositionTop = this._scrollBarWidth + Math.round(position * maxScrollHeight / 100);
-        const clampedThumbPositionTop = Math.max(this._scrollBarWidth, Math.min(thumbPositionTop, maxScrollHeight + this._scrollBarWidth));
+        const maxScrollHeight = scrollContainerRect.height - scrollThumbRect.height - 2 * this._scrollBarSize;
+        const thumbPositionTop = this._scrollBarSize + Math.round(position * maxScrollHeight / 100);
+        const clampedThumbPositionTop = Math.max(this._scrollBarSize, Math.min(thumbPositionTop, maxScrollHeight + this._scrollBarSize));
         this._scrollThumbElement.style.top = `${clampedThumbPositionTop}px`;
     }
 
@@ -603,8 +672,8 @@ export class TerminalViewport {
     getScrollThumbPosition() {
         const scrollContainerRect = this._scrollContainerElement.getBoundingClientRect();
         const scrollThumbRect = this._scrollThumbElement.getBoundingClientRect();
-        const scrollThumbTop = scrollThumbRect.top - scrollContainerRect.top - this._scrollBarWidth;
-        const maxScrollHeight = scrollContainerRect.height - scrollThumbRect.height - 2 * this._scrollBarWidth;
+        const scrollThumbTop = scrollThumbRect.top - scrollContainerRect.top - this._scrollBarSize;
+        const maxScrollHeight = scrollContainerRect.height - scrollThumbRect.height - 2 * this._scrollBarSize;
         const scrollThumbPosition = scrollThumbTop * 100 / maxScrollHeight;
         return scrollThumbPosition;
     }

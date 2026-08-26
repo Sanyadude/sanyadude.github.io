@@ -26,44 +26,42 @@ export class Directory extends Application {
         const cwd = context.fileSystemExplorer.getCurrentPath();
         const entries = context.fileSystemManager.getEntriesAt(path ? path : cwd);
         if (entries.length === 0) return '';
-        const lines = this._getDirectoryInfo(entries, options);
-        return lines.join('\n');
+        return this._getDirectoryInfo(entries, options);
     }
 
     /**
-     * Gets the directory information
+     * Gets directory information
      * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
      * @param {object} options - The options
      * @returns {Array} - The directory information
      */
     _getDirectoryInfo(entries, options) {
-        let filteredEntries = entries;
-        filteredEntries = this._applyHiddenFilter(filteredEntries, options);
-        filteredEntries = this._applyTypeFilter(filteredEntries, options);
-        filteredEntries = this._applySort(filteredEntries, options);
-        const lines = this._getLines(filteredEntries, options);
-        return lines;
+        const filteredEntriesByHidden = this._filterByHidden(entries, options);
+        const filteredEntriesByType = this._filterByType(filteredEntriesByHidden, options);
+        const sortedEntries = this._sortEntries(filteredEntriesByType, options);
+        const formattedList = this._formatList(sortedEntries, options);
+        return formattedList;
     }
 
     /**
-     * Applies the hidden filter to the entries
+     * Filters the entries by hidden
      * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
      * @param {object} options - The options
      * @returns {Array<DirectoryEntry|FileEntry>} - The filtered entries
      */
-    _applyHiddenFilter(entries, options) {
+    _filterByHidden(entries, options) {
         const showHidden = options['hidden'] || false;
         if (showHidden) return entries;
         return entries.filter(entry => !entry.getMetadataField('hidden'));
     }
 
     /**
-     * Applies the type filter to the entries
+     * Filters the entries by type
      * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
      * @param {object} options - The options
      * @returns {Array<DirectoryEntry|FileEntry>} - The filtered entries
      */
-    _applyTypeFilter(entries, options) {
+    _filterByType(entries, options) {
         const showDirectories = options['directories'] || false;
         const showFiles = options['files'] || false;
         if (showDirectories && showFiles) return entries;
@@ -73,12 +71,12 @@ export class Directory extends Application {
     }
 
     /**
-     * Applies the sort option to the entries
+     * Sorts the entries
      * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
      * @param {object} options - The options
      * @returns {Array<DirectoryEntry|FileEntry>} - The sorted entries
      */
-    _applySort(entries, options) {
+    _sortEntries(entries, options) {
         const sortField = options['sort'];
         if (typeof sortField !== 'string' || sortField.length === 0) return entries;
         const field = sortField[0];
@@ -94,12 +92,12 @@ export class Directory extends Application {
     }
 
     /**
-     * Gets the lines of the directory information
+     * Formats the list of the entries into a string
      * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
      * @param {object} options - The options
-     * @returns {Array} - The lines of the directory information
+     * @returns {string} - The formatted list
      */
-    _getLines(entries, options) {
+    _formatList(entries, options) {
         const showBare = options['bare'] || false;
         const lines = [];
         for (const entry of entries) {
@@ -109,7 +107,7 @@ export class Directory extends Application {
             lines.push(`${entries.filter(entry => entry.isDirectory()).length} Dir(s)`);
             lines.push(`${entries.filter(entry => !entry.isDirectory()).length} File(s)`);
         }
-        return lines;
+        return lines.join('\n');
     }
 
     /**
@@ -119,12 +117,12 @@ export class Directory extends Application {
      * @returns {string} - The formatted entry
      */
     _formatEntry(entry, options) {
+        const showBare = options['bare'] || false;
+        if (showBare) return entry.getName();
         const spaceString = ' ';
         const padValue = (value, length) => value.toString().padStart(length, spaceString);
-        const showBare = options['bare'] || false;
         const thousandSeparator = options['thousand-separator'] ? ' ' : '';
         const useLowerCase = options['lowercase'] || false;
-        if (showBare) return entry.getName();
         const entryDate = this._formatDate(entry.getCreated());
         const entryName = useLowerCase ? entry.getName().toLowerCase() : entry.getName();
         const entrySize = padValue(String(entry.getSize()).replace(/\B(?=(\d{3})+(?!\d))/g, thousandSeparator), 16);
