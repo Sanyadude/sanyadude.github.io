@@ -58,7 +58,7 @@ export class TextRenderer {
         this._lineIndexCache[index] = lineWrapIndex;
         const cache = selection ? this._lineSelectionCache : this._lineContentCache;
         let cachedData = cache[lineWrapIndex];
-        const lineKey = `${lineWrapIndex}:${this._hashText(line.text)}${selection ? `:${selection.start}:${selection.end}` : ''}`;
+        const lineKey = `${lineWrapIndex}:${line.hash}${selection ? `:${selection.start}:${selection.end}` : ''}`;
         const isCached = cachedData ? cachedData.key == lineKey : false;
         const shouldSkipRender = isLineRenderedAtIndex && isCached && (selection || !this._lineSelectionCache[lineWrapIndex]);
         if (!selection) this._lineSelectionCache[lineWrapIndex] = null;
@@ -227,20 +227,6 @@ export class TextRenderer {
     _getStyleFromFormat(format = '') {
         const sgrState = TextFormat.parseSgr(format);
         return TextFormat.resolveSgrToStyle(sgrState, this._themeProvider.getTheme());
-    }
-
-    /**
-     * Hashes the text
-     * @param {string} text - The text to hash
-     * @returns {number} - The hash of the text
-     */
-    _hashText(text) {
-        let hash = 0;
-        for (let i = 0; i < text.length; i++) {
-            hash = ((hash << 5) - hash) + text.charCodeAt(i);
-            hash |= 0;
-        }
-        return hash >>> 0;
     }
 
     /**

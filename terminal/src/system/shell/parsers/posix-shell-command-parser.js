@@ -106,12 +106,27 @@ export class PosixShellCommandParser extends ShellCommandParser {
 
     /**
      * Checks whether a token looks like an option (e.g. -v, --verbose)
-     * Numbers (-5), lone dashes (-), and the -- separator are not options
      * @param {string} token - The token to test
+     * @param {ShellProgramOption[]} options - The options to test against
      * @returns {boolean} - True if the token looks like an option
      */
-    _isOptionToken(token) {
-        return typeof token === 'string' && /^-{1,2}[a-zA-Z]/.test(token);
+    _isOptionToken(token, options) {
+        if (typeof token !== 'string' || !token || token === '-') return false;
+        if (token === '--') return true;
+        const getOption = (name) => {
+            return options.find(option => option.getShort() === name || option.getLong() === name);
+        }
+        if (token.startsWith('--')) {
+            const optionArg = token.slice(2);
+            const optionName = optionArg.split('=', 1)[0];
+            return !!getOption(optionName);
+        }
+        if (!token.startsWith('-') || token.length < 2) return false;
+        const optionArg = token.slice(1);
+        const optionName = optionArg.split('=', 1)[0];
+        if (optionName.length === 1 && getOption(optionName)) return true;
+        const isOption = !!getOption(optionArg[0]);
+        return isOption;
     }
 
     /**
@@ -126,6 +141,7 @@ export class PosixShellCommandParser extends ShellCommandParser {
         if (tokens.length === 0) return new ShellCommandLine(commandLine);
         const commands = program.getCommands();
         const options = program.getOptions();
+        const optionsArray = Array.from(options.values());
         let currentIndex = 0;
         const programName = tokens[currentIndex];
         currentIndex++;
@@ -133,7 +149,7 @@ export class PosixShellCommandParser extends ShellCommandParser {
         const parsedOptions = {};
         const positionalArgs = [];
         const getOption = (name) => {
-            const option = Array.from(options.values()).find(option => option.getShort() === name || option.getLong() === name);
+            const option = optionsArray.find(option => option.getShort() === name || option.getLong() === name);
             if (!option) return null;
             return option;
         }
@@ -152,7 +168,7 @@ export class PosixShellCommandParser extends ShellCommandParser {
                 break;
             }
             //handle non-option arguments (first matching registered command becomes the subcommand)
-            if (!this._isOptionToken(currentArg)) {
+            if (!this._isOptionToken(currentArg, optionsArray)) {
                 if (!commandName && commands.has(currentArg)) {
                     commandName = currentArg;
                 } else {
@@ -172,7 +188,7 @@ export class PosixShellCommandParser extends ShellCommandParser {
                 if (option.isFlag()) return true;
                 if (optionValue) return optionValue;
                 const nextArg = tokens[currentIndex + 1];
-                const nextArgConsumable = nextArg && nextArg !== '--' && !this._isOptionToken(nextArg);
+                const nextArgConsumable = nextArg && !this._isOptionToken(nextArg, optionsArray);
                 if (!nextArgConsumable) return option.hasDefault() ? option.getDefaultValue() : null;
                 currentIndex++;
                 return nextArg;
@@ -191,7 +207,10 @@ export class PosixShellCommandParser extends ShellCommandParser {
                     const rest = optionName.slice(charIndex + 1);
                     //a value-taking option takes the remainder of the token as its value (e.g. -n5 -> n=5)
                     if (option && !option.isFlag() && rest.length > 0) {
-                        setOption(option, rest);
+                        const attached = optionValue !== null
+                            ? `${rest}=${optionValue}`
+                            : rest;
+                        setOption(option, attached);
                         break;
                     }
                     //the last character may still take a value via =value, the next token, or its default
@@ -228,7 +247,16 @@ export class PosixShellCommandParser extends ShellCommandParser {
      * @returns {string} - The formatted option string
      */
     _formatOption(option) {
-        return option.isLong() ? `--${option.getLong()}` : `-${option.getShort()}`;
+        const parts = [];
+        const long = option.getLong();
+        const short = option.getShort();
+        if (short) {
+            parts.push(`-${short}`);
+        }
+        if (long) {
+            parts.push(`--${long}`);
+        }
+        return parts.join(',');
     }
 
     /**

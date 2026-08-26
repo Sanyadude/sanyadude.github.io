@@ -1,5 +1,7 @@
 import { ShellProgram } from './shell-program.js'
 import { ShellCommandContext } from './shell-command-context.js'
+import { ShellJob } from './shell-job.js'
+import { ShellInterruptedError } from './shell-interrupted-error.js'
 import { PosixShellCommandParser } from './parsers/posix-shell-command-parser.js'
 import { DosShellCommandParser } from './parsers/dos-shell-command-parser.js'
 import { VARIABLES, ALIASES_DEPTH_MAX } from './shell-config.js'
@@ -20,7 +22,8 @@ export class Shell {
         this._terminal = null;
         this._processManager = null;
 
-        this._isProcessingQueue = false;
+        this._processingPromise = null;
+        this._currentJob = null;
         this._queue = [];
 
         this._programs = new Map();
@@ -57,6 +60,14 @@ export class Shell {
      */
     getFileSystemExplorer() {
         return this._serviceProvider.get('fileSystemExplorer');
+    }
+
+    /**
+     * Gets the file system manager
+     * @returns {FileSystemManager} The file system manager
+     */
+    getFileSystemManager() {
+        return this._serviceProvider.get('fileSystemManager');
     }
 
     /**
@@ -281,7 +292,7 @@ export class Shell {
             });
             programManifest.options?.forEach(option => {
                 if (!option.name || typeof option.name !== 'string') return;
-                program.addOption(option.name, option.description || '', option.defaultValue || null);
+                program.addOption(option.name, option.description || '', option.defaultValue);
             });
             programManifest.arguments?.forEach(argument => {
                 if (!argument.name || typeof argument.name !== 'string') return;
@@ -374,18 +385,30 @@ export class Shell {
     }
 
     /**
+     * Ensures the current shell job can proceed
+     * @throws {ShellInterruptedError} - If the current job was aborted
+     */
+    _ensureShellJobCanProceed() {
+        if (!this._currentJob || !this._currentJob.isAborted()) return;
+        throw new ShellInterruptedError();
+    }
+
+    /**
      * Executes the program with the given command, arguments, and options
      * @param {string} command - The command to execute
      * @param {string} stdin - The stdin to pass to the program
      * @returns {Promise<any>} - A promise that resolves to the result of the program execution
+     * @throws {ShellInterruptedError} - If the current job was aborted
      */
     async _executeProgram(command, stdin = '') {
+        this._ensureShellJobCanProceed();
         const name = this._parser.getProgramName(command);
         const program = this._programs.get(name);
         if (!program) return `Command not found: ${name || '(empty)'}. Use 'help' to see available commands.`;
         const shellCommandLine = this._parser.parse(program, command);
         shellCommandLine.setStdin(stdin);
-        const result = await this._processManager.run(name, shellCommandLine);
+        const result = await this._processManager.run(name, shellCommandLine, this._currentJob.getRuntime());
+        this._ensureShellJobCanProceed();
         return result;
     }
 
@@ -395,15 +418,18 @@ export class Shell {
      */
     async _processQueue() {
         while (this._queue.length > 0) {
-            const current = this._queue[0];
+            this._currentJob = this._queue[0];
             const prompt = this.getPrompt();
-            this._terminal.writePrompt(prompt.user, prompt.host, prompt.cwd, current);
+            this._terminal.writePrompt(prompt.user, prompt.host, prompt.cwd, this._currentJob.getCommand());
             try {
-                const result = await this._runPipeline(current);
+                const result = await this._runPipeline(this._currentJob.getCommand());
                 this._terminal.writeLine(result);
             } catch (error) {
-                this._terminal.writeLine(error?.toString() || 'Error');
+                if (!(error instanceof ShellInterruptedError)) {
+                    this._terminal.writeLine(error?.toString() || 'Error');
+                }
             } finally {
+                this._currentJob = null;
                 this._queue.shift();
             }
         }
@@ -426,6 +452,7 @@ export class Shell {
             this._execute.bind(this),
         ];
         for (const step of steps) {
+            this._ensureShellJobCanProceed();
             if (context.stop) break;
             context = await step(context);
         }
@@ -580,17 +607,36 @@ export class Shell {
         if (context.appendFile) {
             const file = this.getFileSystemExplorer().getFile(context.appendFile);
             if (file) file.writeLine(output);
-            else this.getFileSystemExplorer().createFile(context.appendFile, output, true);
+            else this.getFileSystemManager().createFile(context.appendFile, output, true);
             context.stdout = `Output added to: ${context.appendFile}`;
             return context;
         }
         if (context.outputFile) {
-            this.getFileSystemExplorer().createFile(context.outputFile, output, true);
+            this.getFileSystemManager().createFile(context.outputFile, output, true);
             context.stdout = `Output written to: ${context.outputFile}`;
             return context;
         }
         context.stdout = output?.toString() || '';
         return context;
+    }
+
+    /**
+     * Checks whether the shell is executing a command
+     * @returns {boolean} - True while processing commands
+     */
+    isProcessing() {
+        return this._processingPromise !== null;
+    }
+
+    /**
+     * Interrupts the foreground job and discards queued commands
+     * @returns {boolean} - True if a process was interrupted
+     */
+    abortCurrentJob() {
+        this._queue.splice(1);
+        if (!this._currentJob) return false;
+        this._currentJob.abort();
+        return true;
     }
 
     /**
@@ -603,15 +649,14 @@ export class Shell {
             .map(command => command.trim())
             .filter(Boolean);
         for (const command of commands) {
-            this._queue.push(command);
+            this._queue.push(new ShellJob(command));
         }
-        if (this._isProcessingQueue) return;
-        this._isProcessingQueue = true;
-        try {
-            await this._processQueue();
-        } finally {
-            this._isProcessingQueue = false;
-        }
+        if (this._processingPromise) return;
+        this._processingPromise = this._processQueue().finally(() => {
+            this._processingPromise = null;
+            this._currentJob = null;
+        });
+        await this._processingPromise;
     }
 }
 

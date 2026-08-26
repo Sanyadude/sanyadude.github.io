@@ -2,6 +2,7 @@ import { ACTIONS } from './actions.js'
 import { CompletionReverseCommand } from '../commands/completion-reverse.js'
 import { CompletionCommand } from '../commands/completion.js'
 import { CopyCommand } from '../commands/copy.js'
+import { InterruptCommand } from '../commands/interrupt.js'
 import { DeleteLeftCommand } from '../commands/delete-left.js'
 import { DeleteRightCommand } from '../commands/delete-right.js'
 import { HistoryDownCommand } from '../commands/history-down.js'
@@ -25,6 +26,7 @@ export const COMMANDS = Object.freeze({
     [ACTIONS.COMPLETION]: new CompletionCommand(),
     [ACTIONS.COMPLETION_REVERSE]: new CompletionReverseCommand(),
     [ACTIONS.COPY]: new CopyCommand(),
+    [ACTIONS.INTERRUPT]: new InterruptCommand(),
     [ACTIONS.DELETE_LEFT]: new DeleteLeftCommand(),
     [ACTIONS.DELETE_RIGHT]: new DeleteRightCommand(),
     [ACTIONS.HISTORY_DOWN]: new HistoryDownCommand(),

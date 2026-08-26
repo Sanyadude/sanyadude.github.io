@@ -101,7 +101,6 @@ export class ProcessManager {
         const process = this._processes.get(id);
         if (!process) return null;
         process.kill();
-        this._processes.delete(id);
         return process;
     }
 
@@ -109,20 +108,45 @@ export class ProcessManager {
      * Runs a program
      * @param {string} programName - The name of the program to run
      * @param {ShellCommandLine} commandLine - The command line to run the program
+     * @param {ExecutionRuntime} callerRuntime - The inherited runtime for the program
      * @returns {Promise<any>} - The result of the program execution or error
      */
-    async run(programName, commandLine) {
+    async run(programName, commandLine, callerRuntime) {
+        if (!this._applicationManager.resolve(programName)) {
+            throw new Error(`Program not found: ${programName}`);
+        }
         const process = this.createProcess(commandLine);
         process.start();
+        const runtime = callerRuntime.forProcess(process);
+        if (runtime.isAborted()) {
+            process.kill();
+            return;
+        }
         try {
-            const result = await this._applicationManager.execute(programName, commandLine);
-            if (result === null) {
-                throw new Error(`Program not found: ${programName}`);
+            const executePromise = this._applicationManager.execute(programName, commandLine, runtime);
+            const outcome = await Promise.race([
+                executePromise.then(
+                    (value) => ({ ok: true, value }),
+                    (error) => ({ ok: false, error }),
+                ),
+                runtime.whenAborted().then(() => ({ aborted: true })),
+            ]);
+            if (outcome.aborted || runtime.isAborted()) {
+                process.kill();
+                return;
             }
-            process.terminate(result);
-            return result;
+            if (!outcome.ok) {
+                process.terminate(outcome.error?.toString(), 1);
+                return outcome.error?.toString();
+            }
+            process.terminate(outcome.value);
+            return outcome.value;
         } catch (error) {
-            process.terminate(error?.toString(), 1);  // non-zero exit code
+            if (runtime.isAborted()) {
+                process.kill();
+                return;
+            }
+            process.terminate(error?.toString(), 1);
             return error?.toString();
         }
     }

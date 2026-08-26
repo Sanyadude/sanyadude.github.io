@@ -172,7 +172,7 @@ export class TextBuffer {
     }
 
     /**
-     * Removes a line from the buffer
+     * Removes a line from the buffer (if index is not provided, the last line will be removed)
      * @param {number} index - The index of the line to remove
      * @returns {TextBuffer} - The instance of the TextBuffer
      */
@@ -466,15 +466,33 @@ export class TextBuffer {
     }
 
     /**
+     * Clears scrollback lines without touching the input/prompt buffer
+     * @returns {TextBuffer} - The instance of the TextBuffer
+     */
+    clearLines() {
+        this._bufferLines.length = 0;
+        this._wrappedToBufferLinesMap.length = 0;
+        this._wrappedLinesCache = {};
+        return this;
+    }
+
+    /**
+     * Clears the input line
+     * @returns {TextBuffer} - The instance of the TextBuffer
+     */
+    clearInputLine() {
+        this._inputBuffer.clear();
+        this._inputLine = this._createInputBufferLine();
+        return this;
+    }
+
+    /**
      * Clears the text buffer data
      * @returns {TextBuffer} - The instance of the TextBuffer
      */
     clear() {
-        this._bufferLines.length = 0;
-        this._wrappedToBufferLinesMap.length = 0;
-        this._wrappedLinesCache = {};
-        this._inputBuffer.clear();
-        this._inputLine = this._createInputBufferLine();
+        this.clearLines();
+        this.clearInputLine();
         return this;
     }
 }

@@ -11,10 +11,12 @@ import { ScrollBoundsProvider } from './components/scroll-bounds-provider.js'
 import { InputPrompt } from './components/input-prompt.js'
 import { TerminalApi } from './api/terminal-api.js'
 import { TerminalEventHandler } from './components/terminal-event-handler.js'
+import { TerminalEventDispatcher } from './components/terminal-event-dispatcher.js'
 import { TerminalDebug } from './components/terminal-debug.js'
 import { TerminalClear } from './cli-applications/terminal-clear/terminal-clear.js'
 import { TerminalHistory } from './cli-applications/terminal-history/terminal-history.js'
 import { TerminalSettings } from './cli-applications/terminal-settings/terminal-settings.js'
+import { TERMINAL_NAME, TERMINAL_TYPE, TERMINAL_VERSION, TERMINAL_COLOR_MODE, TERMINAL_WELCOME_MESSAGE_LINES } from './config/config.js'
 
 /**
  * Terminal class - represents a interface for the shell
@@ -33,11 +35,13 @@ export class Terminal {
         this.shell = this.serviceProvider.get('shell');
         this.fileSystemExplorer = this.serviceProvider.get('fileSystemExplorer');
         this.fileSystemManager = this.serviceProvider.get('fileSystemManager');
+        this.configProvider = this.serviceProvider.get('configProvider');
 
         this._info = {
-            name: 'terminal',
-            type: 'myterm',
-            version: '0.3.0',
+            name: TERMINAL_NAME,
+            type: TERMINAL_TYPE,
+            version: TERMINAL_VERSION,
+            colorMode: TERMINAL_COLOR_MODE
         };
 
         this._init();
@@ -49,10 +53,11 @@ export class Terminal {
     _init() {
         this.terminalApi = new TerminalApi(this);
         this.terminalEventHandler = new TerminalEventHandler(this);
+        this.terminalEventDispatcher = new TerminalEventDispatcher(this);
         this.terminalDebug = new TerminalDebug(this);
         // Terminal components
         this.themeProvider = new ThemeProvider();
-        this.terminalViewport = new TerminalViewport(this.container);
+        this.terminalViewport = new TerminalViewport(this.container, this.configProvider);
         this.layoutProvider = this.terminalViewport.getLayoutProvider();
         this.textBuffer = new TextBuffer(this.layoutProvider);
         this.scrollBoundsProvider = new ScrollBoundsProvider(this.layoutProvider, this.textBuffer);
@@ -64,14 +69,14 @@ export class Terminal {
         this.textSelection = new TextSelection(this.layoutProvider, this.scrollBoundsProvider);
         this.inputPrompt = new InputPrompt();
 
-        this.terminalEventHandler.addListeners();
+        this.terminalEventDispatcher.addListeners();
 
         this.api().setTheme();
+        this.api().applyConfig();
         this.api().clear();
         //this.api().enableDebug();
 
-        this.api().writeLine(`Command Line Interface v${this._info.version}`);
-        this.api().writeLine('');
+        TERMINAL_WELCOME_MESSAGE_LINES.forEach(line => this.api().writeLine(line));
     }
 
     /**
@@ -104,6 +109,14 @@ export class Terminal {
      */
     api() {
         return this.terminalApi;
+    }
+
+    /**
+     * Dispatches a terminal event
+     * @param {TerminalEvent} terminalEvent - The terminal event to dispatch
+     */
+    dispatch(terminalEvent) {
+        this.terminalEventHandler.handle(terminalEvent);
     }
 }
 

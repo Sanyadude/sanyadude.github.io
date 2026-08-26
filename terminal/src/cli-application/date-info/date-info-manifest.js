@@ -1,6 +1,6 @@
 import { DEFAULT_DATE_FORMAT, DEFAULT_ISO8601_FORMAT } from './config.js';
 
-export const DATE_MANIFEST = {
+export const DATE_INFO_MANIFEST = {
     name: 'date',
     version: '0.1.0',
     description: 'Shows current date',
@@ -14,8 +14,27 @@ export const DATE_MANIFEST = {
                 description: 'The date to use, if not provided, the current date will be used'
             },
             {
-                name: '-f, --format <format>',
-                description: 'Format the date output:'
+                name: '-I, --iso8601 <format>',
+                description: `Format the date output according to the ISO 8601 standard ('date', 'hours', 'minutes', 'seconds', 'days')`,
+                defaultValue: DEFAULT_ISO8601_FORMAT,
+            },
+            {
+                name: '-R, --rfc-email',
+                description: 'Format the date output according to the RFC 5322 standard'
+            },
+            {
+                name: '-u, --utc',
+                description: 'Use UTC time'
+            },
+            {
+                name: '-s, --set-date <date>',
+                description: 'Set the system time to the specified date'
+            }
+        ],
+        arguments: [
+            {
+                name: '<format>',
+                description: 'Output format (strftime):'
                     +'\n  - %Y: Year (4 digits)'
                     +'\n  - %y: Year (2 digits)'
                     +'\n  - %m: Month (2 digits)'
@@ -48,28 +67,10 @@ export const DATE_MANIFEST = {
                     +'\n  - %D: Date in MM/DD/YY format'
                     +'\n  - %c: Locale date and time'
                     +'\n  - %x: Locale date only'
-                    +'\n  - %X: Locale time only\n',
-                defaultValue: DEFAULT_DATE_FORMAT,
-            },
-            {
-                name: '-I, --iso8601 <format>',
-                description: `Format the date output according to the ISO 8601 standard ('date', 'hours', 'minutes', 'seconds', 'days')`,
-                defaultValue: DEFAULT_ISO8601_FORMAT,
-            },
-            {
-                name: '-R, --rfc-email',
-                description: 'Format the date output according to the RFC 5322 standard'
-            },
-            {
-                name: '-u, --utc',
-                description: 'Use UTC time'
-            },
-            {
-                name: '-s, --set-date <date>',
-                description: 'Set the system time to the specified date'
+                    +'\n  - %X: Locale time only\n'
             }
-        ],
+        ]
     }]
 }
 
-export default DATE_MANIFEST
+export default DATE_INFO_MANIFEST

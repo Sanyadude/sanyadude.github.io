@@ -76,9 +76,9 @@ export class Application {
     /**
      * Called by system to run application
      * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the application
+     * @param {ApplicationExecutionContext|object} context - The execution context
      * @returns {Promise<string>} - The result of the command execution
-     */ 
+     */
     async main(commandLine, context = {}) {
         return '';
     }

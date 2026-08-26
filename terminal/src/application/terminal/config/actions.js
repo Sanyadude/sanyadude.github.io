@@ -16,6 +16,7 @@ export const ACTIONS = Object.freeze({
     SELECTION_EXTEND_RIGHT: 'selectionExtendRight',
     COPY: 'copy',
     PASTE: 'paste',
+    INTERRUPT: 'interrupt',
     MOVE_CURSOR_LEFT: 'moveCursorLeft',
     MOVE_CURSOR_RIGHT: 'moveCursorRight',
     MOVE_CURSOR_WORD_LEFT: 'moveCursorWordLeft',

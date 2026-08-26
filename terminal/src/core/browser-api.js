@@ -24,6 +24,19 @@ export class BrowserAPI {
     }
 
     /**
+     * Gets the URL parameters as a JSON object
+     * @returns {Object} The URL parameters as a JSON object
+     */
+    getUrlParamsAsJson() {
+        const params = new URLSearchParams(window.location.search);
+        const result = {};
+        for (const [key, value] of params.entries()) {
+            result[key] = value;
+        }
+        return result;
+    }
+
+    /**
      * Downloads a file
      * @param {string} name - The name of the file
      * @param {ArrayBuffer} content - The content of the file

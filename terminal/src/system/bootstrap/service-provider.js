@@ -38,6 +38,15 @@ export class ServiceProvider {
     get(name) {
         return this._services.get(name);
     }
+
+    /**
+     * Checks if a service is registered by name
+     * @param {string} name - The name of the service
+     * @returns {boolean} - True if the service is registered, false otherwise
+     */
+    has(name) {
+        return this._services.has(name);
+    }
 }
 
 export default ServiceProvider

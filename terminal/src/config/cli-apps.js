@@ -1,5 +1,6 @@
 import { Find } from '../cli-application/find/find.js'
 import { ChangeDirectory } from '../cli-application/change-directory/change-directory.js'
+import { List } from '../cli-application/list/list.js'
 import { Copy } from '../cli-application/copy/copy.js'
 import { Move } from '../cli-application/move/move.js'
 import { MakeDirectory } from '../cli-application/make-directory/make-directory.js'
@@ -7,6 +8,8 @@ import { Directory } from '../cli-application/directory/directory.js'
 import { DeleteFile } from '../cli-application/delete-file/delete-file.js'
 import { RemoveDirectory } from '../cli-application/remove-directory/remove-directory.js'
 import { Type } from '../cli-application/type/type.js'
+import { Cat } from '../cli-application/cat/cat.js'
+import { Tac } from '../cli-application/tac/tac.js'
 import { Head } from '../cli-application/head/head.js'
 import { Tail } from '../cli-application/tail/tail.js'
 import { Uniq } from '../cli-application/uniq/uniq.js'
@@ -15,6 +18,7 @@ import { Download } from '../cli-application/download/download.js'
 import { Calculator } from '../cli-application/calculator/calculator.js'
 import { Cowsay } from '../cli-application/cowsay/cowsay.js'
 import { Echo } from '../cli-application/echo/echo.js'
+import { Yes } from '../cli-application/yes/yes.js'
 import { JSRuntime } from '../cli-application/js-runtime/js-runtime.js'
 import { Lipsum } from '../cli-application/lipsum/lipsum.js'
 import { Lolcat } from '../cli-application/lolcat/lolcat.js'
@@ -36,10 +40,13 @@ import { Declare } from '../cli-application/declare/declare.js'
 export const CLI_APPS = Object.freeze({
     changeDirectory: new ChangeDirectory(),
     directory: new Directory(),
+    list: new List(),
     find: new Find(),
     copy: new Copy(),
     move: new Move(),
     type: new Type(),
+    cat: new Cat(),
+    tac: new Tac(),
     head: new Head(),
     tail: new Tail(),
     uniq: new Uniq(),
@@ -51,6 +58,7 @@ export const CLI_APPS = Object.freeze({
     calculator: new Calculator(),
     cowsay: new Cowsay(),
     echo: new Echo(),
+    yes: new Yes(),
     jsRuntime: new JSRuntime(),
     lipsum: new Lipsum(),
     lolcat: new Lolcat(),

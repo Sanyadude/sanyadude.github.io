@@ -1,6 +1,5 @@
 import { THEMES } from '../config/themes.js'
-
-const DEFAULT_THEME_NAME = 'pastel-dark';
+import { TERMINAL_DEFAULT_THEME_NAME } from '../config/config.js';
 
 /**
  * ThemeProvider class - represents a theme provider for the terminal
@@ -9,7 +8,7 @@ export class ThemeProvider {
     /**
      * Creates a new ThemeProvider instance
      */
-    constructor(defaultThemeName = DEFAULT_THEME_NAME) {
+    constructor(defaultThemeName = TERMINAL_DEFAULT_THEME_NAME) {
         this._themes = THEMES;
         this._theme = this._themes[defaultThemeName];
     }
@@ -30,7 +29,7 @@ export class ThemeProvider {
      * @param {string} themeName - The name of the theme to set
      * @returns {ThemeProvider} - The instance of the ThemeProvider
      */
-    setTheme(themeName = DEFAULT_THEME_NAME) {
+    setTheme(themeName = TERMINAL_DEFAULT_THEME_NAME) {
         if (!this._themes[themeName]) return this;
         this._theme = this._themes[themeName];
         this.onThemeChange?.({ theme: this._theme });

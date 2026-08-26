@@ -1,8 +1,8 @@
 import { Application } from '../../system/application/application.js'
-import { DATE_MANIFEST } from './date-manifest.js'
+import { DATE_INFO_MANIFEST } from './date-info-manifest.js'
 import { DEFAULT_DATE_FORMAT, DEFAULT_ISO8601_FORMAT } from './config.js'
 import { DateParser } from './date-parser.js'
-import { DateFormatter } from './date-formatter.js'
+import { StrftimeFormatter } from '../../core/datetime/strftime-formatter.js'
 
 /**
  * Date - Application for displaying current date
@@ -13,9 +13,9 @@ export class DateInfo extends Application {
      * Creates a new Date instance
      */
     constructor() {
-        super('date', DATE_MANIFEST);
+        super('date', DATE_INFO_MANIFEST);
         this._dateParser = new DateParser();
-        this._dateFormatter = new DateFormatter();
+        this._dateFormatter = new StrftimeFormatter();
     }
 
     /**
@@ -26,11 +26,13 @@ export class DateInfo extends Application {
      */
     main(commandLine, context) {
         const options = commandLine.getOptions();
+        const args = commandLine.getArguments();
         const setDate = options['set-date'];
         if (setDate) {
             return this._setDate(setDate, context);
         }
-        const format = options['format'] || DEFAULT_DATE_FORMAT;
+        const argsFormat = args.find(arg => arg.startsWith('+'));
+        const format = argsFormat ? argsFormat.slice(1) : DEFAULT_DATE_FORMAT;
         const iso8601 = options['iso8601'];
         const rfcEmail = options['rfc-email'];
         const utc = options['utc'];

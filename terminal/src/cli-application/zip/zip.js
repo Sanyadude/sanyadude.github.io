@@ -31,7 +31,7 @@ export class Zip extends Application {
         if (args.length === 0) return 'Error: No path provided';
         const path = args[0];
         const fullPath = context.fileSystemExplorer.getAbsolutePath(path);
-        const overwrite = options['force'] ? true : false;
+        const overwrite = Boolean(options['force']);
         if (context.fileSystemManager.directoryExists(fullPath)) {
             const directory = context.fileSystemManager.getDirectory(fullPath);
             const zipContent = this._zipDirectory(fullPath, context);

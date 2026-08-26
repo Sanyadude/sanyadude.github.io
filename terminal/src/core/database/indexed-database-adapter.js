@@ -31,15 +31,30 @@ export class IndexedDatabaseAdapter extends DatabaseAdapter {
     async _request(store, mode, callback) {
         const db = await this.open();
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(store, mode);
-            const objectStore = transaction.objectStore(store);
-            const request = callback(objectStore);
-            request.onsuccess = () => {
-                resolve(request.result)
-            };
-            request.onerror = () => {
-                reject(request.error)
-            };
+            let result;
+            try {
+                const transaction = db.transaction(store, mode);
+                const objectStore = transaction.objectStore(store);
+                const request = callback(objectStore);
+                request.onsuccess = (event) => {
+                    result = request.result;
+                };
+                request.onerror = (event) => {
+                    reject(request.error)
+                };
+                transaction.oncomplete = () => {
+                    resolve(result);
+                };
+                transaction.onerror = () => {
+                    reject(transaction.error);
+                };
+                transaction.onabort = () => {
+                    reject(transaction.error || new Error('IndexedDB transaction aborted'));
+                };
+            }
+            catch (error) {
+                reject(error);
+            }
         });
     }
 
@@ -66,7 +81,7 @@ export class IndexedDatabaseAdapter extends DatabaseAdapter {
                 this._opening = null;
                 resolve(this._db);
             };
-            request.onerror = () => {
+            request.onerror = (event) => {
                 this._opening = null;
                 reject(request.error);
             };
@@ -155,13 +170,13 @@ export class IndexedDatabaseAdapter extends DatabaseAdapter {
         await this.close();
         return new Promise((resolve, reject) => {
             const request = indexedDB.deleteDatabase(this._options.name);
-            request.onsuccess = () => {
+            request.onsuccess = (event) => {
                 resolve();
             };
-            request.onerror = () => {
+            request.onerror = (event) => {
                 reject(request.error);
             };
-            request.onblocked = () => {
+            request.onblocked = (event) => {
                 reject(new Error(`Database "${this._options.name}" is blocked by another connection`));
             };
         });

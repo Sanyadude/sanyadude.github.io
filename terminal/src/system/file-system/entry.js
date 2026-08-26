@@ -12,10 +12,15 @@ export class Entry {
 
         const now = Date.now();
         this.metadata = {
+            author: 'root',
+            owner: 'root',
+            group: 'root',
             created: now,
             modified: now,
             accessed: now,
-            hidden: false
+            changed: now,
+            hidden: false,
+            permissions: 'rw-rw-rw-'
         };
     }
 
@@ -77,7 +82,31 @@ export class Entry {
     }
 
     /**
-     * Gets the created time of the entry
+     * Gets the author of the entry
+     * @returns {string} The author of the entry
+     */
+    getAuthor() {
+        return this.metadata.author;
+    }
+
+    /**
+     * Gets the owner of the entry
+     * @returns {string} The owner of the entry
+     */
+    getOwner() {
+        return this.metadata.owner;
+    }
+
+    /**
+     * Gets the group of the entry
+     * @returns {string} The group of the entry
+     */
+    getGroup() {
+        return this.metadata.group;
+    }
+
+    /**
+     * Gets the created time of the entry (time the entry was created)
      * @returns {number} The created time of the entry
      */
     getCreated() {
@@ -85,7 +114,7 @@ export class Entry {
     }
 
     /**
-     * Gets the accessed time of the entry
+     * Gets the accessed time of the entry (last time the entry was accessed/read)
      * @returns {number} The accessed time of the entry
      */
     getAccessed() {
@@ -93,11 +122,35 @@ export class Entry {
     }
 
     /**
-     * Gets the modified time of the entry
+     * Gets the modified time of the entry (last time the contents were modified)
      * @returns {number} The modified time of the entry
      */
     getModified() {
         return this.metadata.modified;
+    }
+
+    /**
+     * Gets the changed time of the entry (last time the metadata/status was changed)
+     * @returns {number} The changed time of the entry
+     */
+    getChanged() {
+        return this.metadata.changed;
+    }
+
+    /**
+     * Gets the permissions of the entry
+     * @returns {string} The permissions of the entry
+     */
+    getPermissions() {
+        return this.metadata.permissions;
+    }
+
+    /**
+     * Checks if the entry is hidden
+     * @returns {boolean} returns false by default
+     */
+    isHidden() {
+        return this.metadata.hidden;
     }
 
     /**

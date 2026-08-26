@@ -75,12 +75,16 @@ export class Uptime extends Application {
      * @returns {string} - The formatted uptime
      */
     _formatPretty(uptime) {
-        const weeks = Math.floor(uptime / (7 * 24 * 60 * 60 * 1000));
-        const days = Math.floor(uptime / (24 * 60 * 60 * 1000));
-        const hours = Math.floor(uptime / (60 * 60 * 1000));
-        const minutes = Math.floor(uptime / (60 * 1000));
-        const seconds = Math.floor(uptime / 1000);
-        return `up ${weeks ? `${weeks} weeks, ` : ''}${days ? `${days} days, ` : ''}${hours ? `${hours} hours, ` : ''}${minutes ? `${minutes} minutes, ` : ''}${seconds} seconds`;
+        let totalSeconds = Math.floor(uptime / 1000);
+        const weeks = Math.floor(totalSeconds / (7 * 24 * 60 * 60));
+        totalSeconds %= 7 * 24 * 60 * 60;
+        const days = Math.floor(totalSeconds / (24 * 60 * 60));
+        totalSeconds %= 24 * 60 * 60;
+        const hours = Math.floor(totalSeconds / (60 * 60));
+        totalSeconds %= 60 * 60;
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `up ${weeks ? `${weeks} week${weeks !== 1 ? 's' : ''}, ` : ''}${days ? `${days} day${days !== 1 ? 's' : ''}, ` : ''}${hours ? `${hours} hour${hours !== 1 ? 's' : ''}, ` : ''}${minutes ? `${minutes} minute${minutes !== 1 ? 's' : ''}, ` : ''}${seconds} second${seconds !== 1 ? 's' : ''}`;
     }
 }
 

@@ -19,16 +19,16 @@ export class Help extends Application {
      * @param {object} context - The context of the command execution
      * @returns {string} - The result of the help command execution
      */
-    async main(commandLine, context) {
+    main(commandLine, context) {
         const args = commandLine.getArguments();
         const programName = args[0] || '';
         if (programName) {
             const program = context.shell.getProgram(programName);
+            if (!program) return `Command not found: ${programName}. Use 'help' to see available commands.`;
             const helpText = program.getHelpText();
             if (helpText) return helpText;
             const parser = context.shell.getParser();
-            if (program) return parser.getHelp(program);
-            return `Command not found: ${programName}. Use 'help' to see available commands.`;
+            return parser.getHelp(program);
         }
         const programs = context.shell.getPrograms();
         if (programs.length === 0) return 'No commands registered.';
