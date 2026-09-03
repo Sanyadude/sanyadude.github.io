@@ -10,73 +10,73 @@ export const COWSAY_MANIFEST = {
         description: 'Formats message as if it were spoken by a cow',
         options: [
             {
-                name: '-l, --list',
+                name: 'list', short: 'l',
                 description: 'List available cows',
             },
             {
-                name: '-r, --random',
+                name: 'random', short: 'r',
                 description: 'Use a random cow',
             },
             {
-                name: '-f, --file <cowfile_name>',
+                name: 'file', short: 'f', value: { name: 'cowfile_name', required: true },
                 description: 'Which cow should say the message',
                 defaultValue: DEFAULT_FILE,
             },
             {
-                name: '-b',
+                name: 'borg', short: 'b',
                 description: 'Initiate Borg mode',
             },
             {
-                name: '-d',
+                name: 'dead', short: 'd',
                 description: 'Causes the cow to appear dead',
             },
             {
-                name: '-g',
+                name: 'greedy', short: 'g',
                 description: 'Invokes greedy mode',
             },
             {
-                name: '-p',
+                name: 'paranoid', short: 'p',
                 description: 'Causes a state of paranoia to come over the cow',
             },
             {
-                name: '-s',
+                name: 'stoned', short: 's',
                 description: 'Makes the cow appear thoroughly stoned',
             },
             {
-                name: '-t',
+                name: 'tired', short: 't',
                 description: 'A tired cow',
             },
             {
-                name: '-w',
+                name: 'wired', short: 'w',
                 description: 'Opposite of tired',
             },
             {
-                name: '-y',
+                name: 'youthful', short: 'y',
                 description: 'Brings on the cow\'s youthful appearance',
             },
             {
-                name: '-n',
+                name: 'no-wrap', short: 'n',
                 description: 'If specified message will not be wrapped',
             },
             {
-                name: '-E, --eyes <eyes_string>',
+                name: 'eyes', short: 'e', value: { name: 'eyes_string', required: true },
                 description: 'The eyes of the cow, first two characters will be used',
                 defaultValue: DEFAULT_EYES,
             },
             {
-                name: '-T, --tongue <tongue_string>',
+                name: 'tongue', short: 'T', value: { name: 'tongue_string', required: true },
                 description: 'The tongue of the cow, first two characters will be used',
                 defaultValue: DEFAULT_TONGUE,
             },
             {
-                name: '-W, --width <width>',
+                name: 'width', short: 'W', value: { name: 'width', required: true },
                 description: 'The width of the bubble after which the message will be wrapped',
                 defaultValue: DEFAULT_WIDTH,
             },
         ],
         arguments: [
             {
-                name: '<message>',
+                name: 'message', required: true,
                 description: 'The message for cow to say, if not provided, the standard input will be used',
             }
         ]
@@ -86,73 +86,73 @@ export const COWSAY_MANIFEST = {
         description: 'Formats message as if it were thought by a cow',
         options: [
             {
-                name: '-l, --list',
+                name: 'list', short: 'l', long: 'list',
                 description: 'List available cows',
             },
             {
-                name: '-r, --random',
+                name: 'random', short: 'r', long: 'random',
                 description: 'Use a random cow',
             },
             {
-                name: '-f, --file <cowfile_name>',
+                name: 'file', short: 'f', long: 'file', value: { name: 'cowfile_name', required: true },
                 description: 'Which cow should think the message',
                 defaultValue: DEFAULT_FILE,
             },
             {
-                name: '-b',
+                name: 'borg', short: 'b',
                 description: 'Initiate Borg mode',
             },
             {
-                name: '-d',
+                name: 'dead', short: 'd',
                 description: 'Causes the cow to appear dead',
             },
             {
-                name: '-g',
+                name: 'greedy', short: 'g',
                 description: 'Invokes greedy mode',
             },
             {
-                name: '-p',
+                name: 'paranoid', short: 'p',
                 description: 'Causes a state of paranoia to come over the cow',
             },
             {
-                name: '-s',
+                name: 'stoned', short: 's',
                 description: 'Makes the cow appear thoroughly stoned',
             },
             {
-                name: '-t',
+                name: 'tired', short: 't',
                 description: 'A tired cow',
             },
             {
-                name: '-w',
+                name: 'wired', short: 'w',
                 description: 'Opposite of tired',
             },
             {
-                name: '-y',
+                name: 'youthful', short: 'y',
                 description: 'Brings on the cow\'s youthful appearance',
             },
             {
-                name: '-n, --no-wrap',
+                name: 'no-wrap', short: 'n', long: 'no-wrap',
                 description: 'If specified message will not be wrapped',
             },
             {
-                name: '-E, --eyes <eyes_string>',
+                name: 'eyes', short: 'E', long: 'eyes', value: { name: 'eyes_string', required: true },
                 description: 'The eyes of the cow, first two characters will be used',
                 defaultValue: DEFAULT_EYES,
             },
             {
-                name: '-T, --tongue <tongue_string>',
+                name: 'tongue', short: 'T', long: 'tongue', value: { name: 'tongue_string', required: true },
                 description: 'The tongue of the cow, first two characters will be used',
                 defaultValue: DEFAULT_TONGUE,
             },
             {
-                name: '-W, --width <width>',
+                name: 'width', short: 'W', long: 'width', value: { name: 'width', required: true },
                 description: 'The width of the bubble after which the message will be wrapped',
                 defaultValue: DEFAULT_WIDTH,
             },
         ],
         arguments: [
             {
-                name: '<message>',
+                name: 'message', required: true,
                 description: 'The message for cow to think, if not provided, the standard input will be used',
             }
         ]

@@ -8,7 +8,7 @@ export const HELP_MANIFEST = {
         name: 'help',
         arguments: [
             {
-                name: '[<command_name>]',
+                name: 'command_name', required: false,
                 description: 'The command to show help for',
             },
         ],

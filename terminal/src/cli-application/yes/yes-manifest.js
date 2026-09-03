@@ -8,7 +8,7 @@ export const YES_MANIFEST = {
         name: 'yes',
         arguments: [
             {
-                name: '<text>',
+                name: 'text', required: false, repeatable: true,
                 description: 'The text to repeat (default: y)',
             }
         ]

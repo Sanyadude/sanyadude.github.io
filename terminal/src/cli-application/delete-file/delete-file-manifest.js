@@ -6,10 +6,21 @@ export const DELETE_FILE_MANIFEST = {
     dependencies: ['fileSystemManager', 'fileSystemExplorer'],
     programs: [{
         name: 'del',
+        aliases: ['erase'],
         arguments: [
             {
-                name: '<file_path>',
-                description: 'The path to the file',
+                name: 'file_path', required: true, repeatable: true,
+                description: 'The path to the file(s)',
+            },
+        ],
+    }, 
+    {
+        name: 'erase',
+        description: 'Deletes a file (alias for del)',
+        arguments: [
+            {
+                name: 'file_path', required: true, repeatable: true,
+                description: 'The path to the file(s)',
             },
         ],
     }]

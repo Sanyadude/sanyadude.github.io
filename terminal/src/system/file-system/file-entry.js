@@ -1,5 +1,5 @@
-import Entry from './entry.js'
-import Path from './path.js'
+import { Entry } from './entry.js'
+import { Path } from './path.js'
 
 /**
  * FileEntry - Represents a file in the file system
@@ -200,6 +200,14 @@ export class FileEntry extends Entry {
      */
     isEmpty() {
         return this.content.length === 0;
+    }
+
+    /**
+     * Checks if the entry is a file
+     * @returns {boolean} returns true
+     */
+    isFile() {
+        return true;
     }
 
     /**

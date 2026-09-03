@@ -161,6 +161,14 @@ export class Entry {
         return false;
     }
 
+    /**
+     * Checks if the entry is a file
+     * @returns {boolean} returns false by default
+     */
+    isFile() {
+        return false;
+    }
+
 }
 
 export default Entry;

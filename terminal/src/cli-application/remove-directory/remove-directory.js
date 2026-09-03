@@ -23,12 +23,20 @@ export class RemoveDirectory extends Application {
         const args = commandLine.getArguments();
         const options = commandLine.getOptions();
         if (args.length === 0) return 'Path should be specified';
-        const path = args.join(' ');
-        const fullPath = context.fileSystemExplorer.getAbsolutePath(path);
-        if (!context.fileSystemManager.directoryExists(fullPath)) return `Directory not found: ${path}`;
-        const recursive = options['recursive'] || false;
-        context.fileSystemManager.removeDirectory(fullPath, recursive);
-        return `Directory removed: ${fullPath}`;        
+        const recursive = Boolean(options['recursive']);
+        const fsExplorer = context.fileSystemExplorer;
+        const fsManager = context.fileSystemManager;
+        const messages = [];
+        for (const path of args) {
+            const fullPath = fsExplorer.getAbsolutePath(path);
+            if (!fsManager.directoryExists(fullPath)) {
+                messages.push(`Directory not found: ${fullPath}`);
+                continue;
+            }
+            fsManager.removeDirectory(fullPath, recursive);
+            messages.push(`Directory removed: ${fullPath}`);
+        }
+        return messages.join('\n');
     }
 }
 

@@ -155,10 +155,7 @@ export class PosixShellCommandParser extends ShellCommandParser {
         }
         const setOption = (option, value) => {
             if (!option) return;
-            const optionShortName = option.getShort();
-            const optionLongName = option.getLong();
-            if (optionShortName) parsedOptions[optionShortName] = value;
-            if (optionLongName) parsedOptions[optionLongName] = value;
+            parsedOptions[option.getName()] = value;
         }
         while (currentIndex < tokens.length) {
             const currentArg = tokens[currentIndex];
@@ -238,25 +235,7 @@ export class PosixShellCommandParser extends ShellCommandParser {
      * @returns {string} - The formatted command string
      */
     _formatCommand(command) {
-        return command.isOptional() ? `[${command.getName()}]` : command.getName();
-    }
-
-    /**
-     * Formats an option for help usage lines (short form)
-     * @param {ShellProgramOption} option - The option to format
-     * @returns {string} - The formatted option string
-     */
-    _formatOption(option) {
-        const parts = [];
-        const long = option.getLong();
-        const short = option.getShort();
-        if (short) {
-            parts.push(`-${short}`);
-        }
-        if (long) {
-            parts.push(`--${long}`);
-        }
-        return parts.join(',');
+        return command.isRequired() ? command.getName() : `[${command.getName()}]`;
     }
 
     /**
@@ -294,9 +273,8 @@ export class PosixShellCommandParser extends ShellCommandParser {
      * @returns {string} - The formatted argument string
      */
     _formatArgument(argument) {
-        return argument.isOptional()
-            ? argument.getNames().map(name => `[<${name}>]`).join(' ')
-            : argument.getNames().map(name => `<${name}>`).join(' ');
+        const formatted = argument.isRequired() ? `<${argument.getName()}>` : `[<${argument.getName()}>]`;
+        return argument.isRepeatable() ? `${formatted}...` : formatted;
     }
 
     /**
@@ -313,11 +291,13 @@ export class PosixShellCommandParser extends ShellCommandParser {
         const hasOptions = programOptions.size > 0;
         const hasArguments = programArguments.size > 0;
 
-        const commandsList = Array.from(programCommands.values()).map(command => this._formatCommand(command)).join('|');
-        const optionsList = Array.from(programOptions.values()).map(option => this._formatOption(option)).join('|');
-        const argumentsList = Array.from(programArguments.values()).map(argument => this._formatArgument(argument)).join('|');
-
-        const name = `Usage:\n ${program.getName()}${hasCommands ? ` [${commandsList}]` : ''}${hasOptions ? ` [${optionsList}]` : ''}${hasOptions && hasArguments ? ' [--]' : ''}${hasArguments ? ` ${argumentsList}` : ''}`;
+        const argumentsList = Array.from(programArguments.values()).map(argument => this._formatArgument(argument)).join(' ');
+        const usageParts = [program.getName()];
+        if (hasCommands) usageParts.push('[COMMAND]');
+        if (hasOptions) usageParts.push('[OPTION]...');
+        if (hasOptions && hasArguments) usageParts.push('[--]');
+        if (hasArguments) usageParts.push(argumentsList);
+        const name = `Usage:\n ${usageParts.join(' ')}`;
         const description = program.getDescription() ? `\n\nDescription:\n ${program.getDescription()}` : '';
         const version = program.getVersion() ? `\n\nVersion:\n ${program.getVersion()}` : '';
 
@@ -330,7 +310,7 @@ export class PosixShellCommandParser extends ShellCommandParser {
         if (hasCommands) {
             commandsHelp += `\n\nCommands:`;
             for (const programCommand of programCommands.values()) {
-                commandsHelp += `\n ${this._formatCommand(programCommand).padEnd(leftPartNameMaxLength)}${programCommand.getDescription() ? ` - ${programCommand.getDescription()}${programCommand.isOptional() ? ' [optional]' : ''}` : ''}`;
+                commandsHelp += `\n ${this._formatCommand(programCommand).padEnd(leftPartNameMaxLength)}${programCommand.getDescription() ? ` - ${programCommand.getDescription()}${programCommand.isRequired() ? '' : ' [optional]'}` : ''}`;
             }
         }
         let optionsHelp = '';
@@ -344,7 +324,7 @@ export class PosixShellCommandParser extends ShellCommandParser {
         if (hasArguments) {
             argsHelp += `\n\nArguments:`;
             for (const programArgument of programArguments.values()) {
-                argsHelp += `\n ${this._formatArgument(programArgument).padEnd(leftPartNameMaxLength)}${programArgument.getDescription() ? ` - ${programArgument.getDescription()}${programArgument.isOptional() ? ' [optional]' : ''}` : ''}`;
+                argsHelp += `\n ${this._formatArgument(programArgument).padEnd(leftPartNameMaxLength)}${programArgument.getDescription() ? ` - ${programArgument.getDescription()}${programArgument.isRequired() ? '' : ' [optional]'}` : ''}`;
             }
         }
         return `${name}${description}${version}${commandsHelp}${optionsHelp}${argsHelp}`;

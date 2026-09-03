@@ -23,14 +23,23 @@ export class Tac extends Application {
         const args = commandLine.getArguments();
         const options = commandLine.getOptions();
         const stdin = commandLine.getStdin();
-        const path = args.join(' ');
-        if (path == 'nul') return '';
         if (args.length === 0 && !stdin) return 'Path should be specified';
         if (args.length === 0 && stdin) return this._formatOutput(stdin, options);
-        const file = context.fileSystemExplorer.getFile(path);
-        if (!file) return `File not found: ${path}`;
-        const output = file.readAsString();
-        return this._formatOutput(output, options);
+        const fsExplorer = context.fileSystemExplorer;
+        const fsManager = context.fileSystemManager;
+        const contents = [];
+        for (const path of args) {
+            if (path === 'nul') {
+                contents.push('');
+                continue;
+            }
+            const fullPath = fsExplorer.getAbsolutePath(path);
+            if (!fsManager.fileExists(fullPath)) return `File not found: ${fullPath}`;
+            const file = fsManager.getFile(fullPath);
+            if (!file) return `File not found: ${path}`;
+            contents.push(file.readAsString());
+        }
+        return this._formatOutput(contents.join('\n'), options);
     }
 
     /**

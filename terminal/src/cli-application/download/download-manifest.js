@@ -8,7 +8,7 @@ export const DOWNLOAD_MANIFEST = {
         name: 'dl',
         arguments: [
             {
-                name: '<file_path>',
+                name: 'file_path', required: true,
                 description: 'The path to the file',
             },
         ],

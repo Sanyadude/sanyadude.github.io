@@ -113,37 +113,33 @@ export class ShellProgram {
 
     /**
      * Adds an option to the program
-     * @param {string} definition - The definition of the option
-     * @param {string} description - The description of the option
-     * @param {string} defaultValue - The default value of the option
+     * @param {object} spec - The option specification
      * @returns {ShellProgram} - The program instance
      */
-    addOption(definition, description = '', defaultValue = null) {
-        const option = new ShellProgramOption(definition, description, defaultValue);
+    addOption(spec) {
+        const option = new ShellProgramOption(spec);
         this._options.set(option.getName(), option);
         return this;
     }
 
     /**
      * Adds a command to the program
-     * @param {string} definition - The definition of the command
-     * @param {string} description - The description of the command
+     * @param {object} spec - The command specification
      * @returns {ShellProgram} - The program instance
      */
-    addCommand(definition, description = '') {
-        const command = new ShellProgramCommand(definition, description);
+    addCommand(spec) {
+        const command = new ShellProgramCommand(spec);
         this._commands.set(command.getName(), command);
         return this;
     }
 
     /**
      * Adds an argument to the program
-     * @param {string} definition - The definition of the argument
-     * @param {string} description - The description of the argument
+     * @param {object} spec - The argument specification
      * @returns {ShellProgram} - The program instance
      */
-    addArgument(definition, description = '') {
-        const argument = new ShellProgramArgument(definition, description);
+    addArgument(spec) {
+        const argument = new ShellProgramArgument(spec);
         this._arguments.set(argument.getName(), argument);
         return this;
     }

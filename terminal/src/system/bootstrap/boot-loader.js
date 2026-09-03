@@ -11,12 +11,14 @@ import { FileSystemExplorer } from '../file-system/file-system-explorer.js'
 import { ApplicationManager } from '../application/application-manager.js'
 import { ProcessManager } from '../process/process-manager.js'
 import {
-    DEFAULT_USER_NAME, DEFAULT_HOST_NAME, DEFAULT_HOST_ADDRESS, DEFAULT_ROOT_DIRECTORY_NAME,
-    DEFAULT_FOLDERS, DEFAULT_PROGRAM_FOLDER, DEFAULT_USERS_FOLDER, DEFAULT_USERS_FOLDERS,
-    README_FILE, LICENSES_FILE, FILE_SYSTEM_STORE_NAME, FILE_SYSTEM_STORE_VALUE_KEY
+    DEFAULT_ROOT_DIRECTORY_NAME, DEFAULT_FOLDERS, DEFAULT_PROGRAM_FOLDER, DEFAULT_USERS_FOLDER, DEFAULT_USERS_FOLDERS,
+    README_FILE, LICENSE_FILE, FILE_SYSTEM_STORE_NAME, FILE_SYSTEM_STORE_VALUE_KEY
 } from '../../config/file-system-config.js'
 import { DATABASE_NAME, DATABASE_VERSION } from '../../config/database-config.js'
-import { CONFIG_STORE_NAME, CONFIG_STORE_VALUE_KEY } from '../../config/boot-config.js'
+import { 
+    CONFIG_STORE_NAME, CONFIG_STORE_VALUE_KEY, 
+    DEFAULT_USER_NAME, DEFAULT_HOST_NAME, DEFAULT_HOST_ADDRESS 
+} from '../../config/boot-config.js'
 import { CLI_APPS } from '../../config/cli-apps.js'
 import { TerminalResolver } from '../../application/terminal/terminal-resolver.js'
 
@@ -281,7 +283,7 @@ export class BootLoader {
      * Seeds the file system
      * @param {Application[]} cliApps - The CLI applications
      */
-    _seedFileSystem(cliApps) {
+    async _seedFileSystem(cliApps) {
         for (const folder of DEFAULT_FOLDERS) {
             this.fileSystemManager.createFromJSON('', folder);
         }
@@ -293,8 +295,12 @@ export class BootLoader {
             this.fileSystemManager.createDirectory(`${DEFAULT_PROGRAM_FOLDER}/${app.getName()}`);
             this.fileSystemManager.createFile(`${DEFAULT_PROGRAM_FOLDER}/${app.getName()}/${app.getName()}.js`, app.constructor.toString());
         }
-        this.fileSystemManager.createFile(`${README_FILE.name}`, README_FILE.content);
-        this.fileSystemManager.createFile(`${LICENSES_FILE.name}`, LICENSES_FILE.content);
+        const seedFiles = [README_FILE, LICENSE_FILE];
+        for (const file of seedFiles) {
+            const response = await BrowserAPI.fetchFile(file.url);
+            const content = new TextDecoder().decode(response);
+            this.fileSystemManager.createFile(file.name, content);
+        }
 
         this.logger.info(`File system seeded`);
     }
@@ -324,7 +330,7 @@ export class BootLoader {
         this._bootApplications(cliApps);
 
         if (!fileSystemManager) {
-            this._seedFileSystem(cliApps);
+            await this._seedFileSystem(cliApps);
         }
 
         await this._triggerAfterBootActions();

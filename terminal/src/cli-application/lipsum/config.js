@@ -1,6 +1,7 @@
 export const DEFAULT_PARAGRAPHS = 1;
 export const DEFAULT_WORDS = 8;
 export const DEFAULT_WORDS_PER_PARAGRAPH = 80;
+export const DEFAULT_WIDTH = 80;
 export const FIRST_SENTENCE = 'Lorem ipsum dolor sit amet consectetur adipiscing elit';
 export const MIN_SENTENCE_WORD_COUNT = 2;
 export const LIPSUM_WORDS = [
@@ -29,6 +30,7 @@ export const CONFIG = Object.freeze({
     DEFAULT_PARAGRAPHS,
     DEFAULT_WORDS,
     DEFAULT_WORDS_PER_PARAGRAPH,
+    DEFAULT_WIDTH,
     FIRST_SENTENCE,
     MIN_SENTENCE_WORD_COUNT,
     LIPSUM_WORDS,

@@ -1,4 +1,4 @@
-import Entry from './entry.js'
+import { Entry } from './entry.js'
 
 /**
  * DirectoryEntry - Represents a directory in the file system

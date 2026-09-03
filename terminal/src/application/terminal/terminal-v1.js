@@ -3,7 +3,13 @@ import { THEMES } from './config/themes.js'
 import { TerminalClear } from './cli-applications/terminal-clear/terminal-clear.js'
 import { TerminalHistory } from './cli-applications/terminal-history/terminal-history.js'
 import { TerminalSettings } from './cli-applications/terminal-settings/terminal-settings.js'
-import { TERMINAL_CONFIG_THEME_KEY, TERMINAL_CONFIG_SYNTAX_KEY, TERMINAL_WELCOME_MESSAGE_LINES, TERMINAL_DEFAULT_THEME_NAME } from './config/config.js'
+import { 
+    TERMINAL_NAME, TERMINAL_TYPE, TERMINAL_COLOR_MODE,
+    TERMINAL_DEFAULT_FONT_SIZE,
+    TERMINAL_DEFAULT_PADDING,
+    TERMINAL_CONFIG_THEME_KEY, TERMINAL_CONFIG_SYNTAX_KEY, 
+    TERMINAL_WELCOME_MESSAGE_LINES, TERMINAL_DEFAULT_THEME_NAME 
+} from './config/config.js'
 
 /**
  * Terminal class - represents a interface for the shell
@@ -30,15 +36,15 @@ export class Terminal {
         this.fileSuggestionIndex = -1;
 
         this.info = {
-            name: 'terminal',
-            type: 'myterm',
+            name: TERMINAL_NAME,
+            type: TERMINAL_TYPE,
             version: '0.1.0',
-            colorMode: 'truecolor'
+            colorMode: TERMINAL_COLOR_MODE
         };
         this.theme = { name: 'none' };
 
-        this.fontSize = 16;
-        this.padding = 10;
+        this.fontSize = TERMINAL_DEFAULT_FONT_SIZE;
+        this.padding = TERMINAL_DEFAULT_PADDING;
 
         this.charSize = { width: 0, height: 0 };
         this.caretPosition = { x: 0, y: 0 };

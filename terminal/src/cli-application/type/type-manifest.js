@@ -3,13 +3,13 @@ export const TYPE_MANIFEST = {
     version: '0.1.0',
     description: 'Displays the contents of a file',
     type: 'cli',
-    dependencies: ['fileSystemExplorer'],
+    dependencies: ['fileSystemExplorer', 'fileSystemManager'],
     programs: [{
         name: 'type',
         arguments: [
             {
-                name: '<file_path>',
-                description: 'The path to the file',
+                name: 'file_path', required: true, repeatable: true,
+                description: 'The path to the file(s)',
             },
         ],
     }]

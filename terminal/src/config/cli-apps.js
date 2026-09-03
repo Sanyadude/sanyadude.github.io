@@ -1,4 +1,5 @@
 import { Find } from '../cli-application/find/find.js'
+import { FindStr } from '../cli-application/findstr/findstr.js'
 import { ChangeDirectory } from '../cli-application/change-directory/change-directory.js'
 import { List } from '../cli-application/list/list.js'
 import { Copy } from '../cli-application/copy/copy.js'
@@ -42,6 +43,7 @@ export const CLI_APPS = Object.freeze({
     directory: new Directory(),
     list: new List(),
     find: new Find(),
+    findstr: new FindStr(),
     copy: new Copy(),
     move: new Move(),
     type: new Type(),

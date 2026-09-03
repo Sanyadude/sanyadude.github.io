@@ -1,7 +1,7 @@
-import DirectoryEntry from './directory-entry.js'
-import FileEntry from './file-entry.js'
-import Path from './path.js'
-import PathSearch from './path-search.js'
+import { DirectoryEntry } from './directory-entry.js'
+import { FileEntry } from './file-entry.js'
+import { Path } from './path.js'
+import { PathSearch } from './path-search.js'
 
 /**
  * FileSystemManager - Manages an in-memory hierarchical file system

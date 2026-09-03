@@ -16,6 +16,7 @@ const ANSI_COLOR_MAP = Object.freeze({
     [SGR.FG.MAGENTA]: 'magenta',
     [SGR.FG.CYAN]: 'cyan',
     [SGR.FG.WHITE]: 'white',
+    [SGR.FG.DEFAULT]: 'foreground',
     //Bright foreground colors
     [SGR.FG.BRIGHT_BLACK]: 'brightBlack',
     [SGR.FG.BRIGHT_RED]: 'brightRed',
@@ -34,6 +35,7 @@ const ANSI_COLOR_MAP = Object.freeze({
     [SGR.BG.MAGENTA]: 'magenta',
     [SGR.BG.CYAN]: 'cyan',
     [SGR.BG.WHITE]: 'white',
+    [SGR.BG.DEFAULT]: 'background',
     //Bright background colors
     [SGR.BG.BRIGHT_BLACK]: 'brightBlack',
     [SGR.BG.BRIGHT_RED]: 'brightRed',
@@ -217,13 +219,13 @@ export class TextFormat {
                     break;
             }
             // Standard ANSI foreground
-            if ((num >= 30 && num <= 37) || (num >= 90 && num <= 97)) {
+            if ((num >= 30 && num <= 37) || num === 39 || (num >= 90 && num <= 97)) {
                 state.fg = { type: 'ansi', value: num };
                 i++;
                 continue;
             }
             // Standard ANSI background
-            if ((num >= 40 && num <= 47) || (num >= 100 && num <= 107)) {
+            if ((num >= 40 && num <= 47) || num === 49|| (num >= 100 && num <= 107)) {
                 state.bg = { type: 'ansi', value: num };
                 i++;
                 continue;
@@ -292,7 +294,7 @@ export class TextFormat {
         let fg = TextFormat.resolveColor(state.fg, theme);
         let bg = TextFormat.resolveColor(state.bg, theme);
         if (state.reverse) {
-            [fg, bg] = [bg != null ? bg : theme.foreground, fg != null ? fg : theme.background];
+            [fg, bg] = [bg != null ? bg : theme.background, fg != null ? fg : theme.foreground];
         }
         if (state.dim) {
             fg = fg ? TextFormat.dimColor(fg) : TextFormat.dimColor(theme.foreground);

@@ -9,8 +9,8 @@ export const MAKE_DIRECTORY_MANIFEST = {
         aliases: ['md'],
         arguments: [
             {
-                name: '<path>',
-                description: 'The path to new directory',
+                name: 'path', required: true, repeatable: true,
+                description: 'The path to the new directory(ies)',
             },
         ],
     }, {
@@ -18,8 +18,8 @@ export const MAKE_DIRECTORY_MANIFEST = {
         description: 'Creates a new directory (alias for mkdir)',
         arguments: [
             {
-                name: '<path>',
-                description: 'The path to new directory',
+                name: 'path', required: true, repeatable: true,
+                description: 'The path to the new directory(ies)',
             },
         ],
     }]

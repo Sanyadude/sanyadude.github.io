@@ -1,5 +1,5 @@
-import FileEntry from './file-entry.js'
-import DirectoryEntry from './directory-entry.js'
+import { FileEntry } from './file-entry.js'
+import { DirectoryEntry } from './directory-entry.js'
 
 /**
  * EntryPath - Represents a path to an entry in the file system

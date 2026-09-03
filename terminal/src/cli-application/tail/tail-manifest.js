@@ -10,28 +10,32 @@ export const TAIL_MANIFEST = {
         name: 'tail',
         options: [
             {
-                name: '-n, --lines <number>',
-                description: 'Display the last <number> lines from the file',
-                defaultValue: DEFAULT_LINES_NUMBER,
-            },
-            {
-                name: '-c, --bytes <number>',
+                name: 'bytes', short: 'c', long: 'bytes', value: { name: 'number', required: true },
                 description: 'Display the last <number> bytes of the file',
                 defaultValue: DEFAULT_BYTES_NUMBER,
             },
             {
-                name: '-q, --quiet',
+                name: 'lines', short: 'n', long: 'lines', value: { name: 'number', required: true },
+                description: 'Display the last <number> lines from the file',
+                defaultValue: DEFAULT_LINES_NUMBER,
+            },
+            {
+                name: 'quiet', short: 'q', long: 'quiet',
                 description: 'Never display file names',
             },
             {
-                name: '-v, --verbose',
+                name: 'verbose', short: 'v', long: 'verbose',
                 description: 'Always display file names',
+            },
+            {
+                name: 'zero-terminated', short: 'z', long: 'zero-terminated',
+                description: 'Line delimiter is NUL (ASCII 0), not newline',
             }
         ],
         arguments: [
             {
-                name: '<file_path>',
-                description: 'The file to display',
+                name: 'file_path', required: true, repeatable: true,
+                description: 'The path to the file(s)',
             }
         ]
     }]

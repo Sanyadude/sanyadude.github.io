@@ -83,7 +83,7 @@ export class Cowsay extends Application {
      */
     _getCowType(options = {}) {
         let cowType = Object.keys(this._getCows()).includes(options['file']) ? options['file'] : DEFAULT_FILE;
-        if (options['random']) {
+        if (Boolean(options['random'])) {
             const cowList = Object.keys(this._getCows());
             cowType = cowList[Math.floor(Math.random() * cowList.length)];
         }
@@ -103,16 +103,16 @@ export class Cowsay extends Application {
         if (type !== DEFAULT_FILE) {
             return { eyes, tongue, defaultMessage };
         }
-        const lastOptionKey = Object.keys(options).filter(key => ['b', 'd', 'g', 'p', 's', 't', 'w', 'y'].includes(key)).pop();
+        const lastOptionKey = Object.keys(options).filter(key => ['borg', 'dead', 'greedy', 'paranoid', 'stoned', 'tired', 'wired', 'youthful'].includes(key)).pop();
         switch (lastOptionKey) {
-            case 'b': eyes = '==', tongue = DEFAULT_TONGUE, defaultMessage = 'Resistance is futile!'; break;
-            case 'd': eyes = 'XX', tongue = 'U ', defaultMessage = 'I have ceased to moo...'; break;
-            case 'g': eyes = '$$', tongue = DEFAULT_TONGUE, defaultMessage = 'Show me the mooney!'; break;
-            case 'p': eyes = '@@', tongue = DEFAULT_TONGUE, defaultMessage = 'I see eyes everywhere...'; break;
-            case 's': eyes = '**', tongue = 'U ', defaultMessage = 'The grass is green as f...'; break;
-            case 't': eyes = '--', tongue = DEFAULT_TONGUE, defaultMessage = 'Sleepy cow strikes again...'; break;
-            case 'w': eyes = 'OO', tongue = DEFAULT_TONGUE, defaultMessage = 'Can\'t stop mooing!'; break;
-            case 'y': eyes = '..', tongue = DEFAULT_TONGUE, defaultMessage = 'I\'m just learning to moo!'; break;
+            case 'borg': eyes = '==', tongue = DEFAULT_TONGUE, defaultMessage = 'Resistance is futile!'; break;
+            case 'dead': eyes = 'XX', tongue = 'U ', defaultMessage = 'I have ceased to moo...'; break;
+            case 'greedy': eyes = '$$', tongue = DEFAULT_TONGUE, defaultMessage = 'Show me the mooney!'; break;
+            case 'paranoid': eyes = '@@', tongue = DEFAULT_TONGUE, defaultMessage = 'I see eyes everywhere...'; break;
+            case 'stoned': eyes = '**', tongue = 'U ', defaultMessage = 'The grass is green as f...'; break;
+            case 'tired': eyes = '--', tongue = DEFAULT_TONGUE, defaultMessage = 'Sleepy cow strikes again...'; break;
+            case 'wired': eyes = 'OO', tongue = DEFAULT_TONGUE, defaultMessage = 'Can\'t stop mooing!'; break;
+            case 'youthful': eyes = '..', tongue = DEFAULT_TONGUE, defaultMessage = 'I\'m just learning to moo!'; break;
             default: defaultMessage = 'Moo, world!';
         }
         return { eyes, tongue, defaultMessage };

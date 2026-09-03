@@ -21,12 +21,21 @@ export class DeleteFile extends Application {
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();
+        const options = commandLine.getOptions();
         if (args.length === 0) return 'Path should be specified';
-        const path = args.join(' ');
-        const fullPath = context.fileSystemExplorer.getAbsolutePath(path);
-        if (!context.fileSystemManager.fileExists(fullPath)) return `File not found: ${path}`;
-        context.fileSystemManager.removeFile(fullPath);
-        return `File removed: ${fullPath}`;
+        const fsExplorer = context.fileSystemExplorer;
+        const fsManager = context.fileSystemManager;
+        const messages = [];
+        for (const path of args) {
+            const fullPath = fsExplorer.getAbsolutePath(path);
+            if (!fsManager.fileExists(fullPath)) {
+                messages.push(`File not found: ${fullPath}`);
+                continue;
+            }
+            fsManager.removeFile(fullPath);
+            messages.push(`File removed: ${fullPath}`);
+        }
+        return messages.join('\n');
     }
 }
 

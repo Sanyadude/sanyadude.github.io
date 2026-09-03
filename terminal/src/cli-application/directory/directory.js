@@ -1,5 +1,6 @@
 import { Application } from '../../system/application/application.js'
 import { DIRECTORY_MANIFEST } from './directory-manifest.js'
+import { ATTRIBUTE_TYPES, SORT_TYPES, TIME_TYPES, DEFAULT_TIME_TYPE, DEFAULT_WIDTH, DEFAULT_PADDING } from './config.js'
 
 /**
  * Directory - Application for listing directory contents
@@ -23,51 +24,84 @@ export class Directory extends Application {
         const options = commandLine.getOptions();
         const args = commandLine.getArguments();
         const path = args.join(' ');
-        const cwd = context.fileSystemExplorer.getCurrentPath();
-        const entries = context.fileSystemManager.getEntriesAt(path ? path : cwd);
-        if (entries.length === 0) return '';
-        return this._getDirectoryInfo(entries, options);
+        const directoryPath = context.fileSystemExplorer.getAbsolutePath(path);
+        const entries = context.fileSystemManager.getEntriesAt(directoryPath);
+        if (options['recursive']) {
+            return this._getRecursiveDirectoryInfo(entries, directoryPath, options, context);
+        }
+        return this._getDirectoryInfo(entries, directoryPath, options, context);
     }
 
     /**
      * Gets directory information
      * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
+     * @param {string} directoryPath - The path to the directory
      * @param {object} options - The options
-     * @returns {Array} - The directory information
+     * @param {object} context - The context of the command execution
+     * @returns {string} - The directory information
      */
-    _getDirectoryInfo(entries, options) {
-        const filteredEntriesByHidden = this._filterByHidden(entries, options);
-        const filteredEntriesByType = this._filterByType(filteredEntriesByHidden, options);
-        const sortedEntries = this._sortEntries(filteredEntriesByType, options);
-        const formattedList = this._formatList(sortedEntries, options);
-        return formattedList;
+    _getDirectoryInfo(entries, directoryPath = '', options = {}, context = {}) {
+        const filteredEntries = this._filterEntries(entries, options);
+        const sortedEntries = this._sortEntries(filteredEntries, options);
+        return this._formatList(sortedEntries, directoryPath, options, context);
     }
 
     /**
-     * Filters the entries by hidden
+     * Lists the entries recursively
+     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
+     * @param {string} path - The path
+     * @param {object} options - The options
+     * @param {object} context - The context of the command execution
+     * @returns {string} - The list of the entries
+     */
+    _getRecursiveDirectoryInfo(entries, path = '', options = {}, context = {}) {
+        const directoryInfo = this._getDirectoryInfo(entries, path, options, context);
+        const section = `${directoryInfo}${directoryInfo ? '\n' : ''}`;
+        const sections = [section];
+        const filteredEntries = this._filterEntries(entries, options);
+        const visibleEntries = this._sortEntries(filteredEntries, options);
+        for (const entry of visibleEntries) {
+            if (!entry.isDirectory()) continue;
+            const childPath = path ? `${path}/${entry.getName()}` : entry.getName();
+            const nestedSection = this._getRecursiveDirectoryInfo(entry.getEntries(), childPath, options, context);
+            if (!nestedSection) continue;
+            sections.push(nestedSection);
+        }
+        return sections.join('\n');
+    }
+
+    /**
+     * Filters the entries by attributes
      * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
      * @param {object} options - The options
      * @returns {Array<DirectoryEntry|FileEntry>} - The filtered entries
      */
-    _filterByHidden(entries, options) {
-        const showHidden = options['hidden'] || false;
-        if (showHidden) return entries;
-        return entries.filter(entry => !entry.getMetadataField('hidden'));
+    _filterEntries(entries, options = {}) {
+        if (options['attributes'] === undefined) return entries.filter(entry => !this._hasAttribute(entry, 'hidden'));
+        const attributeFilters = this._parseLetterOptions(options['attributes'], ATTRIBUTE_TYPES);
+        if (attributeFilters.length === 0) return entries;
+        return entries.filter(entry => {
+            return attributeFilters.every(filter => {
+                const hasAttribute = this._hasAttribute(entry, filter.type);
+                return filter.negate ? !hasAttribute : hasAttribute;
+            });
+        });
     }
 
     /**
-     * Filters the entries by type
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @param {object} options - The options
-     * @returns {Array<DirectoryEntry|FileEntry>} - The filtered entries
+     * Checks whether an entry has an attribute
+     * @param {DirectoryEntry|FileEntry} entry - The entry
+     * @param {string} type - The attribute type
+     * @returns {boolean} - True if the entry has the attribute
      */
-    _filterByType(entries, options) {
-        const showDirectories = options['directories'] || false;
-        const showFiles = options['files'] || false;
-        if (showDirectories && showFiles) return entries;
-        if (showDirectories) return entries.filter(entry => entry.isDirectory());
-        if (showFiles) return entries.filter(entry => !entry.isDirectory());
-        return entries;
+    _hasAttribute(entry, type) {
+        if (type === 'directory') return entry.isDirectory();
+        if (type === 'hidden') return entry.isHidden();
+        if (type === 'readonly') {
+            const permissions = entry.getPermissions() || '';
+            return permissions.length >= 2 && permissions[1] !== 'w';
+        }
+        return false;
     }
 
     /**
@@ -76,77 +110,267 @@ export class Directory extends Application {
      * @param {object} options - The options
      * @returns {Array<DirectoryEntry|FileEntry>} - The sorted entries
      */
-    _sortEntries(entries, options) {
-        const sortField = options['sort'];
-        if (typeof sortField !== 'string' || sortField.length === 0) return entries;
-        const field = sortField[0];
-        const order = sortField[1] === 'd' ? 'desc' : 'asc';
+    _sortEntries(entries, options = {}) {
+        const sortTypes = this._parseLetterOptions(options['sort'], SORT_TYPES);
+        if (sortTypes.length === 0) return entries;
         return entries.sort((a, b) => {
-            const itemA = order === 'asc' ? a : b;
-            const itemB = order === 'asc' ? b : a;
-            if (field === 'n') return itemA.getName().localeCompare(itemB.getName());
-            if (field === 's') return itemA.getSize() - itemB.getSize();
-            if (field === 'd') return itemA.getCreated() - itemB.getCreated();
+            for (const sortType of sortTypes) {
+                const comparisonResult = this._compareBySortType(a, b, sortType.type, options);
+                if (comparisonResult === 0) continue;
+                return sortType.negate ? -comparisonResult : comparisonResult;
+            }
             return 0;
         });
     }
 
     /**
+     * Compares two entries by sort type
+     * @param {DirectoryEntry|FileEntry} entryA - The first entry
+     * @param {DirectoryEntry|FileEntry} entryB - The second entry
+     * @param {string} type - The sort type
+     * @param {object} options - The options
+     * @returns {number} - The comparison result
+     */
+    _compareBySortType(entryA, entryB, type, options = {}) {
+        if (type === 'name') {
+            return entryA.getName().localeCompare(entryB.getName());
+        }
+        if (type === 'size') {
+            const comparisonResult = entryA.getSize() - entryB.getSize();
+            if (comparisonResult !== 0) return comparisonResult;
+            return entryA.getName().localeCompare(entryB.getName());
+        }
+        if (type === 'date') {
+            const timeType = this._getTimeType(options);
+            const comparisonResult = this._getTime(entryA, timeType) - this._getTime(entryB, timeType);
+            if (comparisonResult !== 0) return comparisonResult;
+            return entryA.getName().localeCompare(entryB.getName());
+        }
+        if (type === 'extension') {
+            return this._compareExtensions(entryA.getName(), entryB.getName());
+        }
+        if (type === 'group') {
+            const comparisonResult = Number(entryB.isDirectory()) - Number(entryA.isDirectory());
+            if (comparisonResult !== 0) return comparisonResult;
+            return entryA.getName().localeCompare(entryB.getName());
+        }
+        return 0;
+    }
+
+    /**
+     * Gets the extension of a name
+     * @param {string} name - The name
+     * @returns {string} The extension of the name
+     */
+    _getExtension(name) {
+        const index = name.lastIndexOf('.');
+        return index <= 0 ? '' : name.slice(index + 1);
+    }
+
+    /**
+     * Compares the extensions of two names
+     * @param {string} nameA - The first name
+     * @param {string} nameB - The second name
+     * @returns {number} The comparison result
+     */
+    _compareExtensions(nameA, nameB) {
+        const extensionA = this._getExtension(nameA);
+        const extensionB = this._getExtension(nameB);
+        if (extensionA && !extensionB) return -1;
+        if (!extensionA && extensionB) return 1;
+        const comparisonResult = extensionA.localeCompare(extensionB);
+        if (comparisonResult !== 0) return comparisonResult;
+        return nameA.localeCompare(nameB);
+    }
+
+    /**
      * Formats the list of the entries into a string
      * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
+     * @param {string} directoryPath - The path to the directory
      * @param {object} options - The options
+     * @param {object} context - The context of the command execution
      * @returns {string} - The formatted list
      */
-    _formatList(entries, options) {
-        const showBare = options['bare'] || false;
-        const lines = [];
-        for (const entry of entries) {
-            lines.push(this._formatEntry(entry, options));
+    _formatList(entries, directoryPath = '', options = {}, context = {}) {
+        const showBare = Boolean(options['bare']);
+        if (showBare) {
+            return entries.map(entry => entry.getName()).join('\n');
         }
-        if (!showBare) {
-            lines.push(`${entries.filter(entry => entry.isDirectory()).length} Dir(s)`);
-            lines.push(`${entries.filter(entry => !entry.isDirectory()).length} File(s)`);
+        const spaceString = ' ';
+        const lines = [` Directory of /${directoryPath}`, ''];
+        if (options['wide'] || options['column']) {
+            const names = entries.map(entry => this._getWideName(entry, options));
+            const fillDirection = options['column'] ? 'column' : 'row';
+            const width = this._getWidth(context);
+            lines.push(this._formatColumns(names, fillDirection, width));
+        } else {
+            const showOwner = Boolean(options['owner']);
+            const rows = entries.map(entry => this._getEntryRow(entry, options));
+            const ownerWidth = showOwner
+                ? Math.max(1, ...rows.map(row => row.owner.length))
+                : 0;
+            for (const row of rows) {
+                const owner = showOwner ? `${row.owner.padEnd(ownerWidth, spaceString)} ` : '';
+                lines.push(`${row.date}    ${row.type.padEnd(6, spaceString)} ${row.size.padStart(16, spaceString)} ${owner}${row.name}`);
+            }
         }
+        const paddingLength = 16;
+        const files = entries.filter(entry => !entry.isDirectory());
+        const directories = entries.filter(entry => entry.isDirectory());
+        const totalFilesSize = this._formatSize(files.reduce((sum, file) => sum + file.getSize(), 0), options);
+        const totalDirectoriesSize = this._formatSize(directories.reduce((sum, directory) => sum + directory.getSize(), 0), options);
+        const maxSizeLength = Math.max(totalFilesSize.length, totalDirectoriesSize.length);
+        lines.push(`${String(files.length).padStart(paddingLength, spaceString)} File(s) ${totalFilesSize.padStart(maxSizeLength, spaceString)} bytes`);
+        lines.push(`${String(directories.length).padStart(paddingLength, spaceString)} Dir(s)  ${totalDirectoriesSize.padStart(maxSizeLength, spaceString)} bytes`);
         return lines.join('\n');
     }
 
     /**
-     * Formats the entry
+     * Gets the wide-format display name for an entry
      * @param {DirectoryEntry|FileEntry} entry - The entry
      * @param {object} options - The options
-     * @returns {string} - The formatted entry
+     * @returns {string} - The display name
      */
-    _formatEntry(entry, options) {
-        const showBare = options['bare'] || false;
-        if (showBare) return entry.getName();
-        const spaceString = ' ';
-        const padValue = (value, length) => value.toString().padStart(length, spaceString);
-        const thousandSeparator = options['thousand-separator'] ? ' ' : '';
-        const useLowerCase = options['lowercase'] || false;
-        const entryDate = this._formatDate(entry.getCreated());
-        const entryName = useLowerCase ? entry.getName().toLowerCase() : entry.getName();
-        const entrySize = padValue(String(entry.getSize()).replace(/\B(?=(\d{3})+(?!\d))/g, thousandSeparator), 16);
-        if (entry.isDirectory()) {
-            return `${entryDate} [DIR]${spaceString.repeat(2)} ${entrySize} ${entryName}`;
+    _getWideName(entry, options = {}) {
+        const name = Boolean(options['lowercase']) ? entry.getName().toLowerCase() : entry.getName();
+        return entry.isDirectory() ? `[${name}]` : name;
+    }
+
+    /**
+     * Gets the output width from the terminal or the default
+     * @param {object} context - The context of the command execution
+     * @returns {number} - The output width
+     */
+    _getWidth(context = {}) {
+        const columns = context.terminal ? context.terminal.getSize().columns : 0;
+        return columns > 0 ? columns : DEFAULT_WIDTH;
+    }
+
+    /**
+     * Formats names into columns
+     * @param {string[]} list - The names
+     * @param {string} fillDirection - row or column
+     * @param {number} width - The output width
+     * @returns {string} - The formatted columns
+     */
+    _formatColumns(list, fillDirection = 'row', width = DEFAULT_WIDTH) {
+        if (list.length === 0) return '';
+        const maxLength = Math.max(...list.map(item => item.length));
+        const columns = Math.max(1, Math.floor((width + DEFAULT_PADDING) / (maxLength + DEFAULT_PADDING)));
+        const columnCount = Math.min(columns, list.length);
+        const rowCount = Math.ceil(list.length / columnCount);
+        const rows = [];
+        for (let row = 0; row < rowCount; row++) {
+            const values = [];
+            for (let column = 0; column < columnCount; column++) {
+                const index = fillDirection === 'column'
+                    ? row + column * rowCount
+                    : row * columnCount + column;
+                if (index < list.length) {
+                    values.push(list[index]);
+                }
+            }
+            rows.push(values.map((value, index) => {
+                const isLast = index === values.length - 1;
+                const pad = Math.max(0, maxLength + DEFAULT_PADDING - value.length);
+                return isLast ? value : `${value}${' '.repeat(pad)}`;
+            }).join('').trimEnd());
         }
-        return `${entryDate} [FILE]${spaceString} ${entrySize} ${entryName}`;
+        return rows.join('\n');
+    }
+
+    /**
+     * Gets the display fields for an entry
+     * @param {DirectoryEntry|FileEntry} entry - The entry
+     * @param {object} options - The options
+     * @returns {{date: string, type: string, size: string, owner: string, name: string}} - The entry row
+     */
+    _getEntryRow(entry, options = {}) {
+        const useLowerCase = Boolean(options['lowercase']);
+        return {
+            date: this._formatDate(this._getTime(entry, this._getTimeType(options)), options),
+            type: entry.isDirectory() ? '<DIR>' : '<FILE>',
+            size: this._formatSize(entry.getSize(), options),
+            owner: entry.getOwner() || '',
+            name: useLowerCase ? entry.getName().toLowerCase() : entry.getName(),
+        };
     }
 
     /**
      * Formats the date
      * @param {number} timestamp - The timestamp to format
+     * @param {object} options - The options
      * @returns {string} - The formatted date
      */
-    _formatDate(timestamp) {
+    _formatDate(timestamp, options = {}) {
         const pad = (value) => value.toString().padStart(2, '0');
         const date = new Date(timestamp);
-        const year = date.getFullYear();
+        const year = Boolean(options['four-digit-year']) ? date.getFullYear() : pad(date.getFullYear() % 100);
         const month = pad(date.getMonth() + 1);
         const day = pad(date.getDate());
         const hours = pad(date.getHours());
         const minutes = pad(date.getMinutes());
-        const seconds = pad(date.getSeconds());
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        return `${day}.${month}.${year}  ${hours}:${minutes}`;
+    }
+
+    /**
+     * Formats the size
+     * @param {number} size - The size
+     * @param {object} options - The options
+     * @returns {string} - The formatted size
+     */
+    _formatSize(size, options = {}) {
+        const thousandSeparator = Boolean(options['thousands']) ? ' ' : '';
+        return String(size).replace(/\B(?=(\d{3})+(?!\d))/g, thousandSeparator);
+    }
+
+    /**
+     * Parses letter options into options
+     * @param {string} value - The value
+     * @param {object} types - The types
+     * @returns {Array<{type: string, negate: boolean}>} - The options
+     */
+    _parseLetterOptions(value, types) {
+        if (typeof value !== 'string' || value.length === 0) return [];
+        const normalizedValue = value.toUpperCase();
+        const keys = Object.keys(types).join('');
+        if (!new RegExp(`^[-${keys}]+$`).test(normalizedValue)) return [];
+        const result = [];
+        let negate = false;
+        for (const character of normalizedValue) {
+            if (character === '-') { negate = true; continue; }
+            if (types[character]) {
+                result.push({ type: types[character], negate });
+                negate = false;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Gets the time type from options or the default
+     * @param {object} options - The options
+     * @returns {string} - The time type
+     */
+    _getTimeType(options = {}) {
+        const timeType = options['time'];
+        if (typeof timeType !== 'string' || timeType.length === 0) return DEFAULT_TIME_TYPE;
+        const type = timeType[0].toUpperCase();
+        if (TIME_TYPES[type]) return TIME_TYPES[type];
+        return DEFAULT_TIME_TYPE;
+    }
+
+    /**
+     * Gets the time of the entry
+     * @param {DirectoryEntry|FileEntry} entry - The entry
+     * @param {string} timeType - The time type
+     * @returns {number} - The time
+     */
+    _getTime(entry, timeType) {
+        if (timeType === 'created') return entry.getCreated();
+        if (timeType === 'accessed') return entry.getAccessed();
+        if (timeType === 'written') return entry.getModified();
+        return entry.getModified();
     }
 }
 

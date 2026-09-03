@@ -8,7 +8,8 @@ import {
     COLORS, AUTO_COLOR_ENABLED, C_ESCAPE_MAP,
     BINARY_UNITS_SIZE_MAP, DECIMAL_UNITS_SIZE_MAP, SI_UNITS_SIZE_MAP
 } from './config.js'
-import StrftimeFormatter from '../../core/datetime/strftime-formatter.js'
+import { StrftimeFormatter } from '../../core/datetime/strftime-formatter.js'
+import { Path } from '../../system/file-system/path.js'
 
 /**
  * List - Application for listing directory contents
@@ -93,7 +94,7 @@ export class List extends Application {
      * @returns {Array<DirectoryEntry|FileEntry>} - The filtered entries
      */
     _filterEntries(entries, options = {}) {
-        const all = Boolean(options['all'] || options['f']);
+        const all = Boolean(options['all'] || options['unsorted']);
         const ignoreBackups = Boolean(options['ignore-backups']);
         const ignorePattern = options['ignore'];
         const hidePattern = options['hide'];
@@ -105,48 +106,12 @@ export class List extends Application {
             filteredEntries = filteredEntries.filter(entry => !entry.getName().startsWith('.'));
         }
         if (ignorePattern) {
-            filteredEntries = filteredEntries.filter(entry => !this._globToRegExp(ignorePattern).test(entry.getName()));
+            filteredEntries = filteredEntries.filter(entry => !Path.globToRegExp(ignorePattern).test(entry.getName()));
         }
         if (hidePattern && !all) {
-            filteredEntries = filteredEntries.filter(entry => !this._globToRegExp(hidePattern).test(entry.getName()));
+            filteredEntries = filteredEntries.filter(entry => !Path.globToRegExp(hidePattern).test(entry.getName()));
         }
         return filteredEntries;
-    }
-
-    /**
-     * Converts a shell glob to a full-name regular expression
-     * @param {string} pattern - The glob pattern
-     * @returns {RegExp} - The regular expression
-     */
-    _globToRegExp(pattern) {
-        let regex = '';
-        for (let i = 0; i < pattern.length; i++) {
-            const char = pattern[i];
-            if (char === '*') {
-                regex += '.*';
-                continue;
-            }
-            if (char === '?') {
-                regex += '.';
-                continue;
-            }
-            if (char === '[') {
-                const end = pattern.indexOf(']', i + 1);
-                if (end === -1) {
-                    regex += '\\[';
-                    continue;
-                }
-                let characterClass = pattern.slice(i + 1, end);
-                if (characterClass.startsWith('!')) {
-                    characterClass = `^${characterClass.slice(1)}`;
-                }
-                regex += `[${characterClass}]`;
-                i = end;
-                continue;
-            }
-            regex += char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        }
-        return new RegExp(`^${regex}$`);
     }
 
     /**
@@ -371,8 +336,8 @@ export class List extends Application {
         const maxGroup = Math.max(...rows.map(row => row.group.length));
         const maxAuthor = Math.max(...rows.map(row => row.author.length));
         const maxSize = Math.max(...rows.map(row => row.size.length));
-        const printOwner = !Boolean(options['g']);
-        const printGroup = !Boolean(options['o'] || options['no-group']);
+        const printOwner = !Boolean(options['no-owner']);
+        const printGroup = !Boolean(options['long-no-group'] || options['no-group']);
         const printAuthor = Boolean(options['author']);
         let longList = `${total}\n`;
         for (const row of rows) {
@@ -702,11 +667,11 @@ export class List extends Application {
     _getFormat(options = {}) {
         const format = options['format'];
         if (FORMATS.includes(format)) return format;
-        if (options['x']) return 'horizontal';
-        if (options['m']) return 'commas';
-        if (options['l'] || options['o'] || options['g'] || options['full-time']) return 'long';
-        if (options['1']) return 'single-column';
-        if (options['C']) return 'vertical';
+        if (options['horizontal']) return 'horizontal';
+        if (options['commas']) return 'commas';
+        if (options['long'] || options['long-no-group'] || options['no-owner'] || options['full-time']) return 'long';
+        if (options['single-column']) return 'single-column';
+        if (options['columns']) return 'vertical';
         return DEFAULT_FORMAT;
     }
 
@@ -718,12 +683,12 @@ export class List extends Application {
     _getSortType(options = {}) {
         const sortType = options['sort'];
         if (SORT_TYPES.includes(sortType)) return sortType;
-        if (options['U']) return 'none';
-        if (options['f']) return 'none';
-        if (options['S']) return 'size';
-        if (options['t']) return 'time';
-        if (options['v']) return 'version';
-        if (options['X']) return 'extension';
+        if (options['no-sort']) return 'none';
+        if (options['unsorted']) return 'none';
+        if (options['sort-size']) return 'size';
+        if (options['sort-time']) return 'time';
+        if (options['version-sort']) return 'version';
+        if (options['sort-extension']) return 'extension';
         return DEFAULT_SORT_TYPE;
     }
 
@@ -735,8 +700,8 @@ export class List extends Application {
     _getTimeType(options = {}) {
         const timeType = options['time'];
         if (TIME_TYPES.includes(timeType)) return timeType;
-        if (options['u']) return 'access';
-        if (options['c']) return 'status';
+        if (options['access-time']) return 'access';
+        if (options['ctime']) return 'status';
         return DEFAULT_TIME_TYPE;
     }
 
@@ -748,9 +713,9 @@ export class List extends Application {
     _getIndicatorStyle(options = {}) {
         const indicatorStyle = options['indicator-style'];
         if (INDICATOR_STYLES.includes(indicatorStyle)) return indicatorStyle;
-        if (options['p']) return 'slash';
+        if (options['slash']) return 'slash';
         if (options['file-type']) return 'file-type';
-        if (options['F']) return 'classify';
+        if (options['classify']) return 'classify';
         return DEFAULT_INDICATOR_STYLE;
     }
 

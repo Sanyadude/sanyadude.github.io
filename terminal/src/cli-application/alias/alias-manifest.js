@@ -9,7 +9,7 @@ export const ALIAS_MANIFEST = {
         description: 'Creates an alias for shell commands',
         arguments: [
             {
-                name: '<name_command_pair>',
+                name: 'name_command_pair', required: true,
                 description: 'The name and command in format: name=command for creating an alias',
             }
         ]
@@ -18,13 +18,13 @@ export const ALIAS_MANIFEST = {
         description: 'Removes an alias for shell commands',
         options: [
             {
-                name: '-a, --all',
+                name: 'all', short: 'a', long: 'all',
                 description: 'Removes all aliases',
             }
         ],
         arguments: [
             {
-                name: '<name>',
+                name: 'name', required: true,
                 description: 'The alias to remove',
             }
         ]

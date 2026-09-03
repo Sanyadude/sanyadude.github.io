@@ -22,11 +22,21 @@ export class Type extends Application {
     main(commandLine, context) {
         const args = commandLine.getArguments();
         if (args.length === 0) return 'Path should be specified';
-        const path = args.join(' ');
-        if (path == 'nul') return '';
-        const file = context.fileSystemExplorer.getFile(path);
-        if (!file) return `File not found: ${path}`;
-        return file.readAsString();
+        const fsExplorer = context.fileSystemExplorer;
+        const fsManager = context.fileSystemManager;
+        const outputs = [];
+        for (const path of args) {
+            if (path === 'nul') {
+                outputs.push('');
+                continue;
+            }
+            const fullPath = fsExplorer.getAbsolutePath(path);
+            if (!fsManager.fileExists(fullPath)) return `File not found: ${fullPath}`;
+            const file = fsManager.getFile(fullPath);
+            if (!file) return `File not found: ${path}`;
+            outputs.push(file.readAsString());
+        }
+        return outputs.join('\n');
     }
 }
 

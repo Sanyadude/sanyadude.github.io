@@ -10,30 +10,30 @@ export const DATE_INFO_MANIFEST = {
         name: 'date',
         options: [
             {
-                name: '-d, --date <date>',
+                name: 'date', short: 'd', long: 'date', value: { name: 'date', required: true },
                 description: 'The date to use, if not provided, the current date will be used'
             },
             {
-                name: '-I, --iso8601 <format>',
+                name: 'iso8601', short: 'I', long: 'iso8601', value: { name: 'format', required: true },
                 description: `Format the date output according to the ISO 8601 standard ('date', 'hours', 'minutes', 'seconds', 'days')`,
                 defaultValue: DEFAULT_ISO8601_FORMAT,
             },
             {
-                name: '-R, --rfc-email',
+                name: 'rfc-email', short: 'R', long: 'rfc-email',
                 description: 'Format the date output according to the RFC 5322 standard'
             },
             {
-                name: '-u, --utc',
+                name: 'utc', short: 'u', long: 'utc',
                 description: 'Use UTC time'
             },
             {
-                name: '-s, --set-date <date>',
+                name: 'set-date', short: 's', long: 'set-date', value: { name: 'date', required: true },
                 description: 'Set the system time to the specified date'
             }
         ],
         arguments: [
             {
-                name: '<format>',
+                name: 'format', required: true,
                 description: 'Output format (strftime):'
                     +'\n  - %Y: Year (4 digits)'
                     +'\n  - %y: Year (2 digits)'
