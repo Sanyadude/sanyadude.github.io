@@ -1,6 +1,10 @@
 import { Application } from '../../system/application/application.js'
 import { LIPSUM_MANIFEST } from './lipsum-manifest.js'
-import { DEFAULT_PARAGRAPHS, DEFAULT_WORDS, DEFAULT_WORDS_PER_PARAGRAPH, FIRST_SENTENCE, MIN_SENTENCE_WORD_COUNT, LIPSUM_WORDS } from './config.js'
+import { 
+    DEFAULT_PARAGRAPHS, DEFAULT_WORDS, DEFAULT_WIDTH,
+    DEFAULT_WORDS_PER_PARAGRAPH,
+    FIRST_SENTENCE, MIN_SENTENCE_WORD_COUNT, LIPSUM_WORDS
+} from './config.js'
 
 /**
  * Lipsum - Application for generating dummy text
@@ -17,28 +21,35 @@ export class Lipsum extends Application {
     /**
      * Executes the `lipsum` command
      * @param {ShellCommandLine} commandLine - The command line to execute
+     * @param {object} context - The context of the command execution
      * @returns {string} - The result of the lipsum command execution
      */
-    main(commandLine) {
+    main(commandLine, context) {
         const options = commandLine.getOptions();
-        return this._generateLipsumText(options);
+        const width = this._getWidth(options, context);
+        return this._generateLipsumText(options, width);
     }
 
     /**
      * Generates the lorem ipsum text
      * @param {object} options - The options object
+     * @param {number} width - The wrap width
      * @returns {string} - The lorem ipsum text
      */
-    _generateLipsumText(options = {}) {
+    _generateLipsumText(options = {}, width = DEFAULT_WIDTH) {
         if (options['paragraphs'] !== undefined) {
             const paragraphs = !isNaN(options['paragraphs']) ? Number(options['paragraphs']) : DEFAULT_PARAGRAPHS;
-            return this._generateParagraphs(paragraphs).map(paragraph => paragraph.join(' ')).join('\n\n');
+            return this._generateParagraphs(paragraphs)
+                .map(paragraph => this._wrapWords(paragraph, width))
+                .join('\n\n');
         }
         if (options['words'] !== undefined) {
             const words = !isNaN(options['words']) ? Number(options['words']) : DEFAULT_WORDS;
-            return this._generateFirstParagraphWords(words).join(' ');
+            const generatedWords = this._generateFirstParagraphWords(words);
+            return this._wrapWords(generatedWords, width);
         }
-        return this._generateFirstParagraphWords().join(' ');
+        const generatedWords = this._generateFirstParagraphWords();
+        return this._wrapWords(generatedWords, width);
     }
 
     /**
@@ -145,6 +156,33 @@ export class Lipsum extends Application {
     }
 
     /**
+     * Wraps a list of words to the given column width
+     * @param {string[]} words - The words to wrap
+     * @param {number} width - The wrap width
+     * @returns {string} - The wrapped paragraph
+     */
+    _wrapWords(words, width) {
+        if (!words || words.length === 0) return '';
+        if (!width || width < 1) return words.join(' ');
+        const lines = [];
+        let line = '';
+        for (const word of words) {
+            if (!line) {
+                line = word;
+                continue;
+            }
+            if (line.length + 1 + word.length <= width) {
+                line += ` ${word}`;
+                continue;
+            }
+            lines.push(line);
+            line = word;
+        }
+        if (line) lines.push(line);
+        return lines.join('\n');
+    }
+
+    /**
      * Generates a random number between a minimum and maximum value
      * @param {number} min - The minimum value
      * @param {number} max - The maximum value
@@ -152,6 +190,22 @@ export class Lipsum extends Application {
      */
     _rand(min = 0, max = 1) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    /**
+     * Gets the wrap width from options, the terminal, or the default
+     * @param {object} options - The options object
+     * @param {object} context - The context of the command execution
+     * @returns {number} - The wrap width
+     */
+    _getWidth(options = {}, context = {}) {
+        const rawWidth = options['width'];
+        if (rawWidth !== undefined && rawWidth !== null && rawWidth !== '') {
+            const width = Number(rawWidth);
+            if (Number.isFinite(width) && width >= 1) return Math.floor(width);
+        }
+        const columns = context.terminal.getSize().columns;
+        return columns || DEFAULT_WIDTH;
     }
 
 }

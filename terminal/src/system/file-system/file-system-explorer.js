@@ -1,7 +1,7 @@
-import FileSystemManager from './file-system-manager.js'
-import DirectoryEntry from './directory-entry.js'
-import FileEntry from './file-entry.js'
-import Path from './path.js'
+import { FileSystemManager } from './file-system-manager.js'
+import { DirectoryEntry } from './directory-entry.js'
+import { FileEntry } from './file-entry.js'
+import { Path } from './path.js'
 
 /**
  * FileSystemExplorer - Provides file system navigation similar to Windows Explorer or command-line

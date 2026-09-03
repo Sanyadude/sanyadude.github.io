@@ -5,89 +5,33 @@ export const FIND_MANIFEST = {
     type: 'cli',
     dependencies: ['fileSystemManager', 'fileSystemExplorer'],
     programs: [{
-        name: 'findstr',
-        description: 'Searches for strings in files or standard input using regular expressions',
-        options: [
-            {
-                name: '-b, --beginning',
-                description: 'Match when the search string is at the beginning of the line',
-            },
-            {
-                name: '-e, --end',
-                description: 'Match when the search string is at the end of the line',
-            },
-            {
-                name: '-x, --exact',
-                description: 'Search for the exact string',
-            },
-            {
-                name: '-c, --count',
-                description: 'Show only the number of matches',
-            },
-            {
-                name: '-i, --ignore-case',
-                description: 'Ignore case',
-            },
-            {
-                name: '-v, --invert-match',
-                description: 'Search all lines that do not contain the specified string',
-            },
-            {
-                name: '-n, --line-number',
-                description: 'Show file line number before each line',
-            },
-            {
-                name: '-o, --offset',
-                description: 'Show offset of the match before each line',
-            },
-            {
-                name: '-l, --literal',
-                description: 'Use search string literally',
-            },
-            {
-                name: '-r, --regex',
-                description: 'Use search string as regular expressions',
-            },
-        ],
-        arguments: [
-            {
-                name: '<search_string>',
-                description: 'The search string',
-            },
-            {
-                name: '[<file_path>]',
-                description: 'The path to the file to search in',
-            },
-        ],
-    },
-    {
         name: 'find',
         options: [
             {
-                name: '-c, --count',
-                description: 'Show only the number of matches',
-            },
-            {
-                name: '-i, --ignore-case',
-                description: 'Ignore case',
-            },
-            {
-                name: '-v, --invert-match',
+                name: 'invert-match', short: 'V',
                 description: 'Search all lines that do not contain the specified string',
             },
             {
-                name: '-n, --line-number',
+                name: 'count', short: 'C',
+                description: 'Show only the number of matches',
+            },
+            {
+                name: 'line-number', short: 'N',
                 description: 'Show file line number before each line',
-            }
+            },
+            {
+                name: 'ignore-case', short: 'I',
+                description: 'Ignore case',
+            },
         ],
         arguments: [
             {
-                name: '<search_string>',
+                name: 'search_string', required: true,
                 description: 'The search string',
             },
             {
-                name: '[<file_path>]',
-                description: 'The path to the file to search in',
+                name: 'file_path', required: false, repeatable: true,
+                description: 'The path to the file(s) to search in',
             },
         ],
     }]

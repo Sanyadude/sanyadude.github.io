@@ -20,8 +20,35 @@ export class Echo extends Application {
      */
     main(commandLine) {
         const args = commandLine.getArguments();
-        if (args.length === 0) return commandLine.getStdin();
-        return args.join(' ');
+        const options = commandLine.getOptions();
+        let text = args.length === 0 ? commandLine.getStdin() : args.join(' ');
+        const enableEscapes = Boolean(options['enable-escapes']) && !Boolean(options['disable-escapes']);
+        if (enableEscapes) {
+            text = this._interpretEscapes(text);
+        }
+        const noTrailingNewline = Boolean(options['no-newline']);
+        if (noTrailingNewline) return text;
+        return text + '\n';
+    }
+
+    /**
+     * Interprets common backslash escape sequences
+     * @param {string} text - The text to interpret
+     * @returns {string}
+     */
+    _interpretEscapes(text) {
+        const escapes = {
+            a: '\x07',
+            b: '\b',
+            e: '\x1b',
+            f: '\f',
+            n: '\n',
+            r: '\r',
+            t: '\t',
+            v: '\v',
+            '\\': '\\',
+        };
+        return text.replace(/\\([abefnrtv\\])/g, (_, ch) => escapes[ch]);
     }
 }
 

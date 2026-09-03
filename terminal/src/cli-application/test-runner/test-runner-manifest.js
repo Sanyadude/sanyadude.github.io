@@ -16,9 +16,9 @@ export const TEST_RUNNER_MANIFEST = {
             { name: 'toilet', description: 'Smoke test all toilet fonts' },
         ],
         options: [
-            { name: '-l, --list', description: 'List available test suites' },
-            { name: '-a, --all', description: 'Run all test suites' },
-            { name: '-v, --verbose', description: 'Show passing tests as well as failures' },
+            { name: 'list', short: 'l', long: 'list', description: 'List available test suites' },
+            { name: 'all', short: 'a', long: 'all', description: 'Run all test suites' },
+            { name: 'verbose', short: 'v', long: 'verbose', description: 'Show passing tests as well as failures' },
         ]
     }]
 }

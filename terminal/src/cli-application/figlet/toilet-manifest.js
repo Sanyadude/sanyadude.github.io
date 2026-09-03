@@ -10,75 +10,75 @@ export const TOILET_MANIFEST = {
         name: 'toilet',
         options: [
             {
-                name: '--list',
-                description: 'Lists all available fonts',
-            },
-            {
-                name: '-w, --width <width>',
-                description: 'The width of the output',
-                defaultValue: DEFAULT_WIDTH,
-            },
-            {
-                name: '-t, --terminal',
-                description: 'Use the terminal width as the width of the output',
-            },
-            {
-                name: '-f, --font <font_name>',
+                name: 'font', short: 'f', long: 'font', value: { name: 'font_name', required: true },
                 description: 'The font to use, if not provided, the default font will be used',
                 defaultValue: DEFAULT_FONT_NAME,
             },
             {
-                name: '-l, --left',
+                name: 'left', short: 'l', long: 'left',
                 description: 'Align output to the left',
             },
             {
-                name: '-r, --right',
+                name: 'right', short: 'r', long: 'right',
                 description: 'Align output to the right',
             },
             {
-                name: '-c, --center',
+                name: 'center', short: 'c', long: 'center',
                 description: 'Align output to the center',
             },
             {
-                name: '-L, --left-to-right',
-                description: 'Print the output from left to right',
+                name: 'terminal', short: 't', long: 'terminal',
+                description: 'Use the terminal width as the width of the output',
             },
             {
-                name: '-R, --right-to-left',
-                description: 'Print the output from right to left',
+                name: 'width', short: 'w', long: 'width', value: { name: 'width', required: true },
+                description: 'The width of the output',
+                defaultValue: DEFAULT_WIDTH,
             },
             {
-                name: '-k, --kerning',
+                name: 'kerning', short: 'k', long: 'kerning',
                 description: 'Enables kerning which removes as many blanks as possible between characters so they touch, but does not merge them',
             },
             {
-                name: '-s, --smushing',
+                name: 'smushing', short: 's', long: 'smushing',
                 description: 'Enables smushing where overlapping sub-characters between adjacent letters are removed to make them fit more tightly',
             },
             {
-                name: '-W, --full-width',
+                name: 'full-width', short: 'W', long: 'full-width',
                 description: 'Displays all characters at full width, without kerning or smushing',
             },
             {
-                name: '-F, --filter <filter>',
+                name: 'left-to-right', short: 'L', long: 'left-to-right',
+                description: 'Print the output from left to right',
+            },
+            {
+                name: 'right-to-left', short: 'R', long: 'right-to-left',
+                description: 'Print the output from right to left',
+            },
+            {
+                name: 'list', long: 'list',
+                description: 'Lists all available fonts',
+            },
+            {
+                name: 'filter', short: 'F', long: 'filter', value: { name: 'filter', required: true },
                 description: 'The filter to apply to the output, multiple filters can be applied by separating them with `:`. If list value is provided, the available filters will be listed',
             },
             {
-                name: '--metal',
+                name: 'metal', long: 'metal',
                 description: 'Applies the metal filter to the output',
             },
             {
-                name: '--rainbow',
+                name: 'rainbow', long: 'rainbow',
                 description: 'Applies the rainbow filter to the output',
             },
             {
-                name: '--gay',
+                name: 'gay', long: 'gay',
                 description: 'Applies the gay filter to the output',
             },
         ],
         arguments: [
             {
-                name: '<message>',
+                name: 'message', required: true,
                 description: 'The message to display, if not provided, the standard input will be used',
             },
         ]

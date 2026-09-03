@@ -9,7 +9,7 @@ export const CHANGE_DIRECTORY_MANIFEST = {
         aliases: ['cd'],
         arguments: [
             {
-                name: '<directory_path>',
+                name: 'directory_path', required: true,
                 description: 'The path to the directory',
             }
         ]
@@ -19,7 +19,7 @@ export const CHANGE_DIRECTORY_MANIFEST = {
         description: 'Changes the current directory (alias for chdir)',
         arguments: [
             {
-                name: '<directory_path>',
+                name: 'directory_path', required: true,
                 description: 'The path to the directory',
             }
         ]

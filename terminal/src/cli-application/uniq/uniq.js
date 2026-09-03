@@ -1,5 +1,9 @@
 import { Application } from '../../system/application/application.js'
 import { UNIQ_MANIFEST } from './uniq-manifest.js'
+import { 
+    DEFAULT_GROUP_METHOD, DEFAULT_ALL_REPEATED_METHOD, 
+    GROUP_METHODS, ALL_REPEATED_METHODS 
+} from './config.js'
 
 /**
  * Uniq - Application for filtering out duplicate lines from a file
@@ -40,33 +44,98 @@ export class Uniq extends Application {
      */
     _filterText(text = '', options = {}) {
         if (text === '') return '';
-        const groups = this._groupLines(text.split(/\r?\n/), options);
-        return groups
-            .filter(group => this._shouldOutputGroup(group, options))
-            .map(group => this._formatGroup(group, options))
-            .join('\n');
+        const delimiter = this._getLineDelimiter(options);
+        const lines = this._splitLines(text, options);
+        const groups = this._groupLines(lines, options)
+            .filter(group => this._shouldOutputGroup(group, options));
+        const formatted = groups.map(group => this._formatGroup(group, options, delimiter));
+        return this._joinGroups(formatted, delimiter, options);
+    }
+
+    /**
+     * Returns the --group method, or null when unused
+     * @param {object} options - The options object
+     * @returns {string|null}
+     */
+    _getGroupMethod(options = {}) {
+        if (options['group'] === undefined || options['group'] === null) return null;
+        const method = options['group'] === true ? DEFAULT_GROUP_METHOD : String(options['group']);
+        if (GROUP_METHODS.includes(method)) return method;
+        return DEFAULT_GROUP_METHOD;
+    }
+
+    /**
+     * Returns the --all-repeated method, or null when unused
+     * @param {object} options - The options object
+     * @returns {string|null}
+     */
+    _getAllRepeatedMethod(options = {}) {
+        if (options['all-repeated'] !== undefined && options['all-repeated'] !== null) {
+            const method = options['all-repeated'] === true ? DEFAULT_ALL_REPEATED_METHOD : String(options['all-repeated']);
+            if (ALL_REPEATED_METHODS.includes(method)) return method;
+            return DEFAULT_ALL_REPEATED_METHOD;
+        }
+        if (options['all-duplicates']) return DEFAULT_ALL_REPEATED_METHOD;
+        return null;
+    }
+
+    /**
+     * Joins formatted groups using the selected separator method
+     * @param {string[]} groups - The formatted groups
+     * @param {string} delimiter - The line delimiter
+     * @param {object} options - The options object
+     * @returns {string}
+     */
+    _joinGroups(groups, delimiter, options = {}) {
+        const groupMethod = this._getGroupMethod(options);
+        const allRepeatedMethod = this._getAllRepeatedMethod(options);
+        const method = groupMethod || (allRepeatedMethod && allRepeatedMethod !== DEFAULT_ALL_REPEATED_METHOD ? allRepeatedMethod : null);
+        if (!method || groups.length === 0) return groups.join(delimiter);
+        const between = delimiter + delimiter;
+        if (method === 'prepend') return delimiter + groups.join(between);
+        if (method === 'append') return groups.join(between) + delimiter;
+        if (method === 'both') return delimiter + groups.join(between) + delimiter;
+        return groups.join(between);
+    }
+
+    /**
+     * Returns the line delimiter for the given options
+     * @param {object} options - The options object
+     * @returns {string} - The line delimiter
+     */
+    _getLineDelimiter(options) {
+        return options['zero-terminated'] ? '\0' : '\n';
+    }
+
+    /**
+     * Splits text into lines using the delimiter for the given options
+     * @param {string} text - The text to split
+     * @param {object} options - The options object
+     * @returns {string[]} - The lines
+     */
+    _splitLines(text, options) {
+        if (options['zero-terminated']) return text.split('\0');
+        return text.split(/\r?\n/);
     }
 
     /**
      * Groups adjacent equal lines.
      * @param {string[]} lines - The lines to group
      * @param {object} options - The options object
-     * @returns {{ line: string, count: number }[]} - The grouped lines
+     * @returns {{ line: string, count: number, lines: string[] }[]} - The grouped lines
      */
     _groupLines(lines, options = {}) {
         const groups = [];
-        let currentLine = lines[0];
-        let currentCount = 1;
+        let currentLines = [lines[0]];
         for (let index = 1; index < lines.length; index++) {
-            if (this._compareLines(lines[index], currentLine, options)) {
-                currentCount++;
+            if (this._compareLines(lines[index], currentLines[0], options)) {
+                currentLines.push(lines[index]);
                 continue;
             }
-            groups.push({ line: currentLine, count: currentCount });
-            currentLine = lines[index];
-            currentCount = 1;
+            groups.push({ line: currentLines[0], count: currentLines.length, lines: currentLines });
+            currentLines = [lines[index]];
         }
-        groups.push({ line: currentLine, count: currentCount });
+        groups.push({ line: currentLines[0], count: currentLines.length, lines: currentLines });
         return groups;
     }
 
@@ -77,7 +146,8 @@ export class Uniq extends Application {
      * @returns {boolean} - True when the group should be output
      */
     _shouldOutputGroup(group, options = {}) {
-        if (options['duplicates']) return group.count > 1;
+        if (this._getGroupMethod(options)) return true;
+        if (this._getAllRepeatedMethod(options) || options['repeated']) return group.count > 1;
         if (options['unique']) return group.count === 1;
         return true;
     }
@@ -86,9 +156,13 @@ export class Uniq extends Application {
      * Formats a grouped line for output.
      * @param {{ line: string, count: number }} group - The grouped line
      * @param {object} options - The options object
+     * @param {string} delimiter - The line delimiter
      * @returns {string} - The formatted line
      */
-    _formatGroup(group, options = {}) {
+    _formatGroup(group, options = {}, delimiter = '\n') {
+        if (this._getGroupMethod(options) || this._getAllRepeatedMethod(options)) {
+            return group.lines.join(delimiter);
+        }
         if (!options['count']) return group.line;
         return `${group.count} ${group.line}`;
     }

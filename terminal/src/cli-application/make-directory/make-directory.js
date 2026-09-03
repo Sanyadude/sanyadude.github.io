@@ -22,10 +22,15 @@ export class MakeDirectory extends Application {
     main(commandLine, context) {
         const args = commandLine.getArguments();
         if (args.length === 0) return 'Path should be specified';
-        const path = args.join(' ');
-        const fullPath = context.fileSystemExplorer.getAbsolutePath(path);
-        context.fileSystemManager.createDirectory(fullPath);
-        return `Directory created: ${fullPath}`;
+        const fsExplorer = context.fileSystemExplorer;
+        const fsManager = context.fileSystemManager;
+        const messages = [];
+        for (const path of args) {
+            const fullPath = fsExplorer.getAbsolutePath(path);
+            fsManager.createDirectory(fullPath);
+            messages.push(`Directory created: ${fullPath}`);
+        }
+        return messages.join('\n');
     }
 }
 

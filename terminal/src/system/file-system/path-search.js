@@ -1,6 +1,6 @@
-import DirectoryEntry from './directory-entry.js'
-import FileEntry from './file-entry.js'
-import EntryPath from './entry-path.js'
+import { DirectoryEntry } from './directory-entry.js'
+import { FileEntry } from './file-entry.js'
+import { EntryPath } from './entry-path.js'
 
 /**
  * PathSearch - Provides path search utilities

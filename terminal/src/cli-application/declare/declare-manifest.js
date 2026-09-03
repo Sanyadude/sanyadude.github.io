@@ -9,7 +9,7 @@ export const DECLARE_MANIFEST = {
         description: 'Declares a variable for shell commands',
         arguments: [
             {
-                name: '<name_value_pair>',
+                name: 'name_value_pair', required: true,
                 description: 'The name and value in format: name=value for declaring a variable',
             }
         ]
@@ -18,13 +18,13 @@ export const DECLARE_MANIFEST = {
         description: 'Unsets a variable for shell commands',
         options: [
             {
-                name: '-a, --all',
+                name: 'all', short: 'a', long: 'all',
                 description: 'Unsets all variables',
             }
         ],
         arguments: [
             {
-                name: '<name>',
+                name: 'name', required: true,
                 description: 'The variable to unset',
             }
         ]

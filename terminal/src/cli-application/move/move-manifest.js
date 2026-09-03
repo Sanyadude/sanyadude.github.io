@@ -8,18 +8,18 @@ export const MOVE_MANIFEST = {
         name: 'move',
         options: [
             {
-                name: '-f, --force',
-                description: 'Force the move even if the destination file or directory already exists'
+                name: 'overwrite', short: 'Y',
+                description: 'Overwrite the destination if it already exists',
             },
         ],
         arguments: [
             {
-                name: '<source_path>',
-                description: 'The path to the source file or directory',
+                name: 'source_path', required: true, repeatable: true,
+                description: 'Source path(s)',
             },
             {
-                name: '<destination_path>',
-                description: 'The path to the destination directory',
+                name: 'destination_path', required: true,
+                description: 'Destination path, or directory when moving multiple sources',
             },
         ],
     }]

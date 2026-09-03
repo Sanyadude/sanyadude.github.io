@@ -10,47 +10,51 @@ export const FORTUNE_MANIFEST = {
         description: 'Print a random, hopefully interesting, adage',
         options: [
             {
-                name: '-a, --all',
+                name: 'all', short: 'a',
                 description: 'Print all fortune files including offensive ones',
             },
             {
-                name: '-o, --offensive',
-                description: 'Only print offensive fortunes',
+                name: 'cookie', short: 'c',
+                description: 'Show the cookie file from which the fortune came',
             },
             {
-                name: '-s, --short',
-                description: 'Only print short fortunes',
+                name: 'equal', short: 'e',
+                description: 'Consider all fortune files to be of equal size',
             },
             {
-                name: '-l, --long',
+                name: 'list', short: 'f',
+                description: 'List available fortune files',
+            },
+            {
+                name: 'long', short: 'l',
                 description: 'Only print long fortunes',
             },
             {
-                name: '-n, --length <length>',
+                name: 'pattern', short: 'm', value: { name: 'pattern', required: true },
+                description: 'Specifies the pattern to use for filtering fortunes'
+            },
+            {
+                name: 'length', short: 'n', value: { name: 'length', required: true },
                 description: 'Specifies how long is defined',
                 defaultValue: DEFAULT_LENGTH_THRESHOLD,
             },
             {
-                name: '-m, --pattern <pattern>',
-                description: 'Specifies the pattern to use for filtering fortunes'
+                name: 'offensive', short: 'o',
+                description: 'Only print offensive fortunes',
             },
             {
-                name: '-i, --ignore-case',
+                name: 'short', short: 's',
+                description: 'Only print short fortunes',
+            },
+            {
+                name: 'ignore-case', short: 'i',
                 description: 'Make pattern matching ignore case',
-            },
-            {
-                name: '-c, --show-cookie',
-                description: 'Show the cookie file from which the fortune came.',
-            },
-            {
-                name: '-f, --list',
-                description: 'List available fortune files',
             }
         ],
         arguments: [
             {
-                name: '[file]',
-                description: 'Fortune file to pick from',
+                name: 'files', required: false, repeatable: true,
+                description: 'Fortune files to pick from, optionally prefixed with N% (e.g. 90% computers 10% zippy)',
             }
         ]
     }]

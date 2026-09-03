@@ -4,7 +4,7 @@ import { MOVE_MANIFEST } from './move-manifest.js'
 /**
  * Move - Application for moving a file or directory
  * @extends {Application}
- */ 
+ */
 export class Move extends Application {
     /**
      * Creates a new Move instance
@@ -23,13 +23,23 @@ export class Move extends Application {
         const args = commandLine.getArguments();
         const options = commandLine.getOptions();
         if (args.length < 2) return 'Source and destination paths should be specified';
-        const force = options['force'] || false;
-        const sourcePath = args[0];
-        const destinationPath = args[1];
-        const fullSourcePath = context.fileSystemExplorer.getAbsolutePath(sourcePath);
-        const fullDestinationPath = context.fileSystemExplorer.getAbsolutePath(destinationPath);
-        context.fileSystemManager.move(fullSourcePath, fullDestinationPath, force);
-        return `Moved: ${sourcePath} to ${destinationPath}`;
+        const overwrite = Boolean(options['overwrite']);
+        const destinationPath = args[args.length - 1];
+        const sourceArgs = args.slice(0, -1);
+        const fsExplorer = context.fileSystemExplorer;
+        const fsManager = context.fileSystemManager;
+        const fullDestinationPath = fsExplorer.getAbsolutePath(destinationPath);
+        const sources = sourceArgs.map((sourceArg) => fsExplorer.getAbsolutePath(sourceArg));
+        if (sources.length > 1 && !fsManager.directoryExists(fullDestinationPath)) {
+            return `Destination must be a directory: ${destinationPath}`;
+        }
+        const messages = [];
+        for (const source of sources) {
+            if (!fsManager.exists(source)) return `File not found: ${source}`;
+            fsManager.move(source, fullDestinationPath, overwrite);
+            messages.push(`Moved: ${source} to ${destinationPath}`);
+        }
+        return messages.join('\n');
     }
 }
 

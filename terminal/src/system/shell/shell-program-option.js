@@ -4,68 +4,39 @@
 export class ShellProgramOption {
     /**
      * Creates a new Shell program option
-     * @param {string} definition - The definition of the option
-     * @param {string} description - The description of the option
-     * @param {string} defaultValue - The default value of the option
+     * @param {object} spec - The option specification
      */
-    constructor(definition, description = '', defaultValue = null) {
-        if (!definition || typeof definition !== 'string') {
-            throw new Error('Option definition must be a non-empty string');
+    constructor(spec = {}) {
+        if (!spec.name || typeof spec.name !== 'string') {
+            throw new Error('Option name must be a non-empty string');
         }
-        this._definition = definition;
-        this._description = description || '';
-        this._defaultValue = defaultValue !== null ? defaultValue : null;
+        if (!/^[a-zA-Z0-9][\w-]*$/.test(spec.name)) {
+            throw new Error(`Invalid option name: ${spec.name}`);
+        }
+        if (!spec.short && !spec.long) {
+            throw new Error(`Option "${spec.name}" must define a short or long name`);
+        }
+        if (spec.short !== null && spec.short !== undefined
+            && (typeof spec.short !== 'string' || !/^[a-zA-Z0-9]$/.test(spec.short))) {
+            throw new Error(`Invalid short option name: ${spec.short}`);
+        }
+        if (spec.long !== null && spec.long !== undefined
+            && (typeof spec.long !== 'string' || !/^[a-zA-Z0-9][\w-]*$/.test(spec.long))) {
+            throw new Error(`Invalid long option name: ${spec.long}`);
+        }
+        if (spec.value !== null && spec.value !== undefined
+            && (!spec.value.name || typeof spec.value.name !== 'string'
+                || !/^[a-zA-Z0-9][\w-]*$/.test(spec.value.name))) {
+            throw new Error(`Option "${spec.name}" value name must be a non-empty string`);
+        }
 
-        this._short = null;
-        this._long = null;
-        this._name = null;
-
-        this._required = false;
-        this._valueName = null;
-        this._valueRequired = false;
-
-        this._parseDefinition();
-    }
-
-    /**
-     * Parses the option definition string
-     * @private
-     */
-    _parseDefinition() {
-        let definition = this._definition.trim();
-        const parts = definition.split(',').map(p => p.trim());
-        for (const part of parts) {
-            // Match short flag: -s
-            const shortMatch = part.match(/^-([a-zA-Z0-9])(?:\s|$)/);
-            if (shortMatch && !this._short) {
-                this._short = shortMatch[1];
-                // Remove the short flag from the part for further processing
-                definition = part.substring(shortMatch[0].length).trim();
-                continue;
-            }
-            // Match long flag: --long
-            const longMatch = part.match(/^--([a-zA-Z0-9][\w-]*)/);
-            if (longMatch && !this._long) {
-                this._long = longMatch[1];
-                // Get the rest after the long flag for value parsing
-                definition = part.substring(longMatch[0].length).trim();
-                continue;
-            }
-        }
-        this._name = this._long || this._short;
-        if (!this._name) {
-            throw new Error(`Invalid option definition: ${this._definition}`);
-        }
-        const requiredMatch = definition.match(/<([\w-]+)>/);
-        if (requiredMatch) {
-            this._valueName = requiredMatch[1];
-            this._valueRequired = true;
-        }
-        const optionalMatch = definition.match(/\[<?([\w-]+)>?\]/);
-        if (optionalMatch) {
-            this._valueName = optionalMatch[1];
-            this._valueRequired = false;
-        }
+        this._name = spec.name;
+        this._short = spec.short || null;
+        this._long = spec.long || null;
+        this._description = spec.description || '';
+        this._defaultValue = spec.defaultValue ?? null;
+        this._valueName = spec.value?.name || null;
+        this._valueRequired = this._valueName !== null && spec.value.required !== false;
     }
 
     /**
@@ -102,7 +73,7 @@ export class ShellProgramOption {
 
     /**
      * Returns the default value of the option
-     * @returns {string} - The default value of the option
+     * @returns {*} - The default value of the option
      */
     getDefaultValue() {
         return this._defaultValue;
@@ -117,32 +88,16 @@ export class ShellProgramOption {
     }
 
     /**
-     * Checks if the option is a short option
-     * @returns {boolean} - True if the option is a short option, false otherwise
-     */
-    isShort() {
-        return this._short !== null;
-    }
-
-    /**
-     * Checks if the option is a long option
-     * @returns {boolean} - True if the option is a long option, false otherwise
-     */
-    isLong() {
-        return this._long !== null;
-    }
-
-    /**
      * Gets the value name
-     * @returns {string} - The value name
+     * @returns {string|null} - The value name
      */
     getValueName() {
         return this._valueName;
     }
 
     /**
-     * Checks if the value is required
-     * @returns {boolean} - True if the value is required, false otherwise
+     * Checks if the option value is required
+     * @returns {boolean} - True if the option takes a required value
      */
     isValueRequired() {
         return this._valueRequired;

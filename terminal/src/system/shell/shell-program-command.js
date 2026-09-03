@@ -4,35 +4,18 @@
 export class ShellProgramCommand {
     /**
      * Creates a new Shell program command
-     * @param {string} definition - The definition of the command
-     * @param {string} description - The description of the command
+     * @param {object} spec - The command specification
      */
-    constructor(definition, description = '') {
-        if (!definition || typeof definition !== 'string') {
-            throw new Error('Command definition must be a non-empty string');
+    constructor(spec = {}) {
+        if (!spec.name || typeof spec.name !== 'string') {
+            throw new Error('Command name must be a non-empty string');
         }
-        this._definition = definition;
-        this._description = description || '';
-        this._name = null;
-        this._isOptional = false;
-
-        this._parseDefinition();
-    }
-
-    /**
-     * Parses the command definition string
-     * @private
-     */
-    _parseDefinition() {
-        let definition = this._definition.trim();
-        // Match optional command: [<command>] or [command]
-        const optionalMatch = definition.match(/\[<?([\w-]+)>?\]/);
-        if (optionalMatch) {
-            this._name = optionalMatch[1];
-            this._isOptional = true;
-            return;
+        if (!/^[a-zA-Z0-9][\w-]*$/.test(spec.name)) {
+            throw new Error(`Invalid command name: ${spec.name}`);
         }
-        this._name = definition.replace(/^<|>$/g, '');
+        this._name = spec.name;
+        this._description = spec.description || '';
+        this._required = spec.required !== false;
     }
 
     /**
@@ -52,11 +35,11 @@ export class ShellProgramCommand {
     }
 
     /**
-     * Returns if the command is optional
-     * @returns {boolean} - True if the command is optional, false otherwise
+     * Returns if the command is required
+     * @returns {boolean} - True if the command is required, false otherwise
      */
-    isOptional() {
-        return this._isOptional;
+    isRequired() {
+        return this._required;
     }
 }
 

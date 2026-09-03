@@ -6,6 +6,7 @@ import { ShellCommandLine } from '../shell-command-line.js'
  *
  * Supported syntax:
  *  - switches: /A /S /Q
+ *  - negated flags: /-S sets the flag to false (/S is true); last occurrence wins
  *  - switches with values: /F:value, /O:N, /T:0A
  *  - switches are case-sensitive (/r and /R are distinct options)
  *  - switches are NOT bundled (/AB is the single switch "AB", not /A /B)
@@ -15,7 +16,7 @@ import { ShellCommandLine } from '../shell-command-line.js'
  *
  * Differences from the POSIX parser: values must be attached with ':'
  * (a value switch without ':value' falls back to its default) and there is
- * no '--' separator or short-option bundling.
+ * no '--' separator or short-option bundling. /-X only negates flag switches.
  */
 export class DosShellCommandParser extends ShellCommandParser {
     /**
@@ -94,14 +95,11 @@ export class DosShellCommandParser extends ShellCommandParser {
         }
         const setOption = (option, value) => {
             if (!option) return;
-            const optionShortName = option.getShort();
-            const optionLongName = option.getLong();
-            if (optionShortName) parsedOptions[optionShortName] = value;
-            if (optionLongName) parsedOptions[optionLongName] = value;
+            parsedOptions[option.getName()] = value;
         }
-        const resolveSwitchValue = (option, value) => {
+        const resolveSwitchValue = (option, value, negated) => {
             if (!option) return value !== null ? value : true;
-            if (option.isFlag()) return true;
+            if (option.isFlag()) return !negated;
             if (value !== null) return value;
             return option.hasDefault() ? option.getDefaultValue() : null;
         }
@@ -120,13 +118,20 @@ export class DosShellCommandParser extends ShellCommandParser {
                 currentIndex++;
                 continue;
             }
-            //strip the leading slash and split the name from an attached :value
+            //strip the leading slash, optional flag-negation hyphen, and an attached :value
             const switchBody = currentArg.slice(1);
-            const separatorIndex = switchBody.indexOf(':');
-            const switchName = separatorIndex === -1 ? switchBody : switchBody.slice(0, separatorIndex);
-            const switchValue = separatorIndex === -1 ? null : switchBody.slice(separatorIndex + 1);
+            const isNegated = switchBody.startsWith('-') && switchBody.length > 1;
+            const nameBody = isNegated ? switchBody.slice(1) : switchBody;
+            const separatorIndex = nameBody.indexOf(':');
+            const switchName = separatorIndex === -1 ? nameBody : nameBody.slice(0, separatorIndex);
+            const switchValue = separatorIndex === -1 ? null : nameBody.slice(separatorIndex + 1);
             const option = getOption(switchName);
-            const resolvedValue = resolveSwitchValue(option, switchValue);
+            // /-X only applies to flags; a negated value switch is ignored
+            if (isNegated && (!option || !option.isFlag())) {
+                currentIndex++;
+                continue;
+            }
+            const resolvedValue = resolveSwitchValue(option, switchValue, isNegated);
             setOption(option, resolvedValue);
             currentIndex++;
         }
@@ -143,16 +148,7 @@ export class DosShellCommandParser extends ShellCommandParser {
      * @returns {string} - The formatted command string
      */
     _formatCommand(command) {
-        return command.isOptional() ? `[${command.getName()}]` : command.getName();
-    }
-
-    /**
-     * Formats an option for help usage lines (short form)
-     * @param {ShellProgramOption} option - The option to format
-     * @returns {string} - The formatted option string
-     */
-    _formatOption(option) {
-        return option.isLong() ? `/${option.getLong()}` : `/${option.getShort()}`;
+        return command.isRequired() ? command.getName() : `[${command.getName()}]`;
     }
 
     /**
@@ -190,9 +186,8 @@ export class DosShellCommandParser extends ShellCommandParser {
      * @returns {string} - The formatted argument string
      */
     _formatArgument(argument) {
-        return argument.isOptional()
-            ? argument.getNames().map(name => `[<${name}>]`).join(' ')
-            : argument.getNames().map(name => `<${name}>`).join(' ');
+        const formatted = argument.isRequired() ? `<${argument.getName()}>` : `[<${argument.getName()}>]`;
+        return argument.isRepeatable() ? `${formatted}...` : formatted;
     }
 
     /**
@@ -209,11 +204,12 @@ export class DosShellCommandParser extends ShellCommandParser {
         const hasOptions = programOptions.size > 0;
         const hasArguments = programArguments.size > 0;
 
-        const commandsList = Array.from(programCommands.values()).map(command => this._formatCommand(command)).join('|');
-        const optionsList = Array.from(programOptions.values()).map(option => this._formatOption(option)).join('|');
-        const argumentsList = Array.from(programArguments.values()).map(argument => this._formatArgument(argument)).join('|');
-
-        const name = `Usage:\n ${program.getName()}${hasCommands ? ` [${commandsList}]` : ''}${hasOptions ? ` [${optionsList}]` : ''}${hasArguments ? ` ${argumentsList}` : ''}`;
+        const argumentsList = Array.from(programArguments.values()).map(argument => this._formatArgument(argument)).join(' ');
+        const usageParts = [program.getName()];
+        if (hasCommands) usageParts.push('[COMMAND]');
+        if (hasOptions) usageParts.push('[SWITCH]...');
+        if (hasArguments) usageParts.push(argumentsList);
+        const name = `Usage:\n ${usageParts.join(' ')}`;
         const description = program.getDescription() ? `\n\nDescription:\n ${program.getDescription()}` : '';
         const version = program.getVersion() ? `\n\nVersion:\n ${program.getVersion()}` : '';
 
@@ -226,7 +222,7 @@ export class DosShellCommandParser extends ShellCommandParser {
         if (hasCommands) {
             commandsHelp += `\n\nCommands:`;
             for (const programCommand of programCommands.values()) {
-                commandsHelp += `\n ${this._formatCommand(programCommand).padEnd(leftPartNameMaxLength)}${programCommand.getDescription() ? ` - ${programCommand.getDescription()}${programCommand.isOptional() ? ' [optional]' : ''}` : ''}`;
+                commandsHelp += `\n ${this._formatCommand(programCommand).padEnd(leftPartNameMaxLength)}${programCommand.getDescription() ? ` - ${programCommand.getDescription()}${programCommand.isRequired() ? '' : ' [optional]'}` : ''}`;
             }
         }
         let optionsHelp = '';
@@ -240,7 +236,7 @@ export class DosShellCommandParser extends ShellCommandParser {
         if (hasArguments) {
             argsHelp += `\n\nArguments:`;
             for (const programArgument of programArguments.values()) {
-                argsHelp += `\n ${this._formatArgument(programArgument).padEnd(leftPartNameMaxLength)}${programArgument.getDescription() ? ` - ${programArgument.getDescription()}${programArgument.isOptional() ? ' [optional]' : ''}` : ''}`;
+                argsHelp += `\n ${this._formatArgument(programArgument).padEnd(leftPartNameMaxLength)}${programArgument.getDescription() ? ` - ${programArgument.getDescription()}${programArgument.isRequired() ? '' : ' [optional]'}` : ''}`;
             }
         }
         return `${name}${description}${version}${commandsHelp}${optionsHelp}${argsHelp}`;

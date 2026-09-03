@@ -43,7 +43,7 @@ export class TestRunner extends Application {
             return result.output;
         }
         const suite = this._suites[subcommand];
-        if (!suite) return `Unknown test suite: '${subcommand}'. Use 'test -l' to list available suites.`;
+        if (!suite) return `Unknown test suite: '${subcommand}'. Use 'test -l or --list' to list available suites.`;
         const result = await this._runSuite(suite, shell, verbose);
         return result.output;
     }

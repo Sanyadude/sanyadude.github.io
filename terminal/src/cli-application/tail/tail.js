@@ -27,15 +27,38 @@ export class Tail extends Application {
         if (args.length === 0) {
             return this._readFromStdin(stdin, options);
         }
+        const delimiter = this._getLineDelimiter(options);
         const shouldOutputHeaders = options['verbose'] || (args.length > 1 && !options['quiet']);
-        let result = '';
+        let lines = [];
         for (const arg of args) {
             const file = context.fileSystemExplorer.getFile(arg);
             if (!file) continue;
-            result += shouldOutputHeaders ? `==> ${file.name} <==\n` : '';
-            result += this._readFromFile(file, options) + '\n';
+            let line = shouldOutputHeaders ? `==> ${file.name} <==\n` : '';
+            line += this._readFromFile(file, options);
+            if (line.length === 0) continue;
+            lines.push(line);
         }
-        return result;
+        return lines.join(delimiter);
+    }
+
+    /**
+     * Returns the line delimiter for the given options
+     * @param {object} options - The options object
+     * @returns {string} - The line delimiter
+     */
+    _getLineDelimiter(options) {
+        return options['zero-terminated'] ? '\0' : '\n';
+    }
+
+    /**
+     * Splits text into lines using the delimiter for the given options
+     * @param {string} text - The text to split
+     * @param {object} options - The options object
+     * @returns {string[]} - The lines
+     */
+    _splitLines(text, options) {
+        if (options['zero-terminated']) return text.split('\0');
+        return text.split(/\r?\n/);
     }
 
     /**
@@ -55,12 +78,13 @@ export class Tail extends Application {
             const decoder = new TextDecoder();
             return decoder.decode(bytesToDisplay);
         }
+        const delimiter = this._getLineDelimiter(options);
         const linesCount = !isNaN(parseInt(options['lines'])) 
             ? parseInt(options['lines']) 
             : DEFAULT_LINES_NUMBER;
-        const lines = stdin.split('\n');
+        const lines = this._splitLines(stdin, options);
         const linesToDisplay = lines.slice(-linesCount);
-        return linesToDisplay.join('\n');
+        return linesToDisplay.join(delimiter);
     }
 
     /**
@@ -79,12 +103,13 @@ export class Tail extends Application {
             const decoder = new TextDecoder();
             return decoder.decode(bytesToDisplay);
         }
+        const delimiter = this._getLineDelimiter(options);
         const linesCount = !isNaN(parseInt(options['lines'])) 
             ? parseInt(options['lines']) 
             : DEFAULT_LINES_NUMBER;
-        const lines = file.readAsLines();
+        const lines = this._splitLines(file.readAsString(), options);
         const linesToDisplay = lines.slice(-linesCount);
-        return linesToDisplay.join('\n');
+        return linesToDisplay.join(delimiter);
     }
 }
 

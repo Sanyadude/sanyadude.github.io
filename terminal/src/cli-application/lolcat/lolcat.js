@@ -78,7 +78,10 @@ export class Lolcat extends Application {
                 await new Promise(resolve => setTimeout(resolve, frameDelay));
             }
             if (runtime.isAborted()) break;
-            context.terminal.removeOutputLine();
+            if (!firstFrame) {
+                context.terminal.removeOutputLine();
+            }
+            if (i === lines.length - 1) return finalLines[i];
             context.terminal.writeOutputLine(finalLines[i]);
         }
         return '';
@@ -94,7 +97,7 @@ export class Lolcat extends Application {
         const spread = options['spread'] !== undefined && !isNaN(options['spread']) ? Number(options['spread']) : DEFAULT_SPREAD;
         const freq = options['freq'] !== undefined && !isNaN(options['freq']) ? Number(options['freq']) : DEFAULT_FREQ;
         const seed = options['seed'] !== undefined && !isNaN(options['seed']) ? Number(options['seed']) : DEFAULT_SEED;
-        const invert = Boolean(options['invert']);
+        const invert = options['invert'] !== undefined ? Boolean(options['invert']) : DEFAULT_INVERT_MODE;
         return this._colorizeSineWaveMode(text, spread, freq, seed, invert);
     }
 
@@ -108,7 +111,7 @@ export class Lolcat extends Application {
      * @returns {string} - The ANSI code for the given RGB values
      */
     _rgbToAnsi(red, green, blue, text, invert = false) {
-        return `\x1b[${invert ? '48' : '38'};2;${red};${green};${blue}m${text}`;
+        return `\x1b[${invert ? '7;' : ''}38;2;${red};${green};${blue}m${text}`;
     }
 
     /**
@@ -122,9 +125,6 @@ export class Lolcat extends Application {
      */
     _colorizeHsvMode(text = '', spread = DEFAULT_SPREAD, freq = DEFAULT_FREQ, seed = DEFAULT_SEED, invert = DEFAULT_INVERT_MODE) {
         let lines = text.split(/\r?\n/);
-        if (invert) {
-            lines = this._padLines(lines);
-        }
         let hue = seed ? Math.max(0, Math.min(360, seed)) : Math.random() * 360;
         const outputLines = [];
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
@@ -180,9 +180,6 @@ export class Lolcat extends Application {
      */
     _colorizeSineWaveMode(text = '', spread = DEFAULT_SPREAD, freq = DEFAULT_FREQ, seed = DEFAULT_SEED, invert = DEFAULT_INVERT_MODE) {
         let lines = text.split(/\r?\n/);
-        if (invert) {
-            lines = this._padLines(lines);
-        }
         let phaseSeed = seed ? Math.max(0, Math.min(360, seed)) : Math.random() * 360;
         const outputLines = [];
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
@@ -210,16 +207,6 @@ export class Lolcat extends Application {
         const green = Math.round(Math.sin(angle + 2 * Math.PI / 3) * 127 + 128);
         const blue = Math.round(Math.sin(angle + 4 * Math.PI / 3) * 127 + 128);
         return { red, green, blue };
-    }
-
-    /**
-     * Pads the lines to the maximum length
-     * @param {string[]} lines - The lines to pad
-     * @returns {string[]} - The padded lines
-     */
-    _padLines(lines = []) {
-        const maxLength = Math.max(...lines.map(line => line.length));
-        return lines.map(line => line.padEnd(maxLength, ' '));
     }
 }
 

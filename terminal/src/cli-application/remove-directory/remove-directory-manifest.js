@@ -9,14 +9,14 @@ export const REMOVE_DIRECTORY_MANIFEST = {
         aliases: ['rd'],
         options: [
             {
-                name: '-r, --recursive',
-                description: 'Recursively remove directory and its contents',
+                name: 'recursive', short: 'S',
+                description: 'Remove the directory tree including all contents',
             },
         ],
         arguments: [
             {
-                name: '<directory_path>',
-                description: 'The path to the directory',
+                name: 'directory_path', required: true, repeatable: true,
+                description: 'The path to the directory(ies)',
             },
         ],
     }, {
@@ -24,14 +24,14 @@ export const REMOVE_DIRECTORY_MANIFEST = {
         description: 'Removes a directory (alias for rmdir)',
         options: [
             {
-                name: '-r, --recursive',
-                description: 'Recursively remove directory and its contents',
+                name: 'recursive', short: 'S',
+                description: 'Remove the directory tree including all contents',
             },
         ],
         arguments: [
             {
-                name: '<directory_path>',
-                description: 'The path to the directory',
+                name: 'directory_path', required: true, repeatable: true,
+                description: 'The path to the directory(ies)',
             },
         ],
     }]

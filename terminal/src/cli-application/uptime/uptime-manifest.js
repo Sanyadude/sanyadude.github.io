@@ -9,15 +9,15 @@ export const UPTIME_MANIFEST = {
         description: 'Prints the current uptime of the system',
         options: [
             {
-                name: '-p, --pretty',
+                name: 'pretty', short: 'p', long: 'pretty',
                 description: 'Shows uptime in pretty format'
             },
             {
-                name: '-r, --raw',
+                name: 'raw', short: 'r', long: 'raw',
                 description: 'Displays the uptime in raw format (seconds)'
             },
             {
-                name: '-s, --since',
+                name: 'since', short: 's', long: 'since',
                 description: 'System up since, in yyyy-mm-dd HH:MM:SS format'
             }
         ],

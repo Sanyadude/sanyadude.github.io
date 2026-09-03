@@ -1,10 +1,14 @@
-import { ShellProgram } from './shell-program.js'
 import { ShellCommandContext } from './shell-command-context.js'
 import { ShellJob } from './shell-job.js'
 import { ShellInterruptedError } from './shell-interrupted-error.js'
 import { PosixShellCommandParser } from './parsers/posix-shell-command-parser.js'
 import { DosShellCommandParser } from './parsers/dos-shell-command-parser.js'
-import { VARIABLES, ALIASES_DEPTH_MAX } from './shell-config.js'
+import { VARIABLES } from './shell-config.js'
+import { ShellGlobExpander } from './shell-glob-expander.js'
+import { ShellQuoteSplitter } from './shell-quote-splitter.js'
+import { ShellAliases } from './shell-aliases.js'
+import { ShellVariables } from './shell-variables.js'
+import { ShellProgramRegistry } from './shell-program-registry.js'
 
 /**
  * Represents a Shell instance
@@ -26,11 +30,11 @@ export class Shell {
         this._currentJob = null;
         this._queue = [];
 
-        this._programs = new Map();
-        this._aliases = new Map();
-        this._variables = new Map();
-
         this._parser = new PosixShellCommandParser();
+        this._quoteSplitter = new ShellQuoteSplitter();
+        this._aliases = new ShellAliases();
+        this._variables = new ShellVariables();
+        this._programRegistry = new ShellProgramRegistry();
 
         this._info = {
             version: '0.1.0',
@@ -142,7 +146,7 @@ export class Shell {
      * @returns {Shell} - The Shell instance
      */
     removeAlias(name) {
-        this._aliases.delete(name);
+        this._aliases.remove(name);
         return this;
     }
 
@@ -151,10 +155,7 @@ export class Shell {
      * @returns {object[]} - The aliases
      */
     getAliases() {
-        return [...this._aliases].map(([key, value]) => ({
-            name: key,
-            command: value
-        }));
+        return this._aliases.list();
     }
 
     /**
@@ -192,7 +193,7 @@ export class Shell {
      * @returns {Shell} - The Shell instance
      */
     removeVariable(name) {
-        this._variables.delete(name);
+        this._variables.remove(name);
         return this;
     }
 
@@ -210,10 +211,7 @@ export class Shell {
      * @returns {Object[]} - The variables
      */
     getVariables() {
-        return [...this._variables].map(([key, value]) => ({
-            name: key,
-            value: value
-        }));
+        return this._variables.list();
     }
 
     /**
@@ -262,10 +260,7 @@ export class Shell {
      * @param {ShellProgram} - The registered program
      */
     registerProgram(name) {
-        if (this._programs.has(name)) return this._programs.get(name);
-        const program = new ShellProgram(name);
-        this._programs.set(name, program);
-        return program;
+        return this._programRegistry.register(name);
     }
 
     /**
@@ -274,34 +269,7 @@ export class Shell {
      * @returns {ShellProgram[]} - The registered programs
      */
     registerPrograms(manifest) {
-        if (!manifest.name || typeof manifest.name !== 'string') return null;
-        const programManifests = manifest.programs || [];
-        const registeredPrograms = [];
-        for (const programManifest of programManifests) {
-            if (!programManifest.name || typeof programManifest.name !== 'string') continue;
-            if (this._programs.has(programManifest.name)) {
-                registeredPrograms.push(this._programs.get(programManifest.name));
-                continue;
-            }
-            const program = new ShellProgram(programManifest.name);
-            program.setDescription(programManifest.description || manifest.description || '');
-            program.setVersion(programManifest.version || manifest.version || '');
-            programManifest.commands?.forEach(command => {
-                if (!command.name || typeof command.name !== 'string') return;
-                program.addCommand(command.name, command.description || '');
-            });
-            programManifest.options?.forEach(option => {
-                if (!option.name || typeof option.name !== 'string') return;
-                program.addOption(option.name, option.description || '', option.defaultValue);
-            });
-            programManifest.arguments?.forEach(argument => {
-                if (!argument.name || typeof argument.name !== 'string') return;
-                program.addArgument(argument.name, argument.description || '');
-            });
-            this._programs.set(programManifest.name, program);
-            registeredPrograms.push(program);
-        }
-        return registeredPrograms;
+        return this._programRegistry.registerFromManifest(manifest);
     }
 
     /**
@@ -310,10 +278,7 @@ export class Shell {
      * @returns {ShellProgram|null} - The unregistered program or null if the program was not registered
      */
     unregisterProgram(name) {
-        const program = this._programs.get(name);
-        if (!program) return null;
-        this._programs.delete(name);
-        return program;
+        return this._programRegistry.unregister(name);
     }
 
     /**
@@ -322,7 +287,7 @@ export class Shell {
      * @returns {ShellProgram|null} - The program or null if the program was not registered
      */
     getProgram(name) {
-        return this._programs.get(name);
+        return this._programRegistry.get(name);
     }
 
     /**
@@ -330,58 +295,7 @@ export class Shell {
      * @returns {ShellProgram[]} - An array of all registered programs
      */
     getPrograms() {
-        return Array.from(this._programs.values());
-    }
-
-    /**
-     * Splits a string by a separator while respecting single and double quotes.
-     * Escaped characters inside double quotes and outside quotes are preserved.
-     * @param {string} text - The string to split
-     * @param {string} separator - The separator to split on
-     * @returns {string[]} - The array of parts
-     */
-    _splitUnquoted(text, separator) {
-        if (!text || !separator) return [text];
-        const parts = [];
-        let current = '';
-        let i = 0;
-        let inSingle = false;
-        let inDouble = false;
-        while (i < text.length) {
-            const character = text[i];
-            if (character === '\\' && !inSingle) {
-                current += character;
-                if (i + 1 < text.length) {
-                    current += text[i + 1];
-                    i += 2;
-                } else {
-                    i++;
-                }
-                continue;
-            }
-            if (character === "'" && !inDouble) {
-                inSingle = !inSingle;
-                current += character;
-                i++;
-                continue;
-            }
-            if (character === '"' && !inSingle) {
-                inDouble = !inDouble;
-                current += character;
-                i++;
-                continue;
-            }
-            if (!inSingle && !inDouble && text.startsWith(separator, i)) {
-                parts.push(current);
-                current = '';
-                i += separator.length;
-                continue;
-            }
-            current += character;
-            i++;
-        }
-        parts.push(current);
-        return parts;
+        return this._programRegistry.list();
     }
 
     /**
@@ -403,10 +317,18 @@ export class Shell {
     async _executeProgram(command, stdin = '') {
         this._ensureShellJobCanProceed();
         const name = this._parser.getProgramName(command);
-        const program = this._programs.get(name);
+        const program = this._programRegistry.get(name);
         if (!program) return `Command not found: ${name || '(empty)'}. Use 'help' to see available commands.`;
         const shellCommandLine = this._parser.parse(program, command);
         shellCommandLine.setStdin(stdin);
+        const options = shellCommandLine.getOptions();
+        if (options['help']) {
+            return program.getHelpText() || this._parser.getHelp(program);
+        }
+        if (options['version']) {
+            const version = program.getVersion();
+            return version ? `${program.getName()} ${version}` : program.getName();
+        }
         const result = await this._processManager.run(name, shellCommandLine, this._currentJob.getRuntime());
         this._ensureShellJobCanProceed();
         return result;
@@ -447,6 +369,7 @@ export class Shell {
             this._handleVariableAssignment.bind(this),
             this._expandAliases.bind(this),
             this._expandVariables.bind(this),
+            this._expandGlobs.bind(this),
             this._handlePipes.bind(this),
             this._handleRedirection.bind(this),
             this._execute.bind(this),
@@ -465,30 +388,14 @@ export class Shell {
      * @returns {Promise<object>} - A promise that resolves to the context
      */
     _handleVariableAssignment(context) {
-        const tokens = this._splitUnquoted(context.command, ' ');
-        let tokenIndex = 0;
-        let variables = [];
-        while (tokenIndex < tokens.length) {
-            const token = tokens[tokenIndex];
-            if (!token) break;
-            const match = token.match(/^([a-zA-Z_]\w*)=(.*)$/);
-            if (!match) break;
-            const variable = match[1].trim();
-            const value = match[2].trim()
-                .replace(/^("|')|("|')$/g, '');
-            this.setVariable(variable, value);
-            variables.push(variable);
-            tokenIndex++;
-        }
-        const remainingTokens = tokens.slice(tokenIndex);
-        if (remainingTokens.length > 0) {
-            context.command = remainingTokens.join(' ');
+        const { command, assigned } = this._variables.applyAssignments(context.command);
+        if (assigned.length > 0 && !command) {
+            context.stdout = `Variable${assigned.length > 1 ? 's' : ''} set: ${assigned.join(', ')}`;
+            context.stop = true;
+            context.command = command;
             return context;
         }
-        if (variables.length > 0) {
-            context.stdout = `Variable${variables.length > 1 ? 's' : ''} set: ${variables.join(', ')}`;
-            context.stop = true;
-        }
+        context.command = command;
         return context;
     }
 
@@ -498,25 +405,9 @@ export class Shell {
      * @returns {Promise<object>} - A promise that resolves to the context
      */
     async _expandAliases(context) {
-        const aliases = this._aliases;
-        let tokens = this._splitUnquoted(context.command, ' ');
+        const tokens = this._quoteSplitter.split(context.command, ' ');
         if (tokens.length === 0) return context;
-        const seen = new Set();
-        let depth = 0;
-        while (depth < ALIASES_DEPTH_MAX) {
-            const first = tokens[0];
-            if (!aliases.has(first)) break;
-            if (seen.has(first)) break;
-            seen.add(first);
-            const replacement = aliases.get(first);
-            const newTokens = this._splitUnquoted(replacement, ' ');
-            tokens = [
-                ...newTokens,
-                ...tokens.slice(1)
-            ];
-            depth++;
-        }
-        context.command = tokens.join(' ');
+        context.command = this._aliases.expand(tokens).join(' ');
         return context;
     }
 
@@ -529,21 +420,27 @@ export class Shell {
         const history = this.getFileSystemExplorer().getHistory();
         const pwd = `/${this.getFileSystemExplorer().getCurrentPath()}`;
         const oldPwd = `/${history.length > 1 ? history[history.length - 2] : ''}`;
-        const variables = {
+        context.command = this._variables.expand(context.command, {
             [VARIABLES.USER]: this.getUser().getName(),
             [VARIABLES.HOSTNAME]: this.getHost().getName(),
             [VARIABLES.PWD]: pwd,
             [VARIABLES.OLDPWD]: oldPwd,
             [VARIABLES.TERM]: this._terminal.getTerminalInfo().type,
             [VARIABLES.SHELL]: this._info.name
-        };
-        for (const [variable, value] of this._variables.entries()) {
-            variables[variable] = value;
-        }
-        context.command = context.command.replace(/\$(\w+)|\$\{(\w+)\}/g, (_, v1, v2) => {
-            const key = v1 || v2;
-            return variables[key] ?? `$${key}`;
         });
+        return context;
+    }
+
+    /**
+     * Expands unquoted glob tokens (*, ?, [...]) against the file system
+     * @param {object} context - The context
+     * @returns {Promise<object>} - A promise that resolves to the context
+     */
+    async _expandGlobs(context) {
+        if (!context.command) return context;
+        const expander = new ShellGlobExpander(this.getFileSystemExplorer(), this.getFileSystemManager());
+        const tokens = this._quoteSplitter.split(context.command, ' ');
+        context.command = expander.expand(tokens).join(' ');
         return context;
     }
 
@@ -553,7 +450,7 @@ export class Shell {
      * @returns {Promise<object>} - A promise that resolves to the context
      */
     async _handlePipes(context) {
-        const pipedCommands = this._splitUnquoted(context.command, ' | ')
+        const pipedCommands = this._quoteSplitter.split(context.command, ' | ')
             .map(pipedCommand => pipedCommand.trim())
             .filter(Boolean);
         if (pipedCommands.length <= 1) return context;
@@ -574,21 +471,21 @@ export class Shell {
      */
     async _handleRedirection(context) {
         // Append >>
-        const append = this._splitUnquoted(context.command, ' >> ');
+        const append = this._quoteSplitter.split(context.command, ' >> ');
         if (append.length > 1) {
             context.command = append[0].trim();
             context.appendFile = append[1].trim();
             return context;
         }
         // Overwrite >
-        const overwrite = this._splitUnquoted(context.command, ' > ');
+        const overwrite = this._quoteSplitter.split(context.command, ' > ');
         if (overwrite.length > 1) {
             context.command = overwrite[0].trim();
             context.outputFile = overwrite[1].trim();
             return context;
         }
         // Input <
-        const input = this._splitUnquoted(context.command, ' < ');
+        const input = this._quoteSplitter.split(context.command, ' < ');
         if (input.length > 1) {
             context.command = input[0].trim();
             const file = this.getFileSystemExplorer().getFile(input[1].trim());
@@ -645,7 +542,7 @@ export class Shell {
      * @returns {Promise<void>} - A promise that resolves when the input is processed
      */
     async input(text) {
-        const commands = this._splitUnquoted(text, ';')
+        const commands = this._quoteSplitter.split(text, ';')
             .map(command => command.trim())
             .filter(Boolean);
         for (const command of commands) {

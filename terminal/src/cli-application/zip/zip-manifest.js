@@ -8,17 +8,17 @@ export const ZIP_MANIFEST = {
         name: 'zip',
         options: [
             {
-                name: '-f, --force',
+                name: 'force', short: 'f', long: 'force',
                 description: 'Force to overwrite the existing zip file if it exists',
             },
         ],
         arguments: [
             {
-                name: '<path>',
+                name: 'path', required: true,
                 description: 'The path to the file or directory to zip',
             },
             {
-                name: '[<zip_name>]',
+                name: 'zip_name', required: false,
                 description: 'The name of the zip file',
             },
         ],

@@ -4,53 +4,19 @@
 export class ShellProgramArgument {
     /**
      * Creates a new Shell program argument
-     * @param {string} definition - The definition of the argument
-     * @param {string} description - The description of the argument
+     * @param {object} spec - The argument specification
      */
-    constructor(definition, description = '') {
-        if (!definition || typeof definition !== 'string') {
-            throw new Error('Argument definition must be a non-empty string');
+    constructor(spec = {}) {
+        if (!spec.name || typeof spec.name !== 'string') {
+            throw new Error('Argument name must be a non-empty string');
         }
-        this._definition = definition;
-        this._description = description || '';
-
-        this._name = null;
-        this._names = [];
-        this._isOptional = false;
-
-        this._parseDefinition();
-    }
-
-    /**
-     * Parses the argument definition string
-     * @private
-     */
-    _parseDefinition() {
-        const tokens = this._definition.trim().split(/\s+/);
-        for (const token of tokens) {
-            let name = null;
-            let isOptional = false;
-            // [<arg>] or [arg]
-            const optionalMatch = token.match(/^\[<?([\w-]+)>?\]$/);
-            if (optionalMatch) {
-                name = optionalMatch[1];
-                isOptional = true;
-            }
-            // <arg>
-            const requiredMatch = token.match(/^<([\w-]+)>$/);
-            if (!name && requiredMatch) {
-                name = requiredMatch[1];
-                isOptional = false;
-            }
-            if (!name) {
-                throw new Error(`Invalid argument definition segment: ${token}`);
-            }
-            if (!this._name) {
-                this._name = name;
-            }
-            this._names.push(name);
-            this._isOptional = this._isOptional || isOptional;
+        if (!/^[a-zA-Z0-9][\w-]*$/.test(spec.name)) {
+            throw new Error(`Invalid argument name: ${spec.name}`);
         }
+        this._name = spec.name;
+        this._description = spec.description || '';
+        this._required = spec.required !== false;
+        this._repeatable = spec.repeatable === true;
     }
 
     /**
@@ -62,14 +28,6 @@ export class ShellProgramArgument {
     }
 
     /**
-     * Returns all argument names (supports multi-name definitions)
-     * @returns {string[]} - The argument names
-     */
-    getNames() {
-        return [...this._names];
-    }
-
-    /**
      * Returns the description of the argument
      * @returns {string} - The description of the argument
      */
@@ -78,11 +36,19 @@ export class ShellProgramArgument {
     }
 
     /**
-     * Returns if the argument is optional
-     * @returns {boolean} - True if the argument is optional, false otherwise
+     * Returns if the argument is required
+     * @returns {boolean} - True if the argument is required, false otherwise
      */
-    isOptional() {
-        return this._isOptional;
+    isRequired() {
+        return this._required;
+    }
+
+    /**
+     * Returns if the argument can be repeated
+     * @returns {boolean} - True if the argument can appear more than once
+     */
+    isRepeatable() {
+        return this._repeatable;
     }
 }
 

@@ -257,6 +257,53 @@ export class Path {
         if (lastDotIndex <= 0) return '';
         return fileFullName.slice(lastDotIndex + 1);
     }
+
+    /**
+     * Checks if a path or name contains glob characters (*, ?, or [...])
+     * @param {string} pattern - The path or name to check
+     * @returns {boolean} True if the pattern contains glob characters
+     */
+    static isGlob(pattern) {
+        if (!pattern || typeof pattern !== 'string') return false;
+        return /[*?]|\[.+\]/.test(pattern);
+    }
+
+    /**
+     * Converts glob pattern to a regular expression
+     * Supports *, ?, and [abc] / [!abc] character classes
+     * @param {string} pattern - The glob pattern
+     * @returns {RegExp} The regular expression
+     */
+    static globToRegExp(pattern) {
+        let regex = '';
+        for (let i = 0; i < pattern.length; i++) {
+            const char = pattern[i];
+            if (char === '*') {
+                regex += '.*';
+                continue;
+            }
+            if (char === '?') {
+                regex += '.';
+                continue;
+            }
+            if (char === '[') {
+                const end = pattern.indexOf(']', i + 1);
+                if (end === -1) {
+                    regex += '\\[';
+                    continue;
+                }
+                let characterClass = pattern.slice(i + 1, end);
+                if (characterClass.startsWith('!')) {
+                    characterClass = `^${characterClass.slice(1)}`;
+                }
+                regex += `[${characterClass}]`;
+                i = end;
+                continue;
+            }
+            regex += char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+        return new RegExp(`^${regex}$`);
+    }
 }
 
 export default Path
