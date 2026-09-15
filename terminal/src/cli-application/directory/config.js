@@ -22,11 +22,13 @@ export const TIME_TYPES = Object.freeze({
     'W': 'written',
 });
 
-export default {
+export const CONFIG = Object.freeze({
     DEFAULT_TIME_TYPE,
     DEFAULT_WIDTH,
     DEFAULT_PADDING,
     ATTRIBUTE_TYPES,
     SORT_TYPES,
     TIME_TYPES,
-};
+});
+
+export default CONFIG

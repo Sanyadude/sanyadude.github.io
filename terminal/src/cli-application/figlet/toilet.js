@@ -137,7 +137,7 @@ export class Toilet extends Application {
      */
     _getWidth(options = {}, context = {}) {
         if (options['terminal'] && context.terminal) {
-            return context.terminal.getSize().columns;
+            return context.terminal.getSize().columns || DEFAULT_WIDTH;
         }
         return options['width'] && !isNaN(options['width']) ? Number(options['width']) : null;
     }

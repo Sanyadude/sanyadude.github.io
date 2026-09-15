@@ -15,6 +15,7 @@ import { Head } from '../cli-application/head/head.js'
 import { Tail } from '../cli-application/tail/tail.js'
 import { Uniq } from '../cli-application/uniq/uniq.js'
 import { Sort } from '../cli-application/sort/sort.js'
+import { Rev } from '../cli-application/rev/rev.js'
 import { Download } from '../cli-application/download/download.js'
 import { Calculator } from '../cli-application/calculator/calculator.js'
 import { Cowsay } from '../cli-application/cowsay/cowsay.js'
@@ -37,6 +38,7 @@ import { Uptime } from '../cli-application/uptime/uptime.js'
 import { Help } from '../cli-application/help/help.js'
 import { Alias } from '../cli-application/alias/alias.js'
 import { Declare } from '../cli-application/declare/declare.js'
+import { SteamLocomotive } from '../cli-application/steam-locomotive/steam-locomotive.js'
 
 export const CLI_APPS = Object.freeze({
     changeDirectory: new ChangeDirectory(),
@@ -53,6 +55,7 @@ export const CLI_APPS = Object.freeze({
     tail: new Tail(),
     uniq: new Uniq(),
     sort: new Sort(),
+    rev: new Rev(),
     makeDirectory: new MakeDirectory(),
     removeDirectory: new RemoveDirectory(),
     deleteFile: new DeleteFile(),
@@ -78,6 +81,7 @@ export const CLI_APPS = Object.freeze({
     help: new Help(),
     alias: new Alias(),
     declare: new Declare(),
+    steamLocomotive: new SteamLocomotive(),
 });
 
 export default CLI_APPS

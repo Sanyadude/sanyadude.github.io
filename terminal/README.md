@@ -125,3 +125,7 @@ Each font retains its original license as stated in its header.
 ### fortune
 
 This project includes fortune files from [https://github.com/Distrotech/fortune-mod/](https://github.com/Distrotech/fortune-mod/). Original fortune license is included in `/licenses/fortune.txt` from [https://svnweb.freebsd.org/base/head/usr.bin/fortune/](https://svnweb.freebsd.org/base/head/usr.bin/fortune/)
+
+### sl
+
+This project includes ASCII trains from sl [https://github.com/mtoyoda/sl/](https://github.com/mtoyoda/sl/). License is included in `/licenses/sl.txt`

@@ -1,23 +1,24 @@
 import { ACTIONS } from '../config/actions.js'
 
 /**
- * Delete character at cursor left command
+ * Delete character at cursor right command
  */
-export class DeleteLeftCommand {
+export class DeleteForwardCommand {
     constructor() {
-        this.name = ACTIONS.DELETE_LEFT;
+        this.name = ACTIONS.DELETE_FORWARD;
     }
 
     /**
-     * Executes the delete left command
+     * Executes the delete forward command
      * @param {object} context - Context
      */
     execute(context) {
         context.inputCompletion.reset();
         context.textSelection.reset();
-        context.textBuffer.deleteAtCursorLeft();
-        context.textBuffer.moveCursorLeft();
+        context.textBuffer.deleteAtCursorRight();
         context.terminalApi.render();
         context.terminalApi.renderCursor();
     }
 }
+
+export default DeleteForwardCommand

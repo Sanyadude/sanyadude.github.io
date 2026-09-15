@@ -8,11 +8,11 @@ export const JS_RUNTIME_MANIFEST = {
         name: 'js',
         arguments: [
             {
-                name: 'code', required: true,
+                name: 'code', required: false,
                 description: 'The JavaScript code to run',
             },
             {
-                name: 'file_path', required: true,
+                name: 'file_path', required: false,
                 description: 'The path to the JavaScript file to run',
             },
         ],

@@ -45,7 +45,7 @@ export const LOLCAT_MANIFEST = {
         ],
         arguments: [
             {
-                name: 'file_path', required: true,
+                name: 'file_path', required: false,
                 description: 'The path to the file to colorize, if not provided, the standard input will be used',
             },
         ]

@@ -68,17 +68,17 @@ export class ExecutionRuntime {
     }
 
     /**
-     * Subscribes to the abort of the run
-     * @param {Function} callback - The callback to call on abort
-     * @returns {Function} - A function that removes the subscription
+     * Adds a listener for the abort of the run
+     * @param {Function} listener - The listener to call on abort
+     * @returns {Function} - A function to remove the listener
      */
-    onAbort(callback) {
+    onAbort(listener) {
         if (this._abortSignal.aborted) {
-            callback();
+            listener();
             return () => { };
         }
-        this._abortSignal.addEventListener('abort', callback, { once: true });
-        return () => this._abortSignal.removeEventListener('abort', callback);
+        this._abortSignal.addEventListener('abort', listener, { once: true });
+        return () => this._abortSignal.removeEventListener('abort', listener);
     }
 
     /**
@@ -88,6 +88,27 @@ export class ExecutionRuntime {
     whenAborted() {
         return new Promise((resolve) => this.onAbort(resolve));
     }
+
+    /**
+     * Waits for the given number of milliseconds
+     * @param {number} ms - The number of milliseconds to wait
+     * @returns {Promise<void>} - A promise that resolves when the time has elapsed
+     */
+    sleep(ms) {
+        if (this.isAborted()) {
+            return Promise.resolve();
+        }
+        return new Promise((resolve) => {
+            const timer = setTimeout(() => {
+                unsubscribe();
+                resolve();
+            }, ms);
+            const unsubscribe = this.onAbort(() => {
+                clearTimeout(timer);
+                resolve();
+            });
+        });
+    } 
 }
 
 export default ExecutionRuntime

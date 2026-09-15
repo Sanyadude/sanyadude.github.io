@@ -1,5 +1,6 @@
 import { Application } from '../../../../system/application/application.js'
 import { TERMINAL_SETTINGS_MANIFEST } from './terminal-settings-manifest.js'
+import { TERMINAL_DEFAULT_THEME_NAME } from '../../config/config.js'
 
 /**
  * TerminalSettings - Application for changing terminal settings
@@ -22,6 +23,10 @@ export class TerminalSettings extends Application {
     main(commandLine, context) {
         const options = commandLine.getOptions();
         const api = context.terminal;
+        if (options['info']) {
+            const info = api.getInfo();
+            return `Name: ${info.name}\nType: ${info.type}\nVersion: ${info.version}\nColor Mode: ${info.colorMode}`;
+        }
         if (options['scrollbar-use-theme']) {
             api.toggleScrollbarUseTheme();
             return `Scrollbar use theme ${api.isScrollbarUseThemeEnabled() ? 'enabled' : 'disabled'}`;
@@ -66,7 +71,7 @@ export class TerminalSettings extends Application {
                 return `Current theme: ${api.getTheme().name}`;
             }
             if (options['theme'] === 'default') {
-                api.setTheme();
+                api.setTheme(TERMINAL_DEFAULT_THEME_NAME);
                 return `Theme set to default (${api.getTheme().name})`;
             }
             const themeName = options['theme'];
@@ -75,11 +80,11 @@ export class TerminalSettings extends Application {
             api.setTheme(theme.name);
             return `Theme set to ${theme.name}`;
         }
-        if (options['prev-theme'] || options['theme'] === 'prev') {
+        if (options['prev-theme']) {
             api.setPreviousTheme();
             return `Theme set to ${api.getTheme().name}`;
         }
-        if (options['next-theme'] || options['theme'] === 'next') {
+        if (options['next-theme']) {
             api.setNextTheme();
             return `Theme set to ${api.getTheme().name}`;
         }

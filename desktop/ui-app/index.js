@@ -49,7 +49,7 @@ app.addShortcut({
     }
 });
 
-const terminalIcon = new UIImage('terminal.ico', '/desktop/ui-app/assets/icons/terminal.ico');
+const terminalIcon = new UIImage('terminal.jpg', '/desktop/ui-app/assets/icons/terminal.jpg');
 app.addShortcut({
     name: 'Terminal',
     iconImage: terminalIcon,

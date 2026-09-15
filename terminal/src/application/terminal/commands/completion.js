@@ -25,3 +25,5 @@ export class CompletionCommand {
         context.terminalApi.renderCursor();
     }
 }
+
+export default CompletionCommand

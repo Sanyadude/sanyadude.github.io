@@ -1,3 +1,4 @@
+import { ShellInfo } from './shell-info.js'
 import { ShellCommandContext } from './shell-command-context.js'
 import { ShellJob } from './shell-job.js'
 import { ShellInterruptedError } from './shell-interrupted-error.js'
@@ -36,10 +37,15 @@ export class Shell {
         this._variables = new ShellVariables();
         this._programRegistry = new ShellProgramRegistry();
 
-        this._info = {
-            version: '0.1.0',
-            name: 'shell',
-        }
+        this._info = new ShellInfo();
+    }
+
+    /**
+     * Gets the shell info
+     * @returns {ShellInfo} The shell info
+     */
+    getInfo() {
+        return this._info;
     }
 
     /**
@@ -425,8 +431,8 @@ export class Shell {
             [VARIABLES.HOSTNAME]: this.getHost().getName(),
             [VARIABLES.PWD]: pwd,
             [VARIABLES.OLDPWD]: oldPwd,
-            [VARIABLES.TERM]: this._terminal.getTerminalInfo().type,
-            [VARIABLES.SHELL]: this._info.name
+            [VARIABLES.TERM]: this._terminal.getInfo().type,
+            [VARIABLES.SHELL]: this.getInfo().name
         });
         return context;
     }

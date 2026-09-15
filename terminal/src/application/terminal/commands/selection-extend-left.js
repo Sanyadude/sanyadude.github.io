@@ -23,3 +23,5 @@ export class SelectionExtendLeftCommand {
         context.terminalApi.render();
     }
 }
+
+export default SelectionExtendLeftCommand

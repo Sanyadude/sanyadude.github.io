@@ -57,3 +57,10 @@ export function argument({ name, description = '', required = true, repeatable =
 export function command({ name, description = '', required = true }) {
     return { name, description, required };
 }
+
+export default {
+    flag,
+    option,
+    argument,
+    command,
+}

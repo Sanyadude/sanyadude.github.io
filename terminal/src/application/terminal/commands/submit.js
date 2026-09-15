@@ -25,3 +25,5 @@ export class SubmitCommand {
         context.terminalApi.renderCursor();
     }
 }
+
+export default SubmitCommand

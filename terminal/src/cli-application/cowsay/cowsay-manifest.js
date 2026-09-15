@@ -76,7 +76,7 @@ export const COWSAY_MANIFEST = {
         ],
         arguments: [
             {
-                name: 'message', required: true,
+                name: 'message', required: false,
                 description: 'The message for cow to say, if not provided, the standard input will be used',
             }
         ]
@@ -152,7 +152,7 @@ export const COWSAY_MANIFEST = {
         ],
         arguments: [
             {
-                name: 'message', required: true,
+                name: 'message', required: false,
                 description: 'The message for cow to think, if not provided, the standard input will be used',
             }
         ]

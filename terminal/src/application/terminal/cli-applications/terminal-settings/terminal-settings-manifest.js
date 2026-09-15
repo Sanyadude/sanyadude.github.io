@@ -7,6 +7,7 @@ export const TERMINAL_SETTINGS_MANIFEST = {
     programs: [{
         name: 'terminal',
         options: [
+            { name: 'info', short: 'i', long: 'info', description: 'Prints information about the terminal' },
             { name: 'linux-prompt', short: 'L', long: 'linux-prompt', description: 'Set the prompt to linux style' },
             { name: 'windows-prompt', short: 'W', long: 'windows-prompt', description: 'Set the prompt to windows style' },
             { name: 'cursor-caret', short: 'C', long: 'cursor-caret', description: 'Set the cursor to caret' },

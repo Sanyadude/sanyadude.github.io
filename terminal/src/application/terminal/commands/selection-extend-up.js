@@ -23,3 +23,5 @@ export class SelectionExtendUpCommand {
         context.terminalApi.render();
     }
 }
+
+export default SelectionExtendUpCommand

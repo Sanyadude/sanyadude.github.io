@@ -273,8 +273,9 @@ export class PosixShellCommandParser extends ShellCommandParser {
      * @returns {string} - The formatted argument string
      */
     _formatArgument(argument) {
-        const formatted = argument.isRequired() ? `<${argument.getName()}>` : `[<${argument.getName()}>]`;
-        return argument.isRepeatable() ? `${formatted}...` : formatted;
+        const name = argument.isRepeatable() ? `${argument.getName()}...` : argument.getName();
+        const formatted = argument.isRequired() ? `<${name}>` : `[<${name}>]`;
+        return formatted;
     }
 
     /**
@@ -291,10 +292,10 @@ export class PosixShellCommandParser extends ShellCommandParser {
         const hasOptions = programOptions.size > 0;
         const hasArguments = programArguments.size > 0;
 
-        const argumentsList = Array.from(programArguments.values()).map(argument => this._formatArgument(argument)).join(' ');
+        const argumentsList = Array.from(programArguments.values()).map(argument => this._formatArgument(argument).toUpperCase()).join(' ');
         const usageParts = [program.getName()];
         if (hasCommands) usageParts.push('[COMMAND]');
-        if (hasOptions) usageParts.push('[OPTION]...');
+        if (hasOptions) usageParts.push('[OPTION...]');
         if (hasOptions && hasArguments) usageParts.push('[--]');
         if (hasArguments) usageParts.push(argumentsList);
         const name = `Usage:\n ${usageParts.join(' ')}`;

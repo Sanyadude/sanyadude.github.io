@@ -1,6 +1,8 @@
 import { Application } from '../../system/application/application.js'
 import { YES_MANIFEST } from './yes-manifest.js'
 
+const DELAY_MS = 100;
+
 /**
  * Yes - Application that repeatedly outputs a line until interrupted
  * @extends {Application}
@@ -23,9 +25,11 @@ export class Yes extends Application {
         const args = commandLine.getArguments();
         const text = args.length > 0 ? args.join(' ') : 'y';
         const runtime = context.getRuntime();
+        const terminal = context.terminal;
+        terminal.hidePrompt();
         while (!runtime.isAborted()) {
-            context.terminal.writeOutputLine(text);
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            terminal.writeOutputLine(text);
+            await runtime.sleep(DELAY_MS);
         }
         return '';
     }

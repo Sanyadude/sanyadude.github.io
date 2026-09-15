@@ -103,7 +103,6 @@ export class CursorRenderer {
     stopAnimation() {
         if (!this._cursorElement) return this;
         this._cursorElement.style.animation = 'none';
-        window.getComputedStyle(this._cursorElement).animationName;
         return this;
     }
 
@@ -123,7 +122,9 @@ export class CursorRenderer {
      */
     resetAnimation() {
         this.stopAnimation();
-        this.startAnimation();
+        requestAnimationFrame(() => {
+            this.startAnimation();
+        });
         return this;
     }
 

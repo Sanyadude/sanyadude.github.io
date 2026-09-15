@@ -25,3 +25,5 @@ export class PasteCommand {
         }
     }
 }
+
+export default PasteCommand

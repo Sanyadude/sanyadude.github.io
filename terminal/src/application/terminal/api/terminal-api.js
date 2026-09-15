@@ -15,10 +15,10 @@ export class TerminalApi {
 
     /**
      * Gets the terminal info
-     * @returns {object} - The terminal info
+     * @returns {TerminalInfo} - The terminal info
      */
-    getTerminalInfo() {
-        return this._context._info;
+    getInfo() {
+        return this._context.info;
     }
 
     /**
@@ -83,7 +83,7 @@ export class TerminalApi {
 
     /**
      * Gets the themes of the terminal
-     * @returns {object} - The themes of the terminal
+     * @returns {object[]} - The themes of the terminal
      */
     getThemes() {
         return Object.values(this._context.themeProvider.getThemes());
@@ -293,7 +293,25 @@ export class TerminalApi {
                 this._context.textViewport.scrollY(inputTextLine - offsetLine - viewportLines + linePadding);
             }
         }
-        this._context.terminalViewport.setScrollThumbPosition((this._context.textViewport.getOffsetLine() / this._context.scrollBoundsProvider.getMaxOffsetLine()) * 100);
+        this.updateScrollThumb();
+    }
+
+    /**
+     * Scrolls the input text to the top of the viewport
+     */
+    scrollInputToTop() {
+        const inputTextStartPosition = this._context.textBuffer.getInputTextStartPosition();
+        const offsetLine = this._context.textViewport.getOffset().line;
+        const scrollAmount = inputTextStartPosition.line - offsetLine - 1;
+        this._context.textViewport.scrollY(scrollAmount);
+        this.updateScrollThumb();
+    }
+
+    /**
+     * Updates the scroll thumb position to reflect the current scroll position
+     */
+    updateScrollThumb() {
+        this._context.terminalViewport.setScrollThumbPosition(this._context.textViewport.getScrollYPercentage());
     }
 
     /**
@@ -316,7 +334,6 @@ export class TerminalApi {
      */
     writeOutputLine(text = '') {
         this._context.textBuffer.addNewLine(text);
-        this.ensureInputIsInViewport();
         this.render();
         this.renderCursor();
         return this;
@@ -329,7 +346,6 @@ export class TerminalApi {
      */
     removeOutputLine(index = null) {
         this._context.textBuffer.removeLine(index);
-        this.ensureInputIsInViewport();
         this.render();
         this.renderCursor();
         return this;
@@ -358,6 +374,20 @@ export class TerminalApi {
         this.ensureInputIsInViewport();
         this.render();
         this.renderCursor();
+        return this;
+    }
+
+    /**
+     * Hides the shell prompt and input line while a foreground job is running
+     * @returns {TerminalApi} - The instance of the TerminalApi
+     */
+    hidePrompt() {
+        this._context.inputCompletion.reset();
+        this._context.textBuffer.setPromptText();
+        this._context.textBuffer.setInputText();
+        this._context.textBuffer.moveCursorTo();
+        this._context.cursorRenderer.hide();
+        this.render();
         return this;
     }
 
@@ -435,9 +465,9 @@ export class TerminalApi {
      * Inputs command into the terminal and executes it
      * @param {string} text - The text to input
      */
-    input(text = '') {
+    async input(text = '') {
         this._context.inputHistoryNavigation.addInput(text);
-        this._context.shell.input(text);
+        await this._context.shell.input(text);
     }
 
     /**

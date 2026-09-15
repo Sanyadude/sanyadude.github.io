@@ -44,3 +44,5 @@ export class TextNavigator {
         }
     }
 }
+
+export default TextNavigator

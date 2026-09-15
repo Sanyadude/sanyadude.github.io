@@ -23,3 +23,5 @@ export class SelectionExtendDownCommand {
         context.terminalApi.render();
     }
 }
+
+export default SelectionExtendDownCommand

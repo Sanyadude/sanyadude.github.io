@@ -54,7 +54,7 @@ export const UNIQ_MANIFEST = {
         ],
         arguments: [
             {
-                name: 'file_path', required: true,
+                name: 'file_path', required: false,
                 description: 'The path to the file',
             }
         ]
