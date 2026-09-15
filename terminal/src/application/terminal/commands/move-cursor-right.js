@@ -5,7 +5,7 @@ import { ACTIONS } from '../config/actions.js'
  */
 export class MoveCursorRightCommand {
     constructor() {
-        this.name = ACTIONS.CURSOR_RIGHT;
+        this.name = ACTIONS.MOVE_CURSOR_RIGHT;
     }
 
     /**
@@ -17,3 +17,5 @@ export class MoveCursorRightCommand {
         context.terminalApi.renderCursor();
     }
 }
+
+export default MoveCursorRightCommand

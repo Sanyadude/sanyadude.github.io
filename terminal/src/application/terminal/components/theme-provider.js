@@ -11,10 +11,26 @@ export class ThemeProvider {
     constructor(defaultThemeName = TERMINAL_DEFAULT_THEME_NAME) {
         this._themes = THEMES;
         this._theme = this._themes[defaultThemeName];
+        this._themeChangeListeners = new Set();
     }
 
-    // Event handler for theme change
-    onThemeChange() {}
+    /**
+     * Adds a listener for theme change
+     * @param {Function} listener - The listener to add
+     * @returns {Function} - A function to remove the listener
+     */
+    onThemeChange(listener) {
+        this._themeChangeListeners.add(listener);
+        return () => this._themeChangeListeners.delete(listener);
+    }
+
+    /**
+     * Emits a theme change event
+     * @param {object} event - The event object
+     */
+    _emitThemeChange(event) {
+        this._themeChangeListeners.forEach(listener => listener(event));
+    }
 
     /**
      * Returns all available themes
@@ -32,7 +48,7 @@ export class ThemeProvider {
     setTheme(themeName = TERMINAL_DEFAULT_THEME_NAME) {
         if (!this._themes[themeName]) return this;
         this._theme = this._themes[themeName];
-        this.onThemeChange?.({ theme: this._theme });
+        this._emitThemeChange({ theme: this._theme });
         return this;
     }
 

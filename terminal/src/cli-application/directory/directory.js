@@ -242,7 +242,7 @@ export class Directory extends Application {
      * @returns {number} - The output width
      */
     _getWidth(context = {}) {
-        const columns = context.terminal ? context.terminal.getSize().columns : 0;
+        const columns = context.terminal ? context.terminal.getSize().columns : DEFAULT_WIDTH;
         return columns > 0 ? columns : DEFAULT_WIDTH;
     }
 

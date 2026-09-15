@@ -61,7 +61,7 @@ export class TerminalSession {
      * @returns {object} - The terminal info
      */
     getTerminalInfo() {
-        return this._terminal.getTerminalInfo();
+        return this._terminal.getInfo();
     }
 
     /**

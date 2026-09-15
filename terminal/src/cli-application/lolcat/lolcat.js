@@ -56,11 +56,13 @@ export class Lolcat extends Application {
         const speed = options['speed'] !== undefined && !isNaN(options['speed']) ? Number(options['speed']) : DEFAULT_ANIMATION_SPEED;
         const lines = text.split(/\r?\n/);
         const runtime = context.getRuntime();
+        const terminal = context.terminal;
         const maxFrames = duration;
         const frameDelay = 1000 / speed;
         const colorizedTextResult = this._colorizeText(text, options);
         const finalLines = colorizedTextResult.split(/\r?\n/);
         let animationSeed = seed;
+        terminal.hidePrompt();
         for (let i = 0; i < lines.length; i++) {
             if (runtime.isAborted()) break;
             const line = lines[i];
@@ -68,21 +70,21 @@ export class Lolcat extends Application {
             for (let frame = 0; frame < maxFrames; frame++) {
                 if (runtime.isAborted()) break;
                 if (!firstFrame) {
-                    context.terminal.removeOutputLine();
+                    terminal.removeOutputLine();
                 }
                 firstFrame = false;
                 animationSeed = animationSeed + spread;
                 const frameSeed = animationSeed % 360;
                 const coloredLine = this._colorizeSineWaveMode(line, spread, freq, frameSeed, invert);
-                context.terminal.writeOutputLine(coloredLine);
-                await new Promise(resolve => setTimeout(resolve, frameDelay));
+                terminal.writeOutputLine(coloredLine);
+                await runtime.sleep(frameDelay);
             }
             if (runtime.isAborted()) break;
             if (!firstFrame) {
-                context.terminal.removeOutputLine();
+                terminal.removeOutputLine();
             }
             if (i === lines.length - 1) return finalLines[i];
-            context.terminal.writeOutputLine(finalLines[i]);
+            terminal.writeOutputLine(finalLines[i]);
         }
         return '';
     }

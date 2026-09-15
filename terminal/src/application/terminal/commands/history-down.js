@@ -22,3 +22,5 @@ export class HistoryDownCommand {
         context.terminalApi.renderCursor();
     }
 }
+
+export default HistoryDownCommand

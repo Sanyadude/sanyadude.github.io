@@ -81,14 +81,13 @@ export class ProcessManager {
     /**
      * Terminates a process
      * @param {number} id - The id of the process
-     * @param {any} result - The result of the process
      * @param {number} exitCode - The exit code of the process
      * @returns {Process|null} - The process or null if the process was not found
      */
-    terminateProcess(id, result, exitCode = 0) {
+    terminateProcess(id, exitCode = 0) {
         const process = this._processes.get(id);
         if (!process) return null;
-        process.terminate(result, exitCode);
+        process.terminate(exitCode);
         return process;
     }
 
@@ -136,17 +135,17 @@ export class ProcessManager {
                 return;
             }
             if (!outcome.ok) {
-                process.terminate(outcome.error?.toString(), 1);
+                process.terminate(1);
                 return outcome.error?.toString();
             }
-            process.terminate(outcome.value);
+            process.terminate();
             return outcome.value;
         } catch (error) {
             if (runtime.isAborted()) {
                 process.kill();
                 return;
             }
-            process.terminate(error?.toString(), 1);
+            process.terminate(1);
             return error?.toString();
         }
     }

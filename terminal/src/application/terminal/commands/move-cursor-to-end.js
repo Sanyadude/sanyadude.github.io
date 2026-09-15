@@ -5,7 +5,7 @@ import { ACTIONS } from '../config/actions.js'
  */
 export class MoveCursorToEndCommand {
     constructor() {
-        this.name = ACTIONS.CURSOR_TO_END;
+        this.name = ACTIONS.MOVE_CURSOR_TO_END;
     }
 
     /**
@@ -17,3 +17,5 @@ export class MoveCursorToEndCommand {
         context.terminalApi.renderCursor();
     }
 }
+
+export default MoveCursorToEndCommand

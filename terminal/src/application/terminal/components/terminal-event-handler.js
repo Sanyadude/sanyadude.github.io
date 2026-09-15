@@ -36,14 +36,8 @@ export class TerminalEventHandler {
             case TERMINAL_EVENT_TYPE.MOUSE:
                 this._handleShellMouse(terminalEvent);
                 break;
-            case TERMINAL_EVENT_TYPE.SELECTION_START:
-                this._handleShellSelectionStart(terminalEvent);
-                break;
-            case TERMINAL_EVENT_TYPE.SELECTION_UPDATE:
-                this._handleShellSelectionUpdate(terminalEvent);
-                break;
-            case TERMINAL_EVENT_TYPE.SELECTION_END:
-                this._handleShellSelectionEnd(terminalEvent);
+            case TERMINAL_EVENT_TYPE.SELECTION:
+                this._handleShellSelection(terminalEvent);
                 break;
             case TERMINAL_EVENT_TYPE.SCROLL_STEP:
                 this._handleShellScrollStep(terminalEvent);
@@ -98,11 +92,27 @@ export class TerminalEventHandler {
     }
 
     /**
+     * Handles selection in shell mode
+     * @param {TerminalEvent} terminalEvent - The terminal event
+     */
+    _handleShellSelection(terminalEvent) {
+        const { start, end, phase } = terminalEvent.data;
+        if (phase === 'start') {
+            this._handleShellSelectionStart(terminalEvent);
+        } else if (phase === 'update') {
+            this._handleShellSelectionUpdate(terminalEvent);
+        } else if (phase === 'end') {
+            this._handleShellSelectionEnd(terminalEvent);
+        }
+    }
+
+    /**
      * Handles selection start in shell mode
      * @param {TerminalEvent} terminalEvent - The terminal event
      */
     _handleShellSelectionStart(terminalEvent) {
-        const { start, altKey } = terminalEvent.data;
+        const { altKey } = terminalEvent.originalEvent;
+        const { start } = terminalEvent.data;
         if (altKey) {
             this._context.textSelection.setModeBlock();
         } else {

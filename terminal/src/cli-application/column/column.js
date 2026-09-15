@@ -266,7 +266,7 @@ export class Column extends Application {
     _getOutputWidth(options, context) {
         const outputWidth = options['output-width'];
         if (outputWidth === undefined || outputWidth === null || outputWidth === '') {
-            return context.terminal.getSize().columns || DEFAULT_OUTPUT_WIDTH;
+            return context.terminal ? context.terminal.getSize().columns : DEFAULT_OUTPUT_WIDTH;
         }
         if (String(outputWidth).toLowerCase() === 'unlimited' || Number(outputWidth) === 0) return 0;
         return Number(outputWidth);

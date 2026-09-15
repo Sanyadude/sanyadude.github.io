@@ -22,3 +22,5 @@ export class CopyCommand {
         }
     }
 }
+
+export default CopyCommand

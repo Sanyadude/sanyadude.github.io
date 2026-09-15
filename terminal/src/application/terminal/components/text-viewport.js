@@ -119,6 +119,22 @@ export class TextViewport {
     }
 
     /**
+     * Returns the scroll Y position of the viewport as a percentage
+     * @returns {number} - The scroll Y position of the viewport as a percentage
+     */
+    getScrollYPercentage() {
+        return (this._offset.line / this._boundsProvider.getMaxOffsetLine()) * 100;
+    }
+
+    /**
+     * Returns the scroll X position of the viewport as a percentage
+     * @returns {number} - The scroll X position of the viewport as a percentage
+     */
+    getScrollXPercentage() {
+        return (this._offset.column / this._boundsProvider.getMaxOffsetColumn()) * 100;
+    }
+
+    /**
      * Returns the position of the character from the coordinates
      * @param {number} x - The x coordinate of the character
      * @param {number} y - The y coordinate of the character

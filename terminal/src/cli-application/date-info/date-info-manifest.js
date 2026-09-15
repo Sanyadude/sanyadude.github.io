@@ -33,7 +33,7 @@ export const DATE_INFO_MANIFEST = {
         ],
         arguments: [
             {
-                name: 'format', required: true,
+                name: 'format', required: false,
                 description: 'Output format (strftime):'
                     +'\n  - %Y: Year (4 digits)'
                     +'\n  - %y: Year (2 digits)'

@@ -35,4 +35,4 @@ export const CONFIG = Object.freeze({
     HUMAN_NUMERIC_UNITS,
 });
 
-export default CONFIG;
+export default CONFIG

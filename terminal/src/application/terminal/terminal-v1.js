@@ -1,14 +1,15 @@
+import { TerminalInfo } from './components/terminal-info.js'
 import { TextFormat } from './components/text-format.js'
-import { THEMES } from './config/themes.js'
-import { TerminalClear } from './cli-applications/terminal-clear/terminal-clear.js'
-import { TerminalHistory } from './cli-applications/terminal-history/terminal-history.js'
-import { TerminalSettings } from './cli-applications/terminal-settings/terminal-settings.js'
+import { CharacterMeasurement } from './components/character-measurement.js'
+import { InputHistoryNavigation } from './components/input-history-navigation.js'
+import { InputCompletion } from './components/input-completion.js'
+import { ThemeProvider } from './components/theme-provider.js'
+import { InputPrompt } from './components/input-prompt.js'
+import { CLI_APPS } from './config/cli-apps.js'
 import { 
-    TERMINAL_NAME, TERMINAL_TYPE, TERMINAL_COLOR_MODE,
-    TERMINAL_DEFAULT_FONT_SIZE,
-    TERMINAL_DEFAULT_PADDING,
-    TERMINAL_CONFIG_THEME_KEY, TERMINAL_CONFIG_SYNTAX_KEY, 
-    TERMINAL_WELCOME_MESSAGE_LINES, TERMINAL_DEFAULT_THEME_NAME 
+    TERMINAL_DEFAULT_FONT_SIZE, TERMINAL_DEFAULT_PADDING,
+    TERMINAL_CONFIG_THEME_KEY, TERMINAL_CONFIG_SYNTAX_KEY, TERMINAL_CONFIG_PROMPT_KEY,
+    TERMINAL_WELCOME_MESSAGE_LINES
 } from './config/config.js'
 
 /**
@@ -30,33 +31,21 @@ export class Terminal {
         this.fileSystemManager = this.serviceProvider.get('fileSystemManager');
         this.configProvider = this.serviceProvider.get('configProvider');
 
-        this.history = [];
-        this.historyIndex = null;
-
-        this.fileSuggestionIndex = -1;
-
-        this.info = {
-            name: TERMINAL_NAME,
-            type: TERMINAL_TYPE,
-            version: '0.1.0',
-            colorMode: TERMINAL_COLOR_MODE
-        };
-        this.theme = { name: 'none' };
+        this.info = new TerminalInfo();
 
         this.fontSize = TERMINAL_DEFAULT_FONT_SIZE;
         this.padding = TERMINAL_DEFAULT_PADDING;
 
         this.charSize = { width: 0, height: 0 };
-        this.caretPosition = { x: 0, y: 0 };
 
         this._init();
     }
 
     /**
      * Returns the terminal info
-     * @returns {object} - The terminal info
+     * @returns {TerminalInfo} - The terminal info
      */
-    getTerminalInfo() {
+    getInfo() {
         return this.info;
     }
 
@@ -65,23 +54,28 @@ export class Terminal {
      * @returns {Application[]} The CLI programs
      */
     getCliApplications() {
-        return [new TerminalClear(), new TerminalHistory(), new TerminalSettings()];
+        return Object.values(CLI_APPS);
     }
 
     /**
      * Initializes the Terminal interface
      */
     _init() {
+        this.info.version = '0.1.0';
         this._createContainer();
         this._createHistoryContainer();
-        this.charSize = this._getCharSize(this.historyContainerElement);
+        this.charSize = CharacterMeasurement.measure(this.historyContainerElement);
         this._createInput();
+        this.themeProvider = new ThemeProvider();
+        this.inputHistoryNavigation = new InputHistoryNavigation();
+        this.inputCompletion = new InputCompletion();
+        this.inputPrompt = new InputPrompt();
 
         this._initListeners();
 
         this._render();
 
-        this.setTheme(TERMINAL_DEFAULT_THEME_NAME);
+        this.setTheme();
         this.applyConfig();
         this.reset();
         // Add initial lines
@@ -131,8 +125,9 @@ export class Terminal {
         this.containerElement.appendChild(this.inputContainerElement);
         // Create prompt
         this.promptElement = document.createElement('span');
-        this.promptElement.style.display = 'inline-block';
         this.promptElement.style.userSelect = 'none';
+        this.promptElement.style.whiteSpace = 'pre-wrap';
+        this.promptElement.style.wordBreak = 'break-all';
         this.inputContainerElement.appendChild(this.promptElement);
         // Create input
         this.inputElement = document.createElement('span');
@@ -144,22 +139,6 @@ export class Terminal {
         this.inputElement.setAttribute('placeholder', 'Enter command');
         this.inputElement.setAttribute('autocomplete', 'off');
         this.inputContainerElement.appendChild(this.inputElement);
-    }
-
-    /**
-     * Returns the size of the character
-     * @param {HTMLElement} container - The container of the characters
-     * @returns {object} - The size of the character
-     */
-    _getCharSize(container) {
-        const span = document.createElement('span');
-        span.style.visibility = 'hidden';
-        span.textContent = 'A';
-        container.appendChild(span);
-        const charWidth = span.getBoundingClientRect().width;
-        const charHeight = span.getBoundingClientRect().height;
-        container.removeChild(span);
-        return { width: charWidth, height: charHeight };
     }
 
     /**
@@ -183,6 +162,9 @@ export class Terminal {
         });
         this.inputElement.addEventListener('input', (event) => {
             this._handleInput(event);
+        });
+        this.themeProvider.onThemeChange((event) => {
+            this._handleThemeChange(event.theme);
         });
     }
 
@@ -240,7 +222,6 @@ export class Terminal {
         event.preventDefault();
         this.input(this.inputElement.textContent);
         this.inputElement.textContent = '';
-        this.historyIndex = null;
     }
 
     /**
@@ -249,45 +230,18 @@ export class Terminal {
      */
     _handleTabKey(event) {
         event.preventDefault();
-        //if name have spaces change to "name"
-        const names = this.fileSystemExplorer.getEntries().map(entry => {
-            const name = entry.getName();
-            return name.includes(' ') ? `"${name}"` : name;
-        });
-        if (names.length === 0) return;
-        // Get current input text and caret position
         const text = this.inputElement.textContent.replace(/\u00A0/g, " ");
         const selection = window.getSelection();
         const caretPos = selection.anchorOffset;
         const beforeCaret = text.slice(0, caretPos);
         const afterCaret = text.slice(caretPos);
         if (afterCaret.trim() !== '') return;
-        const lastWordPartIndex = beforeCaret.lastIndexOf(' ');
-        const lastWordPart = beforeCaret.slice(lastWordPartIndex + 1);
-        const fullWord = names.find(name => name.startsWith(lastWordPart)) || '';
-        if (fullWord !== '' && fullWord !== lastWordPart) {
-            const newText = beforeCaret.slice(0, lastWordPartIndex + 1) + fullWord + afterCaret;
-            this.inputElement.textContent = newText;
-            const range = document.createRange();
-            range.setStart(this.inputElement.firstChild || this.inputElement, newText.length);
-            range.collapse(true);
-            selection.removeAllRanges();
-            selection.addRange(range);
-            this.fileSuggestionIndex = names.indexOf(fullWord);
-            return;
-        }
-        // Find the current word before the caret
-        const currentWord = names.find(name => beforeCaret.endsWith(name)) || '';
-        const wordStart = caretPos - currentWord.length;
-        // Cycle through file suggestions
-        this.fileSuggestionIndex = this.fileSuggestionIndex + 1 < names.length ? this.fileSuggestionIndex + 1 : 0;
-        const suggestion = names[this.fileSuggestionIndex];
-        // Replace current word with the suggestion
-        const newText = beforeCaret.slice(0, wordStart) + suggestion + afterCaret;
-        this.inputElement.textContent = newText;
-        // Move caret to end of inserted suggestion
+        this.inputCompletion.setOptions(this.shell.getCwdCompletionList());
+        const reverse = event.shiftKey;
+        const completion = this.inputCompletion.complete(text, caretPos, reverse);
+        this.inputElement.textContent = completion.text;
         const range = document.createRange();
-        range.setStart(this.inputElement.firstChild || this.inputElement, wordStart + suggestion.length);
+        range.setStart(this.inputElement.firstChild || this.inputElement, completion.index);
         range.collapse(true);
         selection.removeAllRanges();
         selection.addRange(range);
@@ -299,13 +253,8 @@ export class Terminal {
      */
     _handleArrowUpKey(event) {
         event.preventDefault();
-        const inputs = this.getHistoryByType('input').map(entry => entry.content);
-        if (inputs.length === 0) return;
-        const distinctInputs = Array.from(new Set(inputs.reverse())).reverse();
-        this.historyIndex = this.historyIndex === null
-            ? distinctInputs.length - 1
-            : Math.max(0, this.historyIndex - 1);
-        this.inputElement.textContent = distinctInputs[this.historyIndex];
+        const newText = this.inputHistoryNavigation.navigateBackward(this.inputElement.textContent);
+        this.inputElement.textContent = newText;
         this._moveCaretToEnd();
     }
 
@@ -314,17 +263,9 @@ export class Terminal {
      * @param {KeyboardEvent} event - The arrow down key event
      */
     _handleArrowDownKey(event) {
-        if (this.historyIndex === null) return;
         event.preventDefault();
-        const inputs = this.getHistoryByType('input').map(entry => entry.content);
-        const distinctInputs = Array.from(new Set(inputs.reverse())).reverse();
-        if (this.historyIndex === distinctInputs.length - 1) {
-            this.historyIndex = null;
-            this.inputElement.textContent = '';
-        } else {
-            this.historyIndex = Math.min(distinctInputs.length - 1, this.historyIndex + 1);
-            this.inputElement.textContent = distinctInputs[this.historyIndex];
-        }
+        const newText = this.inputHistoryNavigation.navigateForward(this.inputElement.textContent);
+        this.inputElement.textContent = newText;
         this._moveCaretToEnd();
     }
 
@@ -339,7 +280,8 @@ export class Terminal {
         }
         this.output(`${this.promptElement.textContent}${this.inputElement.textContent}^C`);
         this.inputElement.textContent = '';
-        this.historyIndex = null;
+        this.inputHistoryNavigation.reset();
+        this.inputCompletion.reset();
     }
 
     /**
@@ -365,7 +307,9 @@ export class Terminal {
             this._handleCtrlCKey(event);
             return;
         }
-        this.fileSuggestionIndex = -1;
+        if (event.key.length === 1 || event.key === 'Backspace' || event.key === 'Delete') {
+            this.inputCompletion.reset();
+        }
     }
 
     /**
@@ -384,24 +328,35 @@ export class Terminal {
     }
 
     /**
-     * Renders the prompt
-     * @param {string} path - The path to render the prompt for
+     * Handles the theme change event
+     * @param {object} theme - The theme to change to
      */
-    _renderPrompt(path) {
-        const currentPath = path || '/';
-        this.promptElement.textContent = `${currentPath}>`;
+    _handleThemeChange(theme) {
+        this.containerElement.style.backgroundColor = theme.background;
+        this.containerElement.style.color = theme.foreground;
+    }
+
+    /**
+     * Renders the prompt
+     */
+    _renderPrompt() {
+        const prompt = this.shell.getPrompt();
+        const promptText = this.inputPrompt.formatPromptText(prompt.user, prompt.host, prompt.cwd);
+        this.promptElement.innerHTML = this._formatOutput(promptText);
     }
 
     /**
      * Renders the history
-     * @param {object[]} historyEntries - The history entries to render
+     * @param {object[]} entries - The history entries to render
      */
-    _render(historyEntries = []) {
-        historyEntries.forEach(entry => {
+    _render(entries = []) {
+        entries.forEach(entry => {
             const lines = entry.content.split('\n');
             //Add path to first input line
             if (lines.length !== 0 && entry.type === 'input') {
-                lines[0] = `${entry.path || '/'}>${lines[0]}`;
+                const prompt = this.shell.getPrompt();
+                const promptText = this.inputPrompt.formatPromptText(prompt.user, prompt.host, prompt.cwd);
+                lines[0] = `${promptText}${lines[0]}`;
             }
             lines.forEach(line => {
                 const lineElement = document.createElement('div');
@@ -413,7 +368,7 @@ export class Terminal {
                 this.historyContainerElement.appendChild(lineElement);
             });
         });
-        this._renderPrompt(this.fileSystemExplorer.getCurrentPath());
+        this._renderPrompt();
         this.containerElement.scrollTop = this.containerElement.scrollHeight;
     }
 
@@ -425,14 +380,11 @@ export class Terminal {
      * @param {string} text - The text to write
      */
     writePrompt(user, host, cwd, text = '') {
-        const inputHistoryEntry = {
+        const inputEntry = {
             type: 'input',
-            path: cwd,
-            content: text,
-            timestamp: Date.now(),
+            content: text
         };
-        this.history.push(inputHistoryEntry);
-        this._render([inputHistoryEntry]);
+        this._render([inputEntry]);
     }
 
     /**
@@ -466,7 +418,10 @@ export class Terminal {
      * @param {string} text - The text to input
      */
     input(text = '') {
-        this.shell.input(text)
+        this.inputHistoryNavigation.addInput(text);
+        this.shell.input(text);
+        this.inputCompletion.reset();
+        this.inputCompletion.setOptions(this.shell.getCwdCompletionList());
     }
 
     /**
@@ -484,7 +439,7 @@ export class Terminal {
         const textSegments = TextFormat.segmentsFromString(text);
         for (const segment of textSegments) {
             const sgrState = TextFormat.parseSgr(segment.format);
-            const style = TextFormat.resolveSgrToStyle(sgrState, this.theme);
+            const style = TextFormat.resolveSgrToStyle(sgrState, this.themeProvider.getTheme());
             const spanElement = document.createElement('span');
             Object.assign(spanElement.style, style);
             spanElement.textContent = segment.text;
@@ -498,39 +453,20 @@ export class Terminal {
      * @param {string} text - The text to output
      */
     output(text = '') {
-        const outputHistoryEntry = {
+        const outputEntry = {
             type: 'output',
-            path: this.fileSystemExplorer.getCurrentPath(),
-            content: text,
-            timestamp: Date.now()
+            content: text
         };
-        this.history.push(outputHistoryEntry);
-        this._render([outputHistoryEntry]);
-    }
-
-    /**
-     * Returns the history of the terminal lines
-     * @returns {object[]} - An array of all history entries
-     */
-    getHistory() {
-        return [...this.history];
-    }
-
-    /**
-     * Returns the history of the terminal lines by type
-     * @param {string} type - The type of history to return
-     * @returns {object[]} - An array of history entries of the given type
-     */
-    getHistoryByType(type) {
-        return this.history.filter(entry => entry.type === type);
+        this._render([outputEntry]);
     }
 
     /**
      * Resets the terminal
      */
     reset() {
-        this.history = [];
         this.historyContainerElement.innerHTML = '';
+        this.inputHistoryNavigation.clear();
+        this.inputCompletion.reset();
     }
 
     /**
@@ -549,6 +485,12 @@ export class Terminal {
         if (themeName) {
             this.setTheme(themeName);
         }
+        const promptType = this.configProvider.get(TERMINAL_CONFIG_PROMPT_KEY);
+        if (promptType === 'linux') {
+            this.setLinuxPrompt();
+        } else if (promptType === 'windows') {
+            this.setWindowsPrompt();
+        }
         const syntax = this.configProvider.get(TERMINAL_CONFIG_SYNTAX_KEY);
         if (syntax === 'posix') {
             this.setShellSyntaxPosix();
@@ -558,16 +500,26 @@ export class Terminal {
     }
 
     /**
+     * Gets the size of the terminal
+     * @returns {object} - The size of the terminal
+     */
+    getSize() {
+        return {
+            columns: Math.floor((this.containerElement.clientWidth - 2*this.padding)/this.charSize.width),
+            lines: Math.floor((this.containerElement.clientHeight - 2*this.padding)/this.charSize.height)
+        };
+    }
+
+    /**
      * Sets the theme of the terminal
      * @param {string} theme - The theme to set
      */
     setTheme(themeName) {
-        const theme = THEMES[themeName];
-        if (!theme) return;
-        this.theme = theme;
-        this.containerElement.style.backgroundColor = theme.background;
-        this.containerElement.style.color = theme.foreground;
-        this.configProvider.set(TERMINAL_CONFIG_THEME_KEY, themeName);
+        this.themeProvider.setTheme(themeName);
+        if (themeName) {
+            this.configProvider.set(TERMINAL_CONFIG_THEME_KEY, themeName);
+        }
+        return this;
     }
 
     /**
@@ -575,23 +527,41 @@ export class Terminal {
      * @returns {object} - The current theme
      */
     getTheme() {
-        return this.theme;
+        return this.themeProvider.getTheme();
     }
 
     /**
-     * Returns all available themes
-     * @returns {Object} - An object with the theme names as keys and the theme objects as values
+     * Gets the themes of the terminal
+     * @returns {object[]} - The themes of the terminal
      */
     getThemes() {
-        return Object.values(THEMES);
+        return Object.values(this.themeProvider.getThemes());
     }
 
-    setNextTheme() {
-        //Do nothing
-    }
-
+    /**
+     * Sets the previous theme
+     * @returns {Terminal} - The instance of the Terminal
+     */
     setPreviousTheme() {
-        //Do nothing
+        this.themeProvider.setPreviousTheme();
+        const themeName = this.themeProvider.getTheme().name;
+        if (themeName) {
+            this.configProvider.set(TERMINAL_CONFIG_THEME_KEY, themeName);
+        }
+        return this;
+    }
+
+    /**
+     * Sets the next theme
+     * @returns {Terminal} - The instance of the Terminal
+     */
+    setNextTheme() {
+        this.themeProvider.setNextTheme();
+        const themeName = this.themeProvider.getTheme().name;
+        if (themeName) {
+            this.configProvider.set(TERMINAL_CONFIG_THEME_KEY, themeName);
+        }
+        return this;
     }
 
     /**
@@ -606,7 +576,7 @@ export class Terminal {
      * @returns {string[]} - An array of the history entries
      */
     getInputHistory() {
-        return this.getHistoryByType('input').map(entry => entry.content);
+        return this.inputHistoryNavigation.getHistory();
     }
 
     /**
@@ -625,12 +595,24 @@ export class Terminal {
         this.configProvider.set(TERMINAL_CONFIG_SYNTAX_KEY, 'posix');
     }
 
+    /**
+     * Sets the prompt formatting similar to linux terminal
+     * @returns {TerminalApi} - The instance of the TerminalApi
+     */
     setLinuxPrompt() {
-        //Do nothing
+        this.inputPrompt.setPromptTypeLinux();
+        this.configProvider.set(TERMINAL_CONFIG_PROMPT_KEY, 'linux');
+        return this._renderPrompt();
     }
 
+    /**
+     * Sets the prompt formatting similar to windows terminal
+     * @returns {TerminalApi} - The instance of the TerminalApi
+     */
     setWindowsPrompt() {
-        //Do nothing
+        this.inputPrompt.setPromptTypeWindows();
+        this.configProvider.set(TERMINAL_CONFIG_PROMPT_KEY, 'windows');
+        return this._renderPrompt();
     }
 
     toggleDebug() {
@@ -646,6 +628,18 @@ export class Terminal {
     }
 
     toggleScrollbarUseTheme() {
+        //Do nothing
+    }
+
+    scrollInputToTop() {
+        //Do nothing
+    }
+
+    hidePrompt() {
+        //Do nothing
+    }
+
+    showPrompt() {
         //Do nothing
     }
 }

@@ -21,7 +21,7 @@ export const ECHO_MANIFEST = {
         ],
         arguments: [
             {
-                name: 'text', required: true, repeatable: true,
+                name: 'text', required: false, repeatable: true,
                 description: 'The text to display, if not provided, the standard input will be used',
             }
         ]

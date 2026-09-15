@@ -204,8 +204,10 @@ export class Lipsum extends Application {
             const width = Number(rawWidth);
             if (Number.isFinite(width) && width >= 1) return Math.floor(width);
         }
-        const columns = context.terminal.getSize().columns;
-        return columns || DEFAULT_WIDTH;
+        const columns = context.terminal ? context.terminal.getSize().columns : DEFAULT_WIDTH;
+        return columns > 0 ? columns : DEFAULT_WIDTH;
     }
 
 }
+
+export default Lipsum

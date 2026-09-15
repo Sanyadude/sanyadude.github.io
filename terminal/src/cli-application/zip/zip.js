@@ -1,10 +1,6 @@
 import { Application } from '../../system/application/application.js'
 import { ZIP_MANIFEST } from './zip-manifest.js'
-
-const ZIP_VERSION = 20; // zip version 2.0
-const LOCAL_FILE_HEADER_SIGNATURE = 0x04034b50;
-const CENTRAL_DIRECTORY_FILE_HEADER_SIGNATURE = 0x02014b50;
-const END_OF_CENTRAL_DIRECTORY_SIGNATURE = 0x06054b50;
+import { ZIP_VERSION, LOCAL_FILE_HEADER_SIGNATURE, CENTRAL_DIRECTORY_FILE_HEADER_SIGNATURE, END_OF_CENTRAL_DIRECTORY_SIGNATURE } from './config.js'
 
 /**
  * Zip - Application for archiving a file or directory
@@ -58,7 +54,7 @@ export class Zip extends Application {
      * @returns {Blob} - The zipped directory
      */
     _zipDirectory(fullPath, context) {
-        const paths = context.fileSystemManager.getEntryPathsAt(fullPath);
+        const paths = context.fileSystemManager.getEntryPaths(fullPath);
         if (paths.length === 0) return null;
         const lfhChunks = [];
         const processedLFHData = [];
@@ -272,3 +268,5 @@ export class Zip extends Application {
         return (crc ^ (-1)) >>> 0; // Final XOR and convert to unsigned 32-bit integer
     }
 }
+
+export default Zip

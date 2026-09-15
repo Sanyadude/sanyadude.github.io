@@ -5,7 +5,7 @@ import { ACTIONS } from '../config/actions.js'
  */
 export class MoveCursorToStartCommand {
     constructor() {
-        this.name = ACTIONS.CURSOR_TO_START;
+        this.name = ACTIONS.MOVE_CURSOR_TO_START;
     }
 
     /**
@@ -17,3 +17,5 @@ export class MoveCursorToStartCommand {
         context.terminalApi.renderCursor();
     }
 }
+
+export default MoveCursorToStartCommand

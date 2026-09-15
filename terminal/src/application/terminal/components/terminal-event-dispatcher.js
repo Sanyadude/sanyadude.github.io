@@ -19,36 +19,36 @@ export class TerminalEventDispatcher {
     addListeners() {
         const terminalViewport = this._context.terminalViewport;
         const themeProvider = this._context.themeProvider;
-        terminalViewport.onDrop = (event) => {
+        terminalViewport.onDrop((event) => {
             this._dispatchDrop(event.uiEvent);
-        };
-        terminalViewport.onClick = (event) => {
+        });
+        terminalViewport.onClick((event) => {
             this._dispatchClick(event.uiEvent, event.position);
-        };
-        terminalViewport.onSelectionStart = (event) => {
-            this._dispatchSelectionStart(event.uiEvent, event.start, event.end);
-        };
-        terminalViewport.onSelectionUpdate = (event) => {
-            this._dispatchSelectionUpdate(event.uiEvent, event.start, event.end);
-        };
-        terminalViewport.onSelectionEnd = (event) => {
-            this._dispatchSelectionEnd(event.uiEvent, event.start, event.end);
-        };
-        terminalViewport.onScrollStep = (event) => {
+        });
+        terminalViewport.onSelectionStart((event) => {
+            this._dispatchSelection(event.uiEvent, event.start, event.end, 'start');
+        });
+        terminalViewport.onSelectionUpdate((event) => {
+            this._dispatchSelection(event.uiEvent, event.start, event.end, 'update');
+        });
+        terminalViewport.onSelectionEnd((event) => {
+            this._dispatchSelection(event.uiEvent, event.start, event.end, 'end');
+        });
+        terminalViewport.onScrollStep((event) => {
             this._dispatchScrollStep(event.uiEvent, event.scrollStep);
-        };
-        terminalViewport.onScroll = (event) => {
+        });
+        terminalViewport.onScroll((event) => {
             this._dispatchScroll(event.uiEvent, event.scrollPosition);
-        };
-        terminalViewport.onResize = (event) => {
+        });
+        terminalViewport.onResize((event) => {
             this._dispatchResize(event.uiEvent, event.layout);
-        };
-        terminalViewport.onKeyDown = (event) => {
+        });
+        terminalViewport.onKeyDown((event) => {
             this._dispatchKeyDown(event.uiEvent);
-        };
-        themeProvider.onThemeChange = (event) => {
+        });
+        themeProvider.onThemeChange((event) => {
             this._dispatchThemeChange(event.theme);
-        };
+        });
     }
 
     /**
@@ -173,51 +173,16 @@ export class TerminalEventDispatcher {
      * @param {MouseEvent} event - The selection start event
      * @param {object} start - The start position of the selection
      * @param {object} end - The end position of the selection
+     * @param {string} phase - The phase of the selection
      */
-    _dispatchSelectionStart(event, start, end) {
+    _dispatchSelection(event, start, end, phase) {
         this._dispatch(new TerminalEvent({
-            type: TERMINAL_EVENT_TYPE.SELECTION_START,
-            name: 'selectionStart',
+            type: TERMINAL_EVENT_TYPE.SELECTION,
+            name: 'selection',
             data: {
                 start,
                 end,
-                altKey: event.altKey,
-            },
-            originalEvent: event,
-        }));
-    }
-
-    /**
-     * Dispatches a selection update event
-     * @param {MouseEvent} event - The selection update event
-     * @param {object} start - The start position of the selection
-     * @param {object} end - The end position of the selection
-     */
-    _dispatchSelectionUpdate(event, start, end) {
-        this._dispatch(new TerminalEvent({
-            type: TERMINAL_EVENT_TYPE.SELECTION_UPDATE,
-            name: 'selectionUpdate',
-            data: {
-                start,
-                end,
-            },
-            originalEvent: event,
-        }));
-    }
-
-    /**
-     * Dispatches a selection end event
-     * @param {MouseEvent} event - The selection end event
-     * @param {object} start - The start position of the selection
-     * @param {object} end - The end position of the selection
-     */
-    _dispatchSelectionEnd(event, start, end) {
-        this._dispatch(new TerminalEvent({
-            type: TERMINAL_EVENT_TYPE.SELECTION_END,
-            name: 'selectionEnd',
-            data: {
-                start,
-                end,
+                phase,
             },
             originalEvent: event,
         }));

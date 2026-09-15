@@ -14,11 +14,13 @@ export class InsertCharCommand {
      * @param {object} payload - Payload
      */
     execute(context, payload) {
-        context.inputCompletion.reset()
-        context.textSelection.reset()
-        context.textBuffer.insertAtCursor(payload.event.key)
-        context.textBuffer.moveCursorRight()
+        context.inputCompletion.reset();
+        context.textSelection.reset();
+        context.textBuffer.insertAtCursor(payload.event.key);
+        context.textBuffer.moveCursorRight();
         context.terminalApi.render();
         context.terminalApi.renderCursor();
     }
 }
+
+export default InsertCharCommand

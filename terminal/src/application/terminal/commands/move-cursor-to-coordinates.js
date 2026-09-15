@@ -5,7 +5,7 @@ import { ACTIONS } from '../config/actions.js'
  */
 export class MoveCursorToCoordinatesCommand {
     constructor() {
-        this.name = ACTIONS.CURSOR_TO_COORDINATES;
+        this.name = ACTIONS.MOVE_CURSOR_TO_COORDINATES;
     }
 
     /**
@@ -27,3 +27,5 @@ export class MoveCursorToCoordinatesCommand {
         context.terminalApi.renderCursor();
     }
 }
+
+export default MoveCursorToCoordinatesCommand

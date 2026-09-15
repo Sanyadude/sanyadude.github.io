@@ -80,3 +80,5 @@ export class JSRuntime extends Application {
         return this;
     }
 }
+
+export default JSRuntime

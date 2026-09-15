@@ -46,7 +46,7 @@ export const CAT_MANIFEST = {
         ],
         arguments: [
             {
-                name: 'file_path', required: true, repeatable: true,
+                name: 'file_path', required: false, repeatable: true,
                 description: 'The path to the file(s)',
             },
         ],

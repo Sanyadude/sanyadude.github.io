@@ -10,7 +10,7 @@ export class TerminalResolver {
     async resolve(version) {
         const isMobile = /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
         const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        const supportedVersions = [1, 2, 3];
+        const supportedVersions = [1, 2];
         if (version && supportedVersions.includes(version)) {
             const { Terminal } = await import(`./terminal-v${version}.js`);
             return Terminal;
@@ -19,7 +19,9 @@ export class TerminalResolver {
             const { Terminal } = await import('./terminal-v1.js');
             return Terminal;
         }
-        const { Terminal } = await import('./terminal-v3.js');
+        const { Terminal } = await import('./terminal-v2.js');
         return Terminal;
     }
 }
+
+export default TerminalResolver

@@ -1,4 +1,5 @@
 import { PROCESS_STATUS } from './process-status.js'
+import { ProcessStream } from './process-stream.js'
 
 /**
  * Process - Represents a process
@@ -14,13 +15,16 @@ export class Process {
         this._commandLine = commandLine;
         this._status = PROCESS_STATUS.NEW;
 
-        this._result = null;
         this._exitCode = 0;
 
         this._startedAt = null;
         this._stoppedAt = null;
         this._terminatedAt = null;
         this._killedAt = null;
+
+        this.stdin = new ProcessStream();
+        this.stdout = new ProcessStream();
+        this.stderr = new ProcessStream();
     }
 
     /**
@@ -45,14 +49,6 @@ export class Process {
      */
     getStatus() {
         return this._status;
-    }
-
-    /**
-     * Gets the result of the process
-     * @returns {any} - The result of the process
-     */
-    getResult() {
-        return this._result;
     }
 
     /**
@@ -87,14 +83,12 @@ export class Process {
 
     /**
      * Terminates the process
-     * @param {any} result - The result of the process
      * @param {number} exitCode - The exit code of the process
      * @returns {boolean} - True if the process was terminated, false otherwise
      */
-    terminate(result, exitCode = 0) {
+    terminate(exitCode = 0) {
         if (this._status === PROCESS_STATUS.KILLED || this._status === PROCESS_STATUS.TERMINATED) return false;
         this._status = PROCESS_STATUS.TERMINATED;
-        this._result = result;
         this._exitCode = exitCode;
         this._terminatedAt = new Date().getTime();
         return true;

@@ -25,3 +25,5 @@ export class CompletionReverseCommand {
         context.terminalApi.renderCursor();
     }
 }
+
+export default CompletionReverseCommand
