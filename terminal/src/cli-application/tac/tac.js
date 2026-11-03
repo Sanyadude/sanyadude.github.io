@@ -15,9 +15,9 @@ export class Tac extends Application {
 
     /**
      * Executes the `tac` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the tac command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the tac command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();
@@ -44,9 +44,9 @@ export class Tac extends Application {
 
     /**
      * Formats the output of the `tac` command
-     * @param {string} output - The output to format
-     * @param {object} options - The options of the command
-     * @returns {string} - The formatted output
+     * @param {string} output The output to format
+     * @param {object} options The options of the command
+     * @returns {string} The formatted output
      */
     _formatOutput(output, options = {}) {
         if (!output) return '';
@@ -58,11 +58,11 @@ export class Tac extends Application {
 
     /**
      * Reverses the output using options
-     * @param {string} output - The output to reverse
-     * @param {string} separator - The separator to use for records
-     * @param {boolean} before - Whether to attach the separator to the beginning of the record
-     * @param {boolean} regex - Whether to interpret the separator as a regular expression
-     * @returns {string} - The reversed output
+     * @param {string} output The output to reverse
+     * @param {string} separator The separator to use for records
+     * @param {boolean} before Whether to attach the separator to the beginning of the record
+     * @param {boolean} regex Whether to interpret the separator as a regular expression
+     * @returns {string} The reversed output
      */
     _reverseFilter(output, separator, before = false, regex = false) {
         if (regex) return this._reverseFilterRegex(output, separator, before);
@@ -71,10 +71,10 @@ export class Tac extends Application {
     
     /**
      * Reverses the output using a string separator
-     * @param {string} output - The output to reverse
-     * @param {string} separator - The separator to use for records
-     * @param {boolean} before - Whether to attach the separator to the beginning of the record
-     * @returns {string} - The reversed output
+     * @param {string} output The output to reverse
+     * @param {string} separator The separator to use for records
+     * @param {boolean} before Whether to attach the separator to the beginning of the record
+     * @returns {string} The reversed output
      */
     _reverseFilterString(output, separator, before) {
         const parts = output.split(separator);
@@ -84,10 +84,10 @@ export class Tac extends Application {
     
     /**
      * Reverses the output using a regular expression separator
-     * @param {string} output - The output to reverse
-     * @param {string} separator - The separator to use for records
-     * @param {boolean} before - Whether to attach the separator to the beginning of the record
-     * @returns {string} - The reversed output
+     * @param {string} output The output to reverse
+     * @param {string} separator The separator to use for records
+     * @param {boolean} before Whether to attach the separator to the beginning of the record
+     * @returns {string} The reversed output
      */
     _reverseFilterRegex(output, separator, before) {
         const parts = output.split(new RegExp(`(${separator})`)).reverse();

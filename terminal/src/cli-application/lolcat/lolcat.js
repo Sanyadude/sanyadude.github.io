@@ -16,9 +16,9 @@ export class Lolcat extends Application {
 
     /**
      * Executes the `lolcat` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the lolcat command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the lolcat command execution
      */
     main(commandLine, context) {
         const options = commandLine.getOptions();
@@ -33,7 +33,7 @@ export class Lolcat extends Application {
             text = file ? file.readAsString() : stdin;
         }
         const plainText = text.replace(/\x1b\[[0-9;]+m/g, '');
-        if (options['animate']) {
+        if (options['animate'] && context.terminal.isCursorAddressingSupported()) {
             return this._colorizeTextWithAnimation(plainText, options, context);
         }
         return this._colorizeText(plainText, options);
@@ -41,10 +41,10 @@ export class Lolcat extends Application {
 
     /**
      * Colorizes text with animation
-     * @param {string} text - The text to animate
-     * @param {object} options - The options object
-     * @param {object} context - The context object
-     * @returns {Promise<string>} - The animated text
+     * @param {string} text The text to animate
+     * @param {object} options The options object
+     * @param {object} context The context object
+     * @returns {Promise<string>} The animated text
      * Deprecated: needs render to not cache lines
      */
     async _colorizeTextWithAnimation(text, options = {}, context = {}) {
@@ -62,38 +62,32 @@ export class Lolcat extends Application {
         const colorizedTextResult = this._colorizeText(text, options);
         const finalLines = colorizedTextResult.split(/\r?\n/);
         let animationSeed = seed;
-        terminal.hidePrompt();
         for (let i = 0; i < lines.length; i++) {
             if (runtime.isAborted()) break;
             const line = lines[i];
-            let firstFrame = true;
             for (let frame = 0; frame < maxFrames; frame++) {
                 if (runtime.isAborted()) break;
-                if (!firstFrame) {
-                    terminal.removeOutputLine();
-                }
-                firstFrame = false;
                 animationSeed = animationSeed + spread;
                 const frameSeed = animationSeed % 360;
                 const coloredLine = this._colorizeSineWaveMode(line, spread, freq, frameSeed, invert);
-                terminal.writeOutputLine(coloredLine);
+                terminal.write(`${frame === 0 ? '' : '\x1b[1A'}${coloredLine}\n`);
                 await runtime.sleep(frameDelay);
             }
             if (runtime.isAborted()) break;
-            if (!firstFrame) {
-                terminal.removeOutputLine();
+            if (i === lines.length - 1) {
+                terminal.write('\x1b[1A');
+                return finalLines[i];
             }
-            if (i === lines.length - 1) return finalLines[i];
-            terminal.writeOutputLine(finalLines[i]);
+            terminal.write(`\x1b[1A${finalLines[i]}\n`);
         }
         return '';
     }
 
     /**
      * Colorizes the text wrapping it in ANSI codes with rainbow formatting
-     * @param {string} text - The text to colorize
-     * @param {object} options - The options object
-     * @returns {string} - The colorized text
+     * @param {string} text The text to colorize
+     * @param {object} options The options object
+     * @returns {string} The colorized text
      */
     _colorizeText(text, options = {}) {
         const spread = options['spread'] !== undefined && !isNaN(options['spread']) ? Number(options['spread']) : DEFAULT_SPREAD;
@@ -105,12 +99,12 @@ export class Lolcat extends Application {
 
     /**
      * Returns the ANSI code for the given RGB values
-     * @param {number} red - The red value
-     * @param {number} green - The green value
-     * @param {number} blue - The blue value
-     * @param {string} text - The text to colorize
-     * @param {boolean} invert - Whether to use background mode
-     * @returns {string} - The ANSI code for the given RGB values
+     * @param {number} red The red value
+     * @param {number} green The green value
+     * @param {number} blue The blue value
+     * @param {string} text The text to colorize
+     * @param {boolean} invert Whether to use background mode
+     * @returns {string} The ANSI code for the given RGB values
      */
     _rgbToAnsi(red, green, blue, text, invert = false) {
         return `\x1b[${invert ? '7;' : ''}38;2;${red};${green};${blue}m${text}`;
@@ -118,12 +112,12 @@ export class Lolcat extends Application {
 
     /**
      * Colorizes the text using the HSV mode
-     * @param {string} text - The text to colorize
-     * @param {number} spread - The spread of the colors horizontally (hue shift)
-     * @param {number} freq - The frequency of color change vertically (hue drift)
-     * @param {number} seed - The seed for starting color
-     * @param {boolean} invert - Whether to use background mode
-     * @returns {string} - The colorized text
+     * @param {string} text The text to colorize
+     * @param {number} spread The spread of the colors horizontally (hue shift)
+     * @param {number} freq The frequency of color change vertically (hue drift)
+     * @param {number} seed The seed for starting color
+     * @param {boolean} invert Whether to use background mode
+     * @returns {string} The colorized text
      */
     _colorizeHsvMode(text = '', spread = DEFAULT_SPREAD, freq = DEFAULT_FREQ, seed = DEFAULT_SEED, invert = DEFAULT_INVERT_MODE) {
         let lines = text.split(/\r?\n/);
@@ -146,10 +140,10 @@ export class Lolcat extends Application {
 
     /**
      * Converts HSV to RGB
-     * @param {number} hue - The hue value of the color
-     * @param {number} saturation - The saturation value of the color
-     * @param {number} value - The brightness value of the color
-     * @returns {object} - The RGB values
+     * @param {number} hue The hue value of the color
+     * @param {number} saturation The saturation value of the color
+     * @param {number} value The brightness value of the color
+     * @returns {object} The RGB values
      */
     _hsvToRgb(hue, saturation = 1, value = 1) {
         const chroma = value * saturation;
@@ -173,12 +167,12 @@ export class Lolcat extends Application {
 
     /**
      * Colorizes the text using the sine wave mode
-     * @param {string} text - The text to colorize
-     * @param {number} spread - The spread of the colors horizontally (hue shift)
-     * @param {number} freq - The frequency of color change vertically (hue drift)
-     * @param {number} seed - The seed for starting color
-     * @param {boolean} invert - Whether to use background mode
-     * @returns {string} - The colorized text
+     * @param {string} text The text to colorize
+     * @param {number} spread The spread of the colors horizontally (hue shift)
+     * @param {number} freq The frequency of color change vertically (hue drift)
+     * @param {number} seed The seed for starting color
+     * @param {boolean} invert Whether to use background mode
+     * @returns {string} The colorized text
      */
     _colorizeSineWaveMode(text = '', spread = DEFAULT_SPREAD, freq = DEFAULT_FREQ, seed = DEFAULT_SEED, invert = DEFAULT_INVERT_MODE) {
         let lines = text.split(/\r?\n/);
@@ -199,9 +193,9 @@ export class Lolcat extends Application {
 
     /**
      * Converts a sine wave to RGB
-     * @param {number} freq - The frequency of the sine wave
-     * @param {number} phase - The phase of the sine wave
-     * @returns {object} - The RGB values
+     * @param {number} freq The frequency of the sine wave
+     * @param {number} phase The phase of the sine wave
+     * @returns {object} The RGB values
      */
     _getSineWaveRgb(freq, phase) {
         const angle = freq !== 0 ? freq * phase : phase;

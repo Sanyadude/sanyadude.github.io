@@ -9,8 +9,8 @@ import { EntryPath } from './entry-path.js'
 export class PathSearch {
     /**
      * Performs a breadth-first search on the given directory
-     * @param {DirectoryEntry} directory - The directory to search
-     * @param {string} prefix - The prefix to add to the path
+     * @param {DirectoryEntry} directory The directory to search
+     * @param {string} prefix The prefix to add to the path
      * @returns {EntryPath[]} The paths found
      */
     static breadthFirstSearch(directory, prefix = '') {
@@ -34,8 +34,8 @@ export class PathSearch {
 
     /**
      * Performs a depth-first search on the given directory
-     * @param {DirectoryEntry} directory - The directory to search
-     * @param {string} prefix - The prefix to add to the path
+     * @param {DirectoryEntry} directory The directory to search
+     * @param {string} prefix The prefix to add to the path
      * @returns {EntryPath[]} The paths found
      */
     static depthFirstSearch(directory, prefix = '') {

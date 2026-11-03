@@ -15,9 +15,9 @@ export class ChangeDirectory extends Application {
 
     /**
      * Executes the `cd` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the cd/chdir command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the cd/chdir command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();

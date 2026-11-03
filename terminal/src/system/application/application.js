@@ -4,9 +4,9 @@
 export class Application {
     /**
      * Creates a new Application instance
-     * @param {string} name - The name of the application (required)
-     * @param {object} manifest - The manifest of the application
-     * @param {object} metadata - The metadata of the application
+     * @param {string} name The name of the application (required)
+     * @param {object} manifest The manifest of the application
+     * @param {object} metadata The metadata of the application
      */
     constructor(name, manifest = {}, metadata = {}) {
         if (!name || typeof name !== 'string') {
@@ -19,7 +19,7 @@ export class Application {
 
     /**
      * Returns the name of the application
-     * @returns {string} - The name of the application
+     * @returns {string} The name of the application
      */
     getName() {
         return this._name;
@@ -27,7 +27,7 @@ export class Application {
 
     /**
      * Returns the version of the application
-     * @returns {string} - The version of the application
+     * @returns {string} The version of the application
      */
     getVersion() {
         return this._manifest.version || '';
@@ -35,7 +35,7 @@ export class Application {
 
     /**
      * Returns the description of the application
-     * @returns {string} - The description of the application
+     * @returns {string} The description of the application
      */
     getDescription() {
         return this._manifest.description || '';
@@ -43,7 +43,7 @@ export class Application {
 
     /**
      * Returns the metadata of the application
-     * @returns {Object} - The metadata of the application
+     * @returns {object} The metadata of the application
      */
     getMetadata() {
         return this._metadata;
@@ -51,7 +51,7 @@ export class Application {
 
     /**
      * Returns the manifest of the application
-     * @returns {object} - The manifest of the application
+     * @returns {object} The manifest of the application
      */
     getManifest() {
         return this._manifest;
@@ -59,7 +59,7 @@ export class Application {
 
     /**
      * Called when the application is installed
-     * @param {AppInstaller} appInstaller - The app installer instance
+     * @param {AppInstaller} appInstaller The app installer instance
      */
     onInstall(appInstaller) {
         return this;
@@ -67,7 +67,7 @@ export class Application {
 
     /**
      * Called when the application is uninstalled
-     * @param {AppInstaller} appInstaller - The app installer instance
+     * @param {AppInstaller} appInstaller The app installer instance
      */
     onUninstall(appInstaller) {
         return this;
@@ -75,9 +75,9 @@ export class Application {
 
     /**
      * Called by system to run application
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {ApplicationExecutionContext|object} context - The execution context
-     * @returns {Promise<string>} - The result of the command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {ApplicationExecutionContext|object} context The execution context
+     * @returns {Promise<string>} The result of the command execution
      */
     async main(commandLine, context = {}) {
         return '';

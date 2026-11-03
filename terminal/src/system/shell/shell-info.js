@@ -1,3 +1,5 @@
+import { SHELL_NAME, SHELL_TYPE, SHELL_VERSION } from './config/config.js'
+
 /**
  * ShellInfo class - represents the information of the shell
  */
@@ -6,9 +8,9 @@ export class ShellInfo {
      * Creates a new ShellInfo instance
      */
     constructor() {
-        this.name = 'shell';
-        this.type = 'myshell';
-        this.version = '0.1.0';
+        this.name = SHELL_NAME;
+        this.type = SHELL_TYPE;
+        this.version = SHELL_VERSION;
     }
 }
 

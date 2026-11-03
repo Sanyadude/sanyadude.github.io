@@ -1,9 +1,11 @@
 import { TerminalClear } from '../cli-applications/terminal-clear/terminal-clear.js'
+import { TerminalExit } from '../cli-applications/terminal-exit/terminal-exit.js'
 import { TerminalHistory } from '../cli-applications/terminal-history/terminal-history.js'
 import { TerminalSettings } from '../cli-applications/terminal-settings/terminal-settings.js'
 
 export const CLI_APPS = Object.freeze({
     clear: new TerminalClear(),
+    exit: new TerminalExit(),
     history: new TerminalHistory(),
     settings: new TerminalSettings(),
 });

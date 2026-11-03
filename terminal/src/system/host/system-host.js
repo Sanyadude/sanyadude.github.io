@@ -4,9 +4,9 @@
 export class SystemHost {
     /**
      * Creates a new SystemHost instance
-     * @param {string} name - The name of the host
-     * @param {string} address - The address of the host
-     * @param {number|null} port - The port of the host
+     * @param {string} name The name of the host
+     * @param {string} address The address of the host
+     * @param {number|null} port The port of the host
      */
     constructor(name, address, port = null) {
         if (!name || typeof name !== 'string') {
@@ -30,7 +30,7 @@ export class SystemHost {
 
     /**
      * Sets the name of the host
-     * @param {string} name - The name of the host
+     * @param {string} name The name of the host
      */
     setName(name) {
         this._name = name;
@@ -46,7 +46,7 @@ export class SystemHost {
 
     /**
      * Sets the address of the host
-     * @param {string} address - The address of the host
+     * @param {string} address The address of the host
      */
     setAddress(address) {
         this._address = address;
@@ -62,7 +62,7 @@ export class SystemHost {
 
     /**
      * Sets the port of the host
-     * @param {number|null} port - The port of the host
+     * @param {number|null} port The port of the host
      */
     setPort(port) {
         this._port = port;

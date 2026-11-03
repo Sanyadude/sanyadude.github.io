@@ -1,13 +1,7 @@
+import { IdGeneratorFactory } from '../../core/id-generator-factory.js'
 import { Process } from './process.js'
 
-/**
- * Generates a unique process id
- * @returns {number} - The next process id
- */
-const nextId = (() => {
-    let id = 0;
-    return () => ++id;
-})();
+const nextId = IdGeneratorFactory.createIncremental();
 
 /**
  * ProcessManager - A class for managing processes
@@ -15,7 +9,7 @@ const nextId = (() => {
 export class ProcessManager {
     /**
      * Creates a new ProcessManager instance
-     * @param {ServiceProvider} serviceProvider - The service provider instance
+     * @param {ServiceProvider} serviceProvider The service provider instance
      */
     constructor(serviceProvider) {
         this._serviceProvider = serviceProvider;
@@ -27,7 +21,7 @@ export class ProcessManager {
 
     /**
      * Gets all processes
-     * @returns {Process[]} - The processes
+     * @returns {Process[]} The processes
      */
     getProcesses() {
         return Array.from(this._processes.values());
@@ -35,8 +29,8 @@ export class ProcessManager {
 
     /**
      * Gets a process by id
-     * @param {number} id - The id of the process
-     * @returns {Process} - The process
+     * @param {number} id The id of the process
+     * @returns {Process} The process
      */
     getProcess(id) {
         return this._processes.get(id);
@@ -44,8 +38,8 @@ export class ProcessManager {
 
     /**
      * Creates a new process
-     * @param {ShellCommandLine} commandLine - The command line to create the process
-     * @returns {Process} - The process
+     * @param {ShellCommandLine} commandLine The command line to create the process
+     * @returns {Process} The process
      */
     createProcess(commandLine) {
         const id = nextId();
@@ -56,8 +50,8 @@ export class ProcessManager {
 
     /**
      * Starts a new process
-     * @param {number} id - The id of the process
-     * @returns {Process} - The process
+     * @param {number} id The id of the process
+     * @returns {Process} The process
      */
     startProcess(id) {
         const process = this._processes.get(id);
@@ -68,8 +62,8 @@ export class ProcessManager {
 
     /**
      * Stops a process
-     * @param {number} id - The id of the process
-     * @returns {Process|null} - The process or null if the process was not found
+     * @param {number} id The id of the process
+     * @returns {Process|null} The process or null if the process was not found
      */
     stopProcess(id) {
         const process = this._processes.get(id);
@@ -80,9 +74,9 @@ export class ProcessManager {
 
     /**
      * Terminates a process
-     * @param {number} id - The id of the process
-     * @param {number} exitCode - The exit code of the process
-     * @returns {Process|null} - The process or null if the process was not found
+     * @param {number} id The id of the process
+     * @param {number} exitCode The exit code of the process
+     * @returns {Process|null} The process or null if the process was not found
      */
     terminateProcess(id, exitCode = 0) {
         const process = this._processes.get(id);
@@ -93,8 +87,8 @@ export class ProcessManager {
 
     /**
      * Kills a process
-     * @param {number} id - The id of the process
-     * @returns {Process|null} - The process or null if the process was not found
+     * @param {number} id The id of the process
+     * @returns {Process|null} The process or null if the process was not found
      */
     killProcess(id) {
         const process = this._processes.get(id);
@@ -105,10 +99,10 @@ export class ProcessManager {
 
     /**
      * Runs a program
-     * @param {string} programName - The name of the program to run
-     * @param {ShellCommandLine} commandLine - The command line to run the program
-     * @param {ExecutionRuntime} callerRuntime - The inherited runtime for the program
-     * @returns {Promise<any>} - The result of the program execution or error
+     * @param {string} programName The name of the program to run
+     * @param {ShellCommandLine} commandLine The command line to run the program
+     * @param {ExecutionRuntime} callerRuntime The inherited runtime for the program
+     * @returns {Promise<any>} The result of the program execution or error
      */
     async run(programName, commandLine, callerRuntime) {
         if (!this._applicationManager.resolve(programName)) {

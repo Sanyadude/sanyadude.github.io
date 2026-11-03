@@ -1,3 +1,4 @@
+export const OWNER_WRITE = 0o200;
 export const DEFAULT_TIME_TYPE = 'written';
 export const DEFAULT_WIDTH = 80;
 export const DEFAULT_PADDING = 2;
@@ -26,6 +27,7 @@ export const CONFIG = Object.freeze({
     DEFAULT_TIME_TYPE,
     DEFAULT_WIDTH,
     DEFAULT_PADDING,
+    OWNER_WRITE,
     ATTRIBUTE_TYPES,
     SORT_TYPES,
     TIME_TYPES,

@@ -12,6 +12,7 @@ export const TERMINAL_SETTINGS_MANIFEST = {
             { name: 'windows-prompt', short: 'W', long: 'windows-prompt', description: 'Set the prompt to windows style' },
             { name: 'cursor-caret', short: 'C', long: 'cursor-caret', description: 'Set the cursor to caret' },
             { name: 'cursor-underline', short: 'U', long: 'cursor-underline', description: 'Set the cursor to underline' },
+            { name: 'cursor-block', short: 'B', long: 'cursor-block', description: 'Set the cursor to block' },
             { name: 'posix-syntax', short: 'P', long: 'posix-syntax', description: 'Set the shell syntax to POSIX/Unix' },
             { name: 'dos-syntax', short: 'D', long: 'dos-syntax', description: 'Set the shell syntax to Windows/DOS' },
             { name: 'theme', short: 't', long: 'theme', value: { name: 'option', required: true }, description: 'Set the theme or show info; options: list|test|current|default|<theme_name>' },

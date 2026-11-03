@@ -4,7 +4,7 @@
 export class NumberNode {
     /**
      * Creates a new NumberNode
-     * @param {number} value - The numeric value
+     * @param {number} value The numeric value
      */
     constructor(value) {
         this.value = value;

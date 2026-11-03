@@ -16,9 +16,9 @@ export class TerminalSettings extends Application {
 
     /**
      * Executes the `terminal` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the terminal command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the terminal command execution
      */
     main(commandLine, context) {
         const options = commandLine.getOptions();
@@ -28,8 +28,8 @@ export class TerminalSettings extends Application {
             return `Name: ${info.name}\nType: ${info.type}\nVersion: ${info.version}\nColor Mode: ${info.colorMode}`;
         }
         if (options['scrollbar-use-theme']) {
-            api.toggleScrollbarUseTheme();
-            return `Scrollbar use theme ${api.isScrollbarUseThemeEnabled() ? 'enabled' : 'disabled'}`;
+            api.toggleScrollbarTheme();
+            return `Scrollbar use theme ${api.isScrollbarThemeEnabled() ? 'enabled' : 'disabled'}`;
         }
         if (options['debug']) {
             api.toggleDebug();
@@ -50,6 +50,10 @@ export class TerminalSettings extends Application {
         if (options['cursor-underline']) {
             api.setCursorStyleUnderline();
             return 'Cursor is underline';
+        }
+        if (options['cursor-block']) {
+            api.setCursorStyleBlock();
+            return 'Cursor is block';
         }
         if (options['posix-syntax']) {
             api.setShellSyntaxPosix();
@@ -93,8 +97,8 @@ export class TerminalSettings extends Application {
 
     /**
      * Generates a theme grid
-     * @param {object} theme - The theme to generate the grid for
-     * @returns {string} - The generated grid
+     * @param {object} theme The theme to generate the grid for
+     * @returns {string} The generated grid
      */
     _generateThemeGrid(theme) {
         const styles = [0, 1, 2, 3, 4, 5, 7, 8, 9];

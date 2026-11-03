@@ -1,6 +1,6 @@
 import { Application } from '../../system/application/application.js'
 import { DIRECTORY_MANIFEST } from './directory-manifest.js'
-import { ATTRIBUTE_TYPES, SORT_TYPES, TIME_TYPES, DEFAULT_TIME_TYPE, DEFAULT_WIDTH, DEFAULT_PADDING } from './config.js'
+import { ATTRIBUTE_TYPES, SORT_TYPES, TIME_TYPES, DEFAULT_TIME_TYPE, DEFAULT_WIDTH, DEFAULT_PADDING, OWNER_WRITE } from './config.js'
 
 /**
  * Directory - Application for listing directory contents
@@ -16,9 +16,9 @@ export class Directory extends Application {
 
     /**
      * Executes the `dir` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the dir command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the dir command execution
      */
     main(commandLine, context) {
         const options = commandLine.getOptions();
@@ -34,11 +34,11 @@ export class Directory extends Application {
 
     /**
      * Gets directory information
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @param {string} directoryPath - The path to the directory
-     * @param {object} options - The options
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The directory information
+     * @param {Array<DirectoryEntry|FileEntry>} entries The entries
+     * @param {string} directoryPath The path to the directory
+     * @param {object} options The options
+     * @param {object} context The context of the command execution
+     * @returns {string} The directory information
      */
     _getDirectoryInfo(entries, directoryPath = '', options = {}, context = {}) {
         const filteredEntries = this._filterEntries(entries, options);
@@ -48,11 +48,11 @@ export class Directory extends Application {
 
     /**
      * Lists the entries recursively
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @param {string} path - The path
-     * @param {object} options - The options
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The list of the entries
+     * @param {Array<DirectoryEntry|FileEntry>} entries The entries
+     * @param {string} path The path
+     * @param {object} options The options
+     * @param {object} context The context of the command execution
+     * @returns {string} The list of the entries
      */
     _getRecursiveDirectoryInfo(entries, path = '', options = {}, context = {}) {
         const directoryInfo = this._getDirectoryInfo(entries, path, options, context);
@@ -72,9 +72,9 @@ export class Directory extends Application {
 
     /**
      * Filters the entries by attributes
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @param {object} options - The options
-     * @returns {Array<DirectoryEntry|FileEntry>} - The filtered entries
+     * @param {Array<DirectoryEntry|FileEntry>} entries The entries
+     * @param {object} options The options
+     * @returns {Array<DirectoryEntry|FileEntry>} The filtered entries
      */
     _filterEntries(entries, options = {}) {
         if (options['attributes'] === undefined) return entries.filter(entry => !this._hasAttribute(entry, 'hidden'));
@@ -90,25 +90,24 @@ export class Directory extends Application {
 
     /**
      * Checks whether an entry has an attribute
-     * @param {DirectoryEntry|FileEntry} entry - The entry
-     * @param {string} type - The attribute type
-     * @returns {boolean} - True if the entry has the attribute
+     * @param {DirectoryEntry|FileEntry} entry The entry
+     * @param {string} type The attribute type
+     * @returns {boolean} True if the entry has the attribute
      */
     _hasAttribute(entry, type) {
         if (type === 'directory') return entry.isDirectory();
         if (type === 'hidden') return entry.isHidden();
         if (type === 'readonly') {
-            const permissions = entry.getPermissions() || '';
-            return permissions.length >= 2 && permissions[1] !== 'w';
+            return (entry.getMode() & OWNER_WRITE) === 0;
         }
         return false;
     }
 
     /**
      * Sorts the entries
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @param {object} options - The options
-     * @returns {Array<DirectoryEntry|FileEntry>} - The sorted entries
+     * @param {Array<DirectoryEntry|FileEntry>} entries The entries
+     * @param {object} options The options
+     * @returns {Array<DirectoryEntry|FileEntry>} The sorted entries
      */
     _sortEntries(entries, options = {}) {
         const sortTypes = this._parseLetterOptions(options['sort'], SORT_TYPES);
@@ -125,11 +124,11 @@ export class Directory extends Application {
 
     /**
      * Compares two entries by sort type
-     * @param {DirectoryEntry|FileEntry} entryA - The first entry
-     * @param {DirectoryEntry|FileEntry} entryB - The second entry
-     * @param {string} type - The sort type
-     * @param {object} options - The options
-     * @returns {number} - The comparison result
+     * @param {DirectoryEntry|FileEntry} entryA The first entry
+     * @param {DirectoryEntry|FileEntry} entryB The second entry
+     * @param {string} type The sort type
+     * @param {object} options The options
+     * @returns {number} The comparison result
      */
     _compareBySortType(entryA, entryB, type, options = {}) {
         if (type === 'name') {
@@ -159,7 +158,7 @@ export class Directory extends Application {
 
     /**
      * Gets the extension of a name
-     * @param {string} name - The name
+     * @param {string} name The name
      * @returns {string} The extension of the name
      */
     _getExtension(name) {
@@ -169,8 +168,8 @@ export class Directory extends Application {
 
     /**
      * Compares the extensions of two names
-     * @param {string} nameA - The first name
-     * @param {string} nameB - The second name
+     * @param {string} nameA The first name
+     * @param {string} nameB The second name
      * @returns {number} The comparison result
      */
     _compareExtensions(nameA, nameB) {
@@ -185,11 +184,11 @@ export class Directory extends Application {
 
     /**
      * Formats the list of the entries into a string
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @param {string} directoryPath - The path to the directory
-     * @param {object} options - The options
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The formatted list
+     * @param {Array<DirectoryEntry|FileEntry>} entries The entries
+     * @param {string} directoryPath The path to the directory
+     * @param {object} options The options
+     * @param {object} context The context of the command execution
+     * @returns {string} The formatted list
      */
     _formatList(entries, directoryPath = '', options = {}, context = {}) {
         const showBare = Boolean(options['bare']);
@@ -205,7 +204,7 @@ export class Directory extends Application {
             lines.push(this._formatColumns(names, fillDirection, width));
         } else {
             const showOwner = Boolean(options['owner']);
-            const rows = entries.map(entry => this._getEntryRow(entry, options));
+            const rows = entries.map(entry => this._getEntryRow(entry, options, context));
             const ownerWidth = showOwner
                 ? Math.max(1, ...rows.map(row => row.owner.length))
                 : 0;
@@ -227,9 +226,9 @@ export class Directory extends Application {
 
     /**
      * Gets the wide-format display name for an entry
-     * @param {DirectoryEntry|FileEntry} entry - The entry
-     * @param {object} options - The options
-     * @returns {string} - The display name
+     * @param {DirectoryEntry|FileEntry} entry The entry
+     * @param {object} options The options
+     * @returns {string} The display name
      */
     _getWideName(entry, options = {}) {
         const name = Boolean(options['lowercase']) ? entry.getName().toLowerCase() : entry.getName();
@@ -238,8 +237,8 @@ export class Directory extends Application {
 
     /**
      * Gets the output width from the terminal or the default
-     * @param {object} context - The context of the command execution
-     * @returns {number} - The output width
+     * @param {object} context The context of the command execution
+     * @returns {number} The output width
      */
     _getWidth(context = {}) {
         const columns = context.terminal ? context.terminal.getSize().columns : DEFAULT_WIDTH;
@@ -248,10 +247,10 @@ export class Directory extends Application {
 
     /**
      * Formats names into columns
-     * @param {string[]} list - The names
-     * @param {string} fillDirection - row or column
-     * @param {number} width - The output width
-     * @returns {string} - The formatted columns
+     * @param {string[]} list The names
+     * @param {string} fillDirection row or column
+     * @param {number} width The output width
+     * @returns {string} The formatted columns
      */
     _formatColumns(list, fillDirection = 'row', width = DEFAULT_WIDTH) {
         if (list.length === 0) return '';
@@ -281,26 +280,39 @@ export class Directory extends Application {
 
     /**
      * Gets the display fields for an entry
-     * @param {DirectoryEntry|FileEntry} entry - The entry
-     * @param {object} options - The options
-     * @returns {{date: string, type: string, size: string, owner: string, name: string}} - The entry row
+     * @param {DirectoryEntry|FileEntry} entry The entry
+     * @param {object} options The options
+     * @param {object} context The context of the command execution
+     * @returns {{date: string, type: string, size: string, owner: string, name: string}} The entry row
      */
-    _getEntryRow(entry, options = {}) {
+    _getEntryRow(entry, options = {}, context = {}) {
         const useLowerCase = Boolean(options['lowercase']);
         return {
             date: this._formatDate(this._getTime(entry, this._getTimeType(options)), options),
             type: entry.isDirectory() ? '<DIR>' : '<FILE>',
             size: this._formatSize(entry.getSize(), options),
-            owner: entry.getOwner() || '',
+            owner: this._userName(entry.getOwner(), context),
             name: useLowerCase ? entry.getName().toLowerCase() : entry.getName(),
         };
     }
 
     /**
+     * Resolves a user id to the current user name
+     * @param {number} id The user id
+     * @param {object} context The context of the command execution
+     * @returns {string} The user name, or the id when the user does not exist
+     */
+    _userName(id, context = {}) {
+        if (!id) return '';
+        const user = context.userManager.getUserById(id);
+        return user ? user.getName() : String(id);
+    }
+
+    /**
      * Formats the date
-     * @param {number} timestamp - The timestamp to format
-     * @param {object} options - The options
-     * @returns {string} - The formatted date
+     * @param {number} timestamp The timestamp to format
+     * @param {object} options The options
+     * @returns {string} The formatted date
      */
     _formatDate(timestamp, options = {}) {
         const pad = (value) => value.toString().padStart(2, '0');
@@ -315,9 +327,9 @@ export class Directory extends Application {
 
     /**
      * Formats the size
-     * @param {number} size - The size
-     * @param {object} options - The options
-     * @returns {string} - The formatted size
+     * @param {number} size The size
+     * @param {object} options The options
+     * @returns {string} The formatted size
      */
     _formatSize(size, options = {}) {
         const thousandSeparator = Boolean(options['thousands']) ? ' ' : '';
@@ -326,9 +338,9 @@ export class Directory extends Application {
 
     /**
      * Parses letter options into options
-     * @param {string} value - The value
-     * @param {object} types - The types
-     * @returns {Array<{type: string, negate: boolean}>} - The options
+     * @param {string} value The value
+     * @param {object} types The types
+     * @returns {Array<{type: string, negate: boolean}>} The options
      */
     _parseLetterOptions(value, types) {
         if (typeof value !== 'string' || value.length === 0) return [];
@@ -349,8 +361,8 @@ export class Directory extends Application {
 
     /**
      * Gets the time type from options or the default
-     * @param {object} options - The options
-     * @returns {string} - The time type
+     * @param {object} options The options
+     * @returns {string} The time type
      */
     _getTimeType(options = {}) {
         const timeType = options['time'];
@@ -362,9 +374,9 @@ export class Directory extends Application {
 
     /**
      * Gets the time of the entry
-     * @param {DirectoryEntry|FileEntry} entry - The entry
-     * @param {string} timeType - The time type
-     * @returns {number} - The time
+     * @param {DirectoryEntry|FileEntry} entry The entry
+     * @param {string} timeType The time type
+     * @returns {number} The time
      */
     _getTime(entry, timeType) {
         if (timeType === 'created') return entry.getCreated();

@@ -15,9 +15,9 @@ export class FindStr extends Application {
 
     /**
      * Executes the `findstr` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the findstr command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the findstr command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();
@@ -45,10 +45,10 @@ export class FindStr extends Application {
 
     /**
      * Resolves one file argument, or every file with that name when recursive
-     * @param {string} filePath - The file path
-     * @param {object} options - The command options
-     * @param {object} context - The context of the command execution
-     * @returns {Array<{path: string, text: string}>|null}
+     * @param {string} filePath The file path
+     * @param {object} options The command options
+     * @param {object} context The context of the command execution
+     * @returns {Array<{path: string, text: string}>|null} The collected files
      */
     _collectFiles(filePath, options, context) {
         const fsExplorer = context.fileSystemExplorer;
@@ -68,10 +68,10 @@ export class FindStr extends Application {
 
     /**
      * Collects files recursively
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @param {string} path - The path
-     * @param {string} name - The name
-     * @returns {Array<{path: string, text: string}>} - The files
+     * @param {Array<DirectoryEntry|FileEntry>} entries The entries
+     * @param {string} path The path
+     * @param {string} name The name
+     * @returns {Array<{path: string, text: string}>} The collected files
      */
     _collectFilesRecursive(entries, path, name) {
         const files = [];
@@ -89,9 +89,9 @@ export class FindStr extends Application {
 
     /**
      * Formats search results for stdin or files
-     * @param {Array<{path: string, lines: string[]}>} results - The lines per source
-     * @param {object} options - The command options
-     * @returns {string[]}
+     * @param {Array<{path: string, lines: string[]}>} results The lines per source
+     * @param {object} options The command options
+     * @returns {string[]} The formatted lines
      */
     _formatLines(results, options) {
         const prefixPaths = results.length > 1;
@@ -120,9 +120,9 @@ export class FindStr extends Application {
 
     /**
      * Compiles the findstr search pattern
-     * @param {string} search - The search string
-     * @param {object} options - The options for the search
-     * @returns {RegExp} - The compiled regular expression
+     * @param {string} search The search string
+     * @param {object} options The options for the search
+     * @returns {RegExp} The compiled regular expression
      */
     _compileRegex(search, options) {
         const useLiteral = Boolean(options['literal']) && !options['regex'];
@@ -142,10 +142,10 @@ export class FindStr extends Application {
 
     /**
      * Finds matching lines with a compiled regular expression
-     * @param {RegExp} regex - The compiled search pattern
-     * @param {string} text - The text to search in
-     * @param {object} options - The options for the search
-     * @returns {string[]}
+     * @param {RegExp} regex The compiled search pattern
+     * @param {string} text The text to search in
+     * @param {object} options The options for the search
+     * @returns {string[]} The matching lines
      */
     _find(regex, text, options) {
         const lines = [];

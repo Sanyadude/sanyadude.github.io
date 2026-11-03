@@ -7,10 +7,10 @@ import { SCHEDULED_TASK_STATUS } from './scheduled-task-status.js'
 export class ScheduledTask {
     /**
      * Creates a new scheduled task
-     * @param {number} id - The id of the task
-     * @param {string} name - The name of the task
-     * @param {Function} callback - The callback to execute when the task is executed
-     * @param {object} options - The options for the scheduled task
+     * @param {number} id The id of the task
+     * @param {string} name The name of the task
+     * @param {Function} callback The callback to execute when the task is executed
+     * @param {object} options The options for the scheduled task
      */
     constructor(id, name, callback, options = {}) {
         this.id = id;
@@ -75,7 +75,7 @@ export class ScheduledTask {
 
     /**
      * Executes the on error callback
-     * @param {Error} error - The error that occurred
+     * @param {Error} error The error that occurred
      */
     _executeOnError(error) {
         if (!this.onError) return;
@@ -100,7 +100,7 @@ export class ScheduledTask {
     
     /**
      * Handles the error of the task
-     * @param {Error} error - The error that occurred
+     * @param {Error} error The error that occurred
      */
     _handleError(error) {
         this.errorCount++;

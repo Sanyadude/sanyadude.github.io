@@ -16,9 +16,9 @@ export class Column extends Application {
 
     /**
      * Executes the `column` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the column command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the column command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();
@@ -36,10 +36,10 @@ export class Column extends Application {
 
     /**
      * Formats the content into multiple columns
-     * @param {string} content - The content to format
-     * @param {object} options - The options for the format
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The formatted content
+     * @param {string} content The content to format
+     * @param {object} options The options for the format
+     * @param {object} context The context of the command execution
+     * @returns {string} The formatted content
      */
     _formatContent(content, options, context) {
         const isTable = options['table'];
@@ -49,9 +49,9 @@ export class Column extends Application {
 
     /**
      * Formats the content into multiple columns
-     * @param {string} content - The content to format
-     * @param {object} options - The options for the format
-     * @returns {string} - The formatted content
+     * @param {string} content The content to format
+     * @param {object} options The options for the format
+     * @returns {string} The formatted content
      */
     _formatColumns(content, options, context) {
         const separator = options['separator'] || DEFAULT_SEPARATOR;
@@ -96,10 +96,10 @@ export class Column extends Application {
 
     /**
      * Formats the content into a table
-     * @param {string} content - The content to format
-     * @param {object} options - The options for the format
-     * @param {object} context - The command context
-     * @returns {string} - The formatted content
+     * @param {string} content The content to format
+     * @param {object} options The options for the format
+     * @param {object} context The command context
+     * @returns {string} The formatted content
      */
     _formatTable(content, options, context) {
         const separator = options['separator'] || DEFAULT_SEPARATOR;
@@ -170,10 +170,10 @@ export class Column extends Application {
 
     /**
      * Caps the number of fields on a row, joining the rest into the last column
-     * @param {string[]} cells - The split fields
-     * @param {number|null} limit - The maximum column count
-     * @param {string|RegExp} separator - The input separator, used when joining leftovers
-     * @returns {string[]}
+     * @param {string[]} cells The split fields
+     * @param {number|null} limit The maximum column count
+     * @param {string|RegExp} separator The input separator, used when joining leftovers
+     * @returns {string[]} The limited columns
      */
     _limitColumns(cells, limit, separator) {
         if (!limit || cells.length <= limit) return cells;
@@ -183,10 +183,10 @@ export class Column extends Application {
 
     /**
      * Returns the 0-based output column indexes after hide/order
-     * @param {number} columnCount - The number of columns
-     * @param {string[]} names - Column names
-     * @param {object} options - The options object
-     * @returns {number[]}
+     * @param {number} columnCount The number of columns
+     * @param {string[]} names Column names
+     * @param {object} options The options object
+     * @returns {number[]} The output indexes
      */
     _getOutputIndexes(columnCount, names, options) {
         const hidden = new Set(this._parseColumnList(options['table-hide'], columnCount, names));
@@ -198,10 +198,10 @@ export class Column extends Application {
 
     /**
      * Parses a comma-separated list of 1-based indices or column names
-     * @param {string|undefined} spec - The list from the command line
-     * @param {number} columnCount - The number of columns
-     * @param {string[]} names - Column names
-     * @returns {number[]}
+     * @param {string|undefined} spec The list from the command line
+     * @param {number} columnCount The number of columns
+     * @param {string[]} names Column names
+     * @returns {number[]} The parsed column list
      */
     _parseColumnList(spec, columnCount, names = []) {
         if (spec === undefined || spec === null || spec === '') return [];
@@ -227,9 +227,9 @@ export class Column extends Application {
 
     /**
      * Spreads leftover output width across columns
-     * @param {number[]} widths - The column widths to expand
-     * @param {string} outputSeparator - The delimiter between columns
-     * @param {number} outputWidth - Target width, or 0 when unrestricted
+     * @param {number[]} widths The column widths to expand
+     * @param {string} outputSeparator The delimiter between columns
+     * @param {number} outputWidth Target width, or 0 when unrestricted
      */
     _expandWidths(widths, outputSeparator, outputWidth) {
         if (outputWidth <= 0 || widths.length === 0) return;
@@ -247,8 +247,8 @@ export class Column extends Application {
 
     /**
      * Returns the table column limit, or null when unlimited
-     * @param {object} options - The options object
-     * @returns {number|null}
+     * @param {object} options The options object
+     * @returns {number|null} The column limit
      */
     _getColumnLimit(options) {
         const raw = options['table-columns-limit'];
@@ -259,9 +259,9 @@ export class Column extends Application {
 
     /**
      * Returns the output width, or 0 when unrestricted
-     * @param {object} options - The options object
-     * @param {object} context - The command context
-     * @returns {number}
+     * @param {object} options The options object
+     * @param {object} context The command context
+     * @returns {number} The output width
      */
     _getOutputWidth(options, context) {
         const outputWidth = options['output-width'];
@@ -274,8 +274,8 @@ export class Column extends Application {
 
     /**
      * Returns the minimum spaces between columns in non-table mode
-     * @param {object} options - The options object
-     * @returns {number}
+     * @param {object} options The options object
+     * @returns {number} The minimum spaces between columns
      */
     _getUseSpaces(options) {
         const useSpaces = options['use-spaces'];
@@ -288,9 +288,9 @@ export class Column extends Application {
 
     /**
      * Gets the lines from the content
-     * @param {string} content - The content to split
-     * @param {boolean} keepEmptyLines - Whether to keep empty lines
-     * @returns {string[]} - The lines
+     * @param {string} content The content to split
+     * @param {boolean} keepEmptyLines Whether to keep empty lines
+     * @returns {string[]} The lines
      */
     _getLines(content, keepEmptyLines) {
         const lines = content.split(/\r?\n/);
@@ -300,9 +300,9 @@ export class Column extends Application {
 
     /**
      * Splits a line respecting quotes
-     * @param {string} line - The line to split
-     * @param {string|RegExp} separator - The separator to split on
-     * @returns {string[]} - The array of parts
+     * @param {string} line The line to split
+     * @param {string|RegExp} separator The separator to split on
+     * @returns {string[]} The split line
      */
     _splitLine(line, separator) {
         if (!line) return [''];

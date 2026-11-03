@@ -15,9 +15,9 @@ export class Alias extends Application {
 
     /**
      * Creates or removes aliases for shell commands
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the alias/unalias command
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the alias/unalias command
      */
     main(commandLine, context) {
         const program = commandLine.getProgram();
@@ -34,9 +34,9 @@ export class Alias extends Application {
 
     /**
      * Creates an alias for the shell command
-     * @param {string[]} args - The arguments of the command
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the alias command
+     * @param {string[]} args The arguments of the command
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the alias command
      */
     _createAlias(args, context) {
         const aliasDefinition = args[0];
@@ -57,10 +57,10 @@ export class Alias extends Application {
 
     /**
      * Removes an alias from the shell
-     * @param {string[]} args - The arguments of the command
-     * @param {object} options - The options of the command
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the unalias command
+     * @param {string[]} args The arguments of the command
+     * @param {object} options The options of the command
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the unalias command
      */
     _removeAlias(args, options, context) {
         if (options['all']) {

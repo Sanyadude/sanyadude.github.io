@@ -16,9 +16,9 @@ export class Sort extends Application {
     
     /**
      * Executes the `sort` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the sort command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the sort command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();
@@ -46,9 +46,9 @@ export class Sort extends Application {
 
     /**
      * Sorts the text
-     * @param {string} text - The text to sort
-     * @param {object} options - The options object
-     * @returns {string} - The sorted text
+     * @param {string} text The text to sort
+     * @param {object} options The options object
+     * @returns {string} The sorted text
      */
     _sortText(text = '', options = {}) {
         const lines = text.split(/\r?\n/);
@@ -61,8 +61,8 @@ export class Sort extends Application {
 
     /**
      * Gets the sort type from options or the default sort type
-     * @param {object} options - The options object
-     * @returns {string} - The sort type
+     * @param {object} options The options object
+     * @returns {string} The sort type
      */
     _getSortType(options = {}) {
         const sortType = options['sort'];
@@ -78,11 +78,11 @@ export class Sort extends Application {
 
     /**
      * Compares two lines using the selected sort options.
-     * @param {string} firstLine - The first line to compare
-     * @param {string} secondLine - The second line to compare
-     * @param {Map} ranks - The ranks used by random sort
-     * @param {object} options - The options object
-     * @returns {number} - The comparison result
+     * @param {string} firstLine The first line to compare
+     * @param {string} secondLine The second line to compare
+     * @param {Map} ranks The ranks used by random sort
+     * @param {object} options The options object
+     * @returns {number} The comparison result
      */
     _compareLines(firstLine, secondLine, ranks = new Map(), options = {}) {
         const sortType = this._getSortType(options);
@@ -110,11 +110,11 @@ export class Sort extends Application {
 
     /**
      * Compares two lines by random rank of their comparison key.
-     * @param {string} firstLine - The first line to compare
-     * @param {string} secondLine - The second line to compare
-     * @param {Map} ranks - The ranks used by random sort
-     * @param {object} options - The options object
-     * @returns {number} - The comparison result
+     * @param {string} firstLine The first line to compare
+     * @param {string} secondLine The second line to compare
+     * @param {Map} ranks The ranks used by random sort
+     * @param {object} options The options object
+     * @returns {number} The comparison result
      */
     _compareRandom(firstLine, secondLine, ranks = new Map(), options = {}) {
         const firstKey = this._getComparisonLineKey(firstLine, options);
@@ -129,10 +129,10 @@ export class Sort extends Application {
 
     /**
      * Compares two lines as strings.
-     * @param {string} firstLine - The first line to compare
-     * @param {string} secondLine - The second line to compare
-     * @param {object} options - The options object
-     * @returns {number} - The comparison result
+     * @param {string} firstLine The first line to compare
+     * @param {string} secondLine The second line to compare
+     * @param {object} options The options object
+     * @returns {number} The comparison result
      */
     _compareStrings(firstLine, secondLine, options = {}) {
         const firstKey = this._getComparisonLineKey(firstLine, options);
@@ -144,10 +144,10 @@ export class Sort extends Application {
 
     /**
      * Compares two lines by their leading general numeric value.
-     * @param {string} firstLine - The first line to compare
-     * @param {string} secondLine - The second line to compare
-     * @param {object} options - The options object
-     * @returns {number} - The comparison result
+     * @param {string} firstLine The first line to compare
+     * @param {string} secondLine The second line to compare
+     * @param {object} options The options object
+     * @returns {number} The comparison result
      */
     _compareNumbersGeneral(firstLine, secondLine, options = {}) {
         const firstNumber = this._getGeneralNumericValue(this._getComparisonLineKey(firstLine, options));
@@ -162,10 +162,10 @@ export class Sort extends Application {
 
     /**
      * Compares two lines by their leading numeric value.
-     * @param {string} firstLine - The first line to compare
-     * @param {string} secondLine - The second line to compare
-     * @param {object} options - The options object
-     * @returns {number} - The comparison result
+     * @param {string} firstLine The first line to compare
+     * @param {string} secondLine The second line to compare
+     * @param {object} options The options object
+     * @returns {number} The comparison result
      */
     _compareNumbers(firstLine, secondLine, options = {}) {
         const firstNumber = this._getNumericValue(this._getComparisonLineKey(firstLine, options));
@@ -180,10 +180,10 @@ export class Sort extends Application {
 
     /**
      * Compares two lines by their leading human-readable numeric value.
-     * @param {string} firstLine - The first line to compare
-     * @param {string} secondLine - The second line to compare
-     * @param {object} options - The options object
-     * @returns {number} - The comparison result
+     * @param {string} firstLine The first line to compare
+     * @param {string} secondLine The second line to compare
+     * @param {object} options The options object
+     * @returns {number} The comparison result
      */
     _compareNumbersHuman(firstLine, secondLine, options = {}) {
         const firstNumber = this._getHumanNumericValue(this._getComparisonLineKey(firstLine, options));
@@ -195,10 +195,10 @@ export class Sort extends Application {
 
     /**
      * Compares two lines by their leading month name.
-     * @param {string} firstLine - The first line to compare
-     * @param {string} secondLine - The second line to compare
-     * @param {object} options - The options object
-     * @returns {number} - The comparison result
+     * @param {string} firstLine The first line to compare
+     * @param {string} secondLine The second line to compare
+     * @param {object} options The options object
+     * @returns {number} The comparison result
      */
     _compareMonths(firstLine, secondLine, options = {}) {
         const firstMonth = this._getMonthValue(this._getComparisonLineKey(firstLine, options));
@@ -210,10 +210,10 @@ export class Sort extends Application {
 
     /**
      * Compares two lines by version numbers within the text.
-     * @param {string} firstLine - The first line to compare
-     * @param {string} secondLine - The second line to compare
-     * @param {object} options - The options object
-     * @returns {number} - The comparison result
+     * @param {string} firstLine The first line to compare
+     * @param {string} secondLine The second line to compare
+     * @param {object} options The options object
+     * @returns {number} The comparison result
      */
     _compareVersions(firstLine, secondLine, options = {}) {
         const firstKey = this._getComparisonLineKey(firstLine, options);
@@ -223,9 +223,9 @@ export class Sort extends Application {
 
     /**
      * Compares two names as version strings.
-     * @param {string} nameA - The first name
-     * @param {string} nameB - The second name
-     * @returns {number} - The comparison result
+     * @param {string} nameA The first name
+     * @param {string} nameB The second name
+     * @returns {number} The comparison result
      */
     _compareVersionNames(nameA, nameB) {
         const partsA = nameA.match(/(\d+|\D+)/g) || [];
@@ -253,9 +253,9 @@ export class Sort extends Application {
 
     /**
      * Returns the normalized string used for comparisons.
-     * @param {string} line - The line to normalize
-     * @param {object} options - The options object
-     * @returns {string} - The comparison key
+     * @param {string} line The line to normalize
+     * @param {object} options The options object
+     * @returns {string} The comparison key
      */
     _getComparisonLineKey(line, options = {}) {
         let key = options['ignore-leading-blanks'] ? line.trimStart() : line;
@@ -270,8 +270,8 @@ export class Sort extends Application {
 
     /**
      * Gets the leading numeric value from a line.
-     * @param {string} line - The line to parse
-     * @returns {number} - The numeric value
+     * @param {string} line The line to parse
+     * @returns {number} The numeric value
      */
     _getNumericValue(line) {
         const match = line.match(/^[\s]*[+-]?(?:\d+\.?\d*|\.\d+)/);
@@ -280,8 +280,8 @@ export class Sort extends Application {
 
     /**
      * Gets the leading human-readable numeric value from a line (e.g. 2K, 1G).
-     * @param {string} line - The line to parse
-     * @returns {number} - The numeric value
+     * @param {string} line The line to parse
+     * @returns {number} The numeric value
      */
     _getHumanNumericValue(line) {
         const match = line.match(/^[\s]*([+-])?(\d+\.?\d*|\.\d+)([kKMGTPEZYRQ])?/);
@@ -295,8 +295,8 @@ export class Sort extends Application {
 
     /**
      * Gets the leading month value from a line. Unknown months are 0.
-     * @param {string} line - The line to parse
-     * @returns {number} - The month value (0-12)
+     * @param {string} line The line to parse
+     * @returns {number} The month value (0-12)
      */
     _getMonthValue(line) {
         const match = line.match(/^\s*([A-Za-z]{3})/);
@@ -307,8 +307,8 @@ export class Sort extends Application {
 
     /**
      * Gets the leading general numeric value from a line.
-     * @param {string} line - The line to parse
-     * @returns {number} - The numeric value
+     * @param {string} line The line to parse
+     * @returns {number} The numeric value
      */
     _getGeneralNumericValue(line) {
         const match = line.match(/^[\s]*[+-]?(?:NaN|Infinity|(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/i);
@@ -317,9 +317,9 @@ export class Sort extends Application {
 
     /**
      * Gets a stable random rank for a comparison key.
-     * @param {string} key - The comparison key
-     * @param {Map} randomRanks - The random ranks used by random sort
-     * @returns {number} - The random rank
+     * @param {string} key The comparison key
+     * @param {Map} randomRanks The random ranks used by random sort
+     * @returns {number} The random rank
      */
     _getRandomRank(key, randomRanks) {
         if (!randomRanks.has(key)) {

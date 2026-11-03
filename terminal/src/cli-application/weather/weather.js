@@ -17,8 +17,8 @@ export class Weather extends Application {
 
     /**
      * Executes the `weather` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @returns {string} - The result of the weather command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @returns {string} The result of the weather command execution
      */
     async main(commandLine) {
         const options = commandLine.getOptions();

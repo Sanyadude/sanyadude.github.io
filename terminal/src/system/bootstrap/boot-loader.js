@@ -8,8 +8,15 @@ import { Shell } from '../shell/shell.js'
 import { TaskScheduler } from '../task-scheduler/task-scheduler.js'
 import { FileSystemManager } from '../file-system/file-system-manager.js'
 import { FileSystemExplorer } from '../file-system/file-system-explorer.js'
+import { FileDropHandler } from './file-drop-handler.js'
 import { ApplicationManager } from '../application/application-manager.js'
 import { ProcessManager } from '../process/process-manager.js'
+import { UserManager } from '../user/user-manager.js'
+import { IdentityProvider } from '../user/identity-provider.js'
+import { PermissionManager } from '../permission/permission-manager.js'
+import { PermissionProvider } from '../permission/permission-provider.js'
+import { CredentialStore } from '../security/credential-store.js'
+import { AuthenticationManager } from '../security/authentication-manager.js'
 import {
     DEFAULT_ROOT_DIRECTORY_NAME, DEFAULT_FOLDERS, DEFAULT_PROGRAM_FOLDER, DEFAULT_USERS_FOLDER, DEFAULT_USERS_FOLDERS,
     README_FILE, LICENSE_FILE, FILE_SYSTEM_STORE_NAME, FILE_SYSTEM_STORE_VALUE_KEY
@@ -49,7 +56,7 @@ export class BootLoader {
 
     /**
      * Gets the service provider
-     * @returns {ServiceProvider} - The service provider
+     * @returns {ServiceProvider} The service provider
      */
     getServiceProvider() {
         return this.serviceProvider;
@@ -57,7 +64,7 @@ export class BootLoader {
 
     /**
      * Gets the settings provider
-     * @returns {SystemSettingsProvider} - The settings provider
+     * @returns {SystemSettingsProvider} The settings provider
      */
     getSettingsProvider() {
         return this.settingsProvider;
@@ -65,7 +72,7 @@ export class BootLoader {
 
     /**
      * Gets the database
-     * @returns {Database} - The database
+     * @returns {Database} The database
      */
     getDatabase() {
         return this.database;
@@ -73,7 +80,7 @@ export class BootLoader {
 
     /**
      * Gets the logger
-     * @returns {Logger} - The logger
+     * @returns {Logger} The logger
      */
     getLogger() {
         return this.logger;
@@ -86,7 +93,7 @@ export class BootLoader {
         const urlParams = BrowserAPI.getUrlParamsAsJson();
         for (const [key, value] of Object.entries(urlParams)) {
             if (key === 'terminal-version') {
-                this.initialState.terminalVersion = Number(value);
+                this.initialState.terminalVersion = value;
                 continue;
             }
             if (key === 'actions') {
@@ -135,7 +142,7 @@ export class BootLoader {
 
     /**
      * Loads the config from the database
-     * @returns {Promise<ConfigProvider|null>} - The config provider or null if it was not found
+     * @returns {Promise<ConfigProvider|null>} The config provider or null if it was not found
      */
     async _loadConfigFromDatabase() {
         try {
@@ -151,7 +158,7 @@ export class BootLoader {
 
     /**
      * Saves the config to the database
-     * @returns {Promise<void>} - The config provider
+     * @returns {Promise<void>} The config provider
      */
     async _saveConfigToDatabase() {
         await this.database.put(
@@ -163,7 +170,7 @@ export class BootLoader {
 
     /**
      * Saves the file system to the database
-     * @returns {Promise<void>} - The file system manager
+     * @returns {Promise<void>} The file system manager
      */
     async _saveFileSystemToDatabase() {
         await this.database.put(
@@ -193,7 +200,6 @@ export class BootLoader {
      * Boots the settings
      */
     _bootSettings() {
-        this.serviceProvider.add('systemUser', this.settingsProvider.getUser());
         this.serviceProvider.add('systemHost', this.settingsProvider.getHost());
         this.serviceProvider.add('systemTime', this.settingsProvider.getTime());
 
@@ -205,6 +211,15 @@ export class BootLoader {
      */
     _bootCoreServices() {
         this.serviceProvider.add('logger', this.logger);
+
+        this.userManager = new UserManager();
+        this.serviceProvider.add('userManager', this.userManager);
+
+        this.credentialStore = new CredentialStore();
+        this.serviceProvider.add('credentialStore', this.credentialStore);
+
+        this.authenticationManager = new AuthenticationManager(this.userManager, this.credentialStore);
+        this.serviceProvider.add('authenticationManager', this.authenticationManager);
 
         this.taskScheduler = new TaskScheduler();
         this.serviceProvider.add('taskScheduler', this.taskScheduler);
@@ -225,7 +240,7 @@ export class BootLoader {
 
     /**
      * Loads the file system from the database
-     * @returns {Promise<FileSystemManager|null>} - The file system manager or null if it was not found
+     * @returns {Promise<FileSystemManager|null>} The file system manager or null if it was not found
      */
     async _loadFileSystemFromDatabase() {
         try {
@@ -241,35 +256,42 @@ export class BootLoader {
 
     /**
      * Boots the file system
-     * @param {FileSystemManager} fileSystemManager - The file system manager
+     * @param {FileSystemManager} fileSystemManager The file system manager
      */
     _bootFileSystem(fileSystemManager = null) {
         this.fileSystemManager = fileSystemManager ? fileSystemManager : new FileSystemManager(DEFAULT_ROOT_DIRECTORY_NAME);
+        this.fileSystemManager.setIdentityProvider(new IdentityProvider(this.userManager));
+        this.permissionManager = new PermissionManager();
+        this.serviceProvider.add('permissionManager', this.permissionManager);
+        this.fileSystemManager.setPermissionProvider(new PermissionProvider(this.permissionManager));
         this.serviceProvider.add('fileSystemManager', this.fileSystemManager);
         this.fileSystemExplorer = new FileSystemExplorer(this.fileSystemManager);
         this.serviceProvider.add('fileSystemExplorer', this.fileSystemExplorer);
+
+        const fileDropHandler = new FileDropHandler(this.fileSystemExplorer, this.fileSystemManager, this.logger);
+        BrowserAPI.onDrop(this.rootContainerElement, (event) => fileDropHandler.handle(event));
 
         this.logger.info(`File system initialized`);
     }
 
     /**
      * Boots the terminal
-     * @returns {Promise<void>} - The terminal
+     * @returns {Promise<void>} The terminal
      */
     async _bootTerminal() {
         const terminalResolver = new TerminalResolver();
         const Terminal = await terminalResolver.resolve(this.initialState.terminalVersion);
         this.terminal = new Terminal(this.rootContainerElement, this.serviceProvider);
-        this.serviceProvider.add('terminal', this.terminal.api());
+        this.serviceProvider.add('terminal', this.terminal.api);
 
-        this.shell.setTerminal(this.terminal.api());
+        this.shell.setTerminal(this.terminal.api);
 
         this.logger.info(`Terminal initialized`);
     }
 
     /**
      * Boots the applications
-     * @param {Application[]} cliApps - The CLI applications
+     * @param {Application[]} cliApps The CLI applications
      */
     _bootApplications(cliApps) {
         for (const app of cliApps) {
@@ -281,7 +303,7 @@ export class BootLoader {
 
     /**
      * Seeds the file system
-     * @param {Application[]} cliApps - The CLI applications
+     * @param {Application[]} cliApps The CLI applications
      */
     async _seedFileSystem(cliApps) {
         for (const folder of DEFAULT_FOLDERS) {
@@ -340,8 +362,8 @@ export class BootLoader {
 
     /**
      * Installs an application
-     * @param {Application} application - The application to install
-     * @returns {BootLoader} - The BootLoader instance
+     * @param {Application} application The application to install
+     * @returns {BootLoader} The BootLoader instance
      */
     install(application) {
         this.applicationManager.install(application, this.shell);

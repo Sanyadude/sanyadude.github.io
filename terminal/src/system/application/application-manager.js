@@ -8,7 +8,7 @@ import { ApplicationExecutionContext } from './application-execution-context.js'
 export class ApplicationManager {
     /**
      * Creates a new ApplicationManager instance
-     * @param {ServiceProvider} serviceProvider - The service provider instance
+     * @param {ServiceProvider} serviceProvider The service provider instance
      */
     constructor(serviceProvider) {
         this._serviceProvider = serviceProvider;
@@ -19,7 +19,7 @@ export class ApplicationManager {
 
     /**
      * Gets the application registry
-     * @returns {ApplicationRegistry} - The application registry
+     * @returns {ApplicationRegistry} The application registry
      */
     getRegistry() {
         return this._applicationRegistry;
@@ -27,9 +27,9 @@ export class ApplicationManager {
 
     /**
      * Installs an application
-     * @param {Application} application - The application to install
-     * @param {Shell} shell - The shell instance
-     * @returns {ApplicationManager} - The application manager instance
+     * @param {Application} application The application to install
+     * @param {Shell} shell The shell instance
+     * @returns {ApplicationManager} The application manager instance
      */
     install(application, shell) {
         const manifest = application.getManifest();
@@ -50,8 +50,8 @@ export class ApplicationManager {
 
     /**
      * Uninstalls an application
-     * @param {Application} application - The application to uninstall
-     * @returns {ApplicationManager} - The application manager instance
+     * @param {Application} application The application to uninstall
+     * @returns {ApplicationManager} The application manager instance
      */
     uninstall(application) {
         if (!this._applicationRegistry.has(application.getName())) return this;
@@ -70,8 +70,8 @@ export class ApplicationManager {
 
     /**
      * Resolves a program name to an installed application
-     * @param {string} programName - The program name
-     * @returns {Application|null} - The application or null if not found
+     * @param {string} programName The program name
+     * @returns {Application|null} The application or null if not found
      */
     resolve(programName) {
         const applicationName = this._programApplicationMap.get(programName);
@@ -81,8 +81,8 @@ export class ApplicationManager {
 
     /**
      * Resolves the services of an application
-     * @param {Application} application - The application to resolve the services of
-     * @returns {Object} - The services
+     * @param {Application} application The application to resolve the services of
+     * @returns {object} The services
      */
     resolveServices(application) {
         if (!application) return null;
@@ -92,10 +92,10 @@ export class ApplicationManager {
 
     /**
      * Executes a program
-     * @param {string} programName - The name of the program to execute
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {ExecutionRuntime} runtime - The runtime of the run
-     * @returns {Promise<string|null>} - The result of the program execution or null if the program was not found
+     * @param {string} programName The name of the program to execute
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {ExecutionRuntime} runtime The runtime of the run
+     * @returns {Promise<string|null>} The result of the program execution or null if the program was not found
      */
     async execute(programName, commandLine, runtime) {
         const application = this.resolve(programName);

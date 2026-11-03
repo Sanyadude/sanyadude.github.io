@@ -4,8 +4,8 @@
 export class CowParser {
     /**
      * Parses the cow file and returns the parsed cow body
-     * @param {string} cowFile - The cow file content
-     * @returns {string} - The parsed cow body
+     * @param {string} cowFile The cow file content
+     * @returns {string} The parsed cow body
      */
     parse(cowFile) {
         const vars = this._extractVariables(cowFile);
@@ -29,8 +29,8 @@ export class CowParser {
 
     /**
      * Extracts the variables from the cow file
-     * @param {string} content - The content of the cow file
-     * @returns {Object} - The variables
+     * @param {string} content The content of the cow file
+     * @returns {object} The variables
      */
     _extractVariables(content) {
         const bodyIndex = content.indexOf('$the_cow');
@@ -49,8 +49,8 @@ export class CowParser {
 
     /**
      * Extracts the body of the cow file
-     * @param {string} content - The content of the cow file
-     * @returns {string} - The body of the cow file
+     * @param {string} content The content of the cow file
+     * @returns {string} The body of the cow file
      */
     _extractBody(content) {
         const heredocRegex = /\$the_cow\s*=\s*<<\s*("?)(\w+)\1\s*;?\s*\n([\s\S]*?)\n\s*\2\b/;

@@ -127,10 +127,10 @@ const getTokenValue = (date, token, utc = false) => {
 export class StrftimeFormatter {
     /**
      * Formats the date according to the given format
-     * @param {Date} date - The date to format
-     * @param {string} format - The format to use
-     * @param {boolean} utc - Whether to use UTC time
-     * @returns {string} - The formatted date
+     * @param {Date} date The date to format
+     * @param {string} format The format to use
+     * @param {boolean} utc Whether to use UTC time
+     * @returns {string} The formatted date
      */
     format(date, format, utc = false) {
         let formattedDate = '';

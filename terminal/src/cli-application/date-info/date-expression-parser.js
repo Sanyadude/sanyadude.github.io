@@ -6,8 +6,8 @@ import { TOKEN, RELATIVE_DAYS } from './date-parser-config.js'
 export class DateExpressionParser {
     /**
      * Parses the tokens and returns a parsed object
-     * @param {Array<{type: string, value: string}>} tokens - The tokens to parse
-     * @returns {Object} - The parsed object
+     * @param {Array<{type: string, value: string}>} tokens The tokens to parse
+     * @returns {object} The parsed object
      */
     parse(tokens) {
         const operations = [];
@@ -161,8 +161,8 @@ export class DateExpressionParser {
 
     /**
      * Normalizes a unit
-     * @param {string} unit - The unit to normalize
-     * @returns {string} - The normalized unit
+     * @param {string} unit The unit to normalize
+     * @returns {string} The normalized unit
      */
     _normalizeUnit(unit) {
         return unit.endsWith('s') ? unit.slice(0, -1) : unit;
@@ -170,8 +170,8 @@ export class DateExpressionParser {
 
     /**
      * Normalizes a time
-     * @param {string} time - The time to normalize
-     * @returns {string} - The normalized time
+     * @param {string} time The time to normalize
+     * @returns {string} The normalized time
      */
     _normalizeTime(time) {
         const is12h = time.includes('am') || time.includes('pm');

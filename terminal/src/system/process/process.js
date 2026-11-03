@@ -7,8 +7,8 @@ import { ProcessStream } from './process-stream.js'
 export class Process {
     /**
      * Creates a new Process instance
-     * @param {number} id - The id of the process
-     * @param {ShellCommandLine} commandLine - The command line of the process
+     * @param {number} id The id of the process
+     * @param {ShellCommandLine} commandLine The command line of the process
      */
     constructor(id, commandLine) {
         this._id = id;
@@ -29,7 +29,7 @@ export class Process {
 
     /**
      * Gets the id of the process
-     * @returns {number} - The id of the process
+     * @returns {number} The id of the process
      */
     getId() {
         return this._id;
@@ -37,7 +37,7 @@ export class Process {
     
     /**
      * Gets the command line of the process
-     * @returns {ShellCommandLine} - The command line of the process
+     * @returns {ShellCommandLine} The command line of the process
      */
     getCommandLine() {
         return this._commandLine;
@@ -45,7 +45,7 @@ export class Process {
 
     /**
      * Gets the status of the process
-     * @returns {PROCESS_STATUS} - The status of the process
+     * @returns {PROCESS_STATUS} The status of the process
      */
     getStatus() {
         return this._status;
@@ -53,7 +53,7 @@ export class Process {
 
     /**
      * Gets the exit code of the process
-     * @returns {number} - The exit code of the process
+     * @returns {number} The exit code of the process
      */
     getExitCode() {
         return this._exitCode;
@@ -61,7 +61,7 @@ export class Process {
 
     /**
      * Starts the process
-     * @returns {boolean} - True if the process was started, false otherwise
+     * @returns {boolean} True if the process was started, false otherwise
      */
     start() {
         if (this._status !== PROCESS_STATUS.NEW && this._status !== PROCESS_STATUS.STOPPED) return false;
@@ -72,7 +72,7 @@ export class Process {
 
     /**
      * Stops the process
-     * @returns {boolean} - True if the process was stopped, false otherwise
+     * @returns {boolean} True if the process was stopped, false otherwise
      */
     stop() {
         if (this._status !== PROCESS_STATUS.RUNNING) return false;
@@ -83,26 +83,39 @@ export class Process {
 
     /**
      * Terminates the process
-     * @param {number} exitCode - The exit code of the process
-     * @returns {boolean} - True if the process was terminated, false otherwise
+     * @param {number} exitCode The exit code of the process
+     * @returns {boolean} True if the process was terminated, false otherwise
      */
     terminate(exitCode = 0) {
         if (this._status === PROCESS_STATUS.KILLED || this._status === PROCESS_STATUS.TERMINATED) return false;
         this._status = PROCESS_STATUS.TERMINATED;
         this._exitCode = exitCode;
         this._terminatedAt = new Date().getTime();
+        this.closeStreams();
         return true;
     }
 
     /**
      * Kills the process
-     * @returns {boolean} - True if the process was killed, false otherwise
+     * @returns {boolean} True if the process was killed, false otherwise
      */
     kill() {
         if (this._status === PROCESS_STATUS.KILLED || this._status === PROCESS_STATUS.TERMINATED) return false;
         this._status = PROCESS_STATUS.KILLED;
         this._killedAt = new Date().getTime();
+        this.closeStreams();
         return true;
+    }
+
+    /**
+     * Closes stdin, stdout, and stderr
+     * @returns {Process} The process
+     */
+    closeStreams() {
+        this.stdin.close();
+        this.stdout.close();
+        this.stderr.close();
+        return this;
     }
 }
 

@@ -1,15 +1,9 @@
+import { IdGeneratorFactory } from '../../core/id-generator-factory.js'
 import { SCHEDULED_TASK_TYPE } from './scheduled-task-type.js'
 import { SCHEDULED_TASK_STATUS } from './scheduled-task-status.js'
 import { ScheduledTask } from './scheduled-task.js'
 
-/**
- * Generates a unique task id
- * @returns {number} - The next task id
- */
-const nextId = (() => {
-    let id = 0;
-    return () => ++id;
-})();
+const nextId = IdGeneratorFactory.createIncremental();
 
 /**
  * TaskScheduler - A class for a task scheduler
@@ -57,9 +51,9 @@ export class TaskScheduler {
 
     /**
      * Schedules a new task
-     * @param {string} name - The name of the task
-     * @param {Function} callback - The callback to execute when the task is executed
-     * @param {object} options - The options for the scheduled task
+     * @param {string} name The name of the task
+     * @param {Function} callback The callback to execute when the task is executed
+     * @param {object} options The options for the scheduled task
      * @returns {number} The id of the scheduled task
      */
     schedule(name, callback, options = {}) {
@@ -77,10 +71,10 @@ export class TaskScheduler {
 
     /**
      * Schedules a new task at a specific time
-     * @param {string} name - The name of the task
-     * @param {Function} callback - The callback to execute when the task is executed
-     * @param {Date} scheduledTime - The time to schedule the task at
-     * @param {object} options - The options for the scheduled task
+     * @param {string} name The name of the task
+     * @param {Function} callback The callback to execute when the task is executed
+     * @param {Date} scheduledTime The time to schedule the task at
+     * @param {object} options The options for the scheduled task
      * @returns {number} The id of the scheduled task
      */
     scheduleAt(name, callback, scheduledTime, options = {}) {
@@ -94,10 +88,10 @@ export class TaskScheduler {
 
     /**
      * Schedules a new task after a delay
-     * @param {string} name - The name of the task
-     * @param {Function} callback - The callback to execute when the task is executed
-     * @param {number} delay - The delay in milliseconds
-     * @param {object} options - The options for the scheduled task
+     * @param {string} name The name of the task
+     * @param {Function} callback The callback to execute when the task is executed
+     * @param {number} delay The delay in milliseconds
+     * @param {object} options The options for the scheduled task
      * @returns {number} The id of the scheduled task
      */
     scheduleAfter(name, callback, delay, options = {}) {
@@ -110,10 +104,10 @@ export class TaskScheduler {
 
     /**
      * Schedules a new task at a specific interval
-     * @param {string} name - The name of the task
-     * @param {Function} callback - The callback to execute when the task is executed
-     * @param {number} interval - The interval in milliseconds
-     * @param {object} options - The options for the scheduled task
+     * @param {string} name The name of the task
+     * @param {Function} callback The callback to execute when the task is executed
+     * @param {number} interval The interval in milliseconds
+     * @param {object} options The options for the scheduled task
      * @returns {number} The id of the scheduled task
      */
     scheduleInterval(name, callback, interval, options = {}) {
@@ -126,7 +120,7 @@ export class TaskScheduler {
 
     /**
      * Gets a task by its id
-     * @param {number} taskId - The id of the task
+     * @param {number} taskId The id of the task
      * @returns {ScheduledTask} The task
      */
     getTask(taskId) {
@@ -143,7 +137,7 @@ export class TaskScheduler {
 
     /**
      * Pauses a task by its id
-     * @param {number} taskId - The id of the task
+     * @param {number} taskId The id of the task
      * @returns {boolean} True if the task was paused, false otherwise
      */
     pauseTask(taskId) {
@@ -155,14 +149,16 @@ export class TaskScheduler {
 
     /**
      * Pauses all tasks
+     * @returns {TaskScheduler} The instance of the TaskScheduler
      */
     pauseAllTasks() {
         this.tasks.forEach((task) => this.pauseTask(task.id));
+        return this;
     }
 
     /**
      * Resumes a task by its id
-     * @param {number} taskId - The id of the task
+     * @param {number} taskId The id of the task
      * @returns {boolean} True if the task was resumed, false otherwise
      */
     resumeTask(taskId) {
@@ -174,14 +170,16 @@ export class TaskScheduler {
 
     /**
      * Resumes all tasks
+     * @returns {TaskScheduler} The instance of the TaskScheduler
      */
     resumeAllTasks() {
         this.tasks.forEach((task) => this.resumeTask(task.id));
+        return this;
     }
 
     /**
      * Cancels a task by its id
-     * @param {number} taskId - The id of the task
+     * @param {number} taskId The id of the task
      * @returns {boolean} True if the task was cancelled, false otherwise
      */
     cancelTask(taskId) {
@@ -193,14 +191,16 @@ export class TaskScheduler {
 
     /**
      * Cancels all tasks
+     * @returns {TaskScheduler} The instance of the TaskScheduler
      */
     cancelAllTasks() {
         this.tasks.forEach((task) => this.cancelTask(task.id));
+        return this;
     }
 
     /**
      * Removes a task by its id
-     * @param {number} taskId - The id of the task
+     * @param {number} taskId The id of the task
      * @returns {boolean} True if the task was removed, false otherwise
      */
     removeTask(taskId) {
@@ -213,41 +213,49 @@ export class TaskScheduler {
 
     /**
      * Removes all tasks
+     * @returns {TaskScheduler} The instance of the TaskScheduler
      */
     removeAllTasks() {
         this.tasks.forEach((task) => this.removeTask(task.id));
+        return this;
     }
 
     /**
      * Starts the scheduler
+     * @returns {TaskScheduler} The instance of the TaskScheduler
      */
     start() {
-        if (this.isRunning) return;
+        if (this.isRunning) return this;
         this.isRunning = true;
         clearInterval(this._checkIntervalId);
         this._checkIntervalId = setInterval(() => {
             this._processScheduledTasks();
         }, this.checkInterval);
+        return this;
     }
 
     /**
      * Stops the scheduler
+     * @returns {TaskScheduler} The instance of the TaskScheduler
      */
     stop() {
-        if (!this.isRunning) return;
+        if (!this.isRunning) return this;
         this.isRunning = false;
         if (this._checkIntervalId) {
             clearInterval(this._checkIntervalId);
             this._checkIntervalId = null;
         }
+        return this;
     }
 
     /**
      * Disposes the scheduler
+     * @returns {TaskScheduler} The instance of the TaskScheduler
      */
     dispose() {
         this.stop();
         this.removeAllTasks();
+        return this;
     }
 }
 

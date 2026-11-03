@@ -1,4 +1,4 @@
-import { DEFAULT_DATE_FORMAT, DEFAULT_ISO8601_FORMAT } from './config.js';
+import { DEFAULT_DATE_FORMAT, DEFAULT_ISO8601_FORMAT } from './config.js'
 
 export const DATE_INFO_MANIFEST = {
     name: 'date',

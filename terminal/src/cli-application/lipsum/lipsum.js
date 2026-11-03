@@ -20,9 +20,9 @@ export class Lipsum extends Application {
 
     /**
      * Executes the `lipsum` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the lipsum command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the lipsum command execution
      */
     main(commandLine, context) {
         const options = commandLine.getOptions();
@@ -32,9 +32,9 @@ export class Lipsum extends Application {
 
     /**
      * Generates the lorem ipsum text
-     * @param {object} options - The options object
-     * @param {number} width - The wrap width
-     * @returns {string} - The lorem ipsum text
+     * @param {object} options The options object
+     * @param {number} width The wrap width
+     * @returns {string} The lorem ipsum text
      */
     _generateLipsumText(options = {}, width = DEFAULT_WIDTH) {
         if (options['paragraphs'] !== undefined) {
@@ -54,9 +54,9 @@ export class Lipsum extends Application {
 
     /**
      * Generates paragraphs of lorem ipsum text
-     * @param {number} paragraphs - The number of paragraphs to generate
-     * @param {number} wordsPerParagraph - The number of words per paragraph
-     * @returns {string[][]} - The generated paragraphs with words
+     * @param {number} paragraphs The number of paragraphs to generate
+     * @param {number} wordsPerParagraph The number of words per paragraph
+     * @returns {string[][]} The generated paragraphs with words
      */
     _generateParagraphs(paragraphs = DEFAULT_PARAGRAPHS, wordsPerParagraph = DEFAULT_WORDS_PER_PARAGRAPH) {
         if (paragraphs <= 0) return [];
@@ -76,8 +76,8 @@ export class Lipsum extends Application {
 
     /**
      * Generates the first paragraph words
-     * @param {number} words - The number of words to generate
-     * @returns {string[]} - The generated first paragraph words
+     * @param {number} words The number of words to generate
+     * @returns {string[]} The generated first paragraph words
      */
     _generateFirstParagraphWords(words = DEFAULT_WORDS) {
         if (words <= 0) return [];
@@ -93,8 +93,8 @@ export class Lipsum extends Application {
 
     /**
      * Generates the first sentence of lorem ipsum text
-     * @param {number} words - The number of words to generate from the first sentence
-     * @returns {string[]} - The generated first sentence words
+     * @param {number} words The number of words to generate from the first sentence
+     * @returns {string[]} The generated first sentence words
      */
     _generateFirstSentenceWords(words = DEFAULT_WORDS) {
         if (words <= 0) return [];
@@ -114,8 +114,8 @@ export class Lipsum extends Application {
 
     /**
      * Generate words of lorem ipsum text
-     * @param {number} words - The number of words to generate
-     * @returns {string[]} - The generated words with punctuation
+     * @param {number} words The number of words to generate
+     * @returns {string[]} The generated words with punctuation
      */
     _generateWords(words = DEFAULT_WORDS) {
         if (words <= 0) return [];
@@ -157,9 +157,9 @@ export class Lipsum extends Application {
 
     /**
      * Wraps a list of words to the given column width
-     * @param {string[]} words - The words to wrap
-     * @param {number} width - The wrap width
-     * @returns {string} - The wrapped paragraph
+     * @param {string[]} words The words to wrap
+     * @param {number} width The wrap width
+     * @returns {string} The wrapped paragraph
      */
     _wrapWords(words, width) {
         if (!words || words.length === 0) return '';
@@ -184,9 +184,9 @@ export class Lipsum extends Application {
 
     /**
      * Generates a random number between a minimum and maximum value
-     * @param {number} min - The minimum value
-     * @param {number} max - The maximum value
-     * @returns {number} - The random number
+     * @param {number} min The minimum value
+     * @param {number} max The maximum value
+     * @returns {number} The random number
      */
     _rand(min = 0, max = 1) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -194,9 +194,9 @@ export class Lipsum extends Application {
 
     /**
      * Gets the wrap width from options, the terminal, or the default
-     * @param {object} options - The options object
-     * @param {object} context - The context of the command execution
-     * @returns {number} - The wrap width
+     * @param {object} options The options object
+     * @param {object} context The context of the command execution
+     * @returns {number} The wrap width
      */
     _getWidth(options = {}, context = {}) {
         const rawWidth = options['width'];

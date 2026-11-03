@@ -10,10 +10,87 @@ import { PathSearch } from './path-search.js'
 export class FileSystemManager {
     /**
      * Creates a new FileSystemManager instance
-     * @param {string} rootDirectoryName - Name of the root directory (default: 'root')
+     * @param {string} rootDirectoryName Name of the root directory (default: 'root')
      */
     constructor(rootDirectoryName = 'root') {
         this.rootDirectory = new DirectoryEntry(rootDirectoryName);
+        this._identityProvider = null;
+        this._permissionProvider = null;
+    }
+
+    /**
+     * Sets the provider used to stamp owner, group, and author on new entries
+     * @param {IdentityProvider} provider The identity provider
+     * @returns {FileSystemManager} The file system manager
+     */
+    setIdentityProvider(provider) {
+        this._identityProvider = provider;
+        this._stampIdentity(this.rootDirectory);
+        return this;
+    }
+
+    /**
+     * Sets the provider used to stamp mode on new entries
+     * @param {PermissionProvider} provider The permission provider
+     * @returns {FileSystemManager} The file system manager
+     */
+    setPermissionProvider(provider) {
+        this._permissionProvider = provider;
+        this._stampMode(this.rootDirectory);
+        return this;
+    }
+
+    /**
+     * Creates a directory entry owned by the current user
+     * @param {string} name The directory name
+     * @returns {DirectoryEntry} The directory entry
+     */
+    _createDirectoryEntry(name) {
+        const directory = new DirectoryEntry(name);
+        this._stampIdentity(directory);
+        this._stampMode(directory);
+        return directory;
+    }
+
+    /**
+     * Creates a file entry owned by the current user
+     * @param {string} name The file name
+     * @param {string|Uint8Array} content The file content
+     * @returns {FileEntry} The file entry
+     */
+    _createFileEntry(name, content) {
+        const file = new FileEntry(name, content);
+        this._stampIdentity(file);
+        this._stampMode(file);
+        return file;
+    }
+
+    /**
+     * Applies the current user as author, owner, and group
+     * @param {Entry} entry The entry to stamp
+     * @returns {Entry} The same entry
+     */
+    _stampIdentity(entry) {
+        if (!this._identityProvider) return entry;
+        const identity = this._identityProvider.getIdentity();
+        entry.setMetadata({
+            author: identity.author,
+            owner: identity.owner,
+            group: identity.group,
+        });
+        return entry;
+    }
+
+    /**
+     * Applies the provider mode to an entry
+     * @param {Entry} entry The entry to stamp
+     * @returns {Entry} The same entry
+     */
+    _stampMode(entry) {
+        if (!this._permissionProvider) return entry;
+        const mode = this._permissionProvider.getMode(entry.isDirectory() ? 'directory' : 'file');
+        entry.setMetadata({ mode });
+        return entry;
     }
 
     /**
@@ -35,7 +112,7 @@ export class FileSystemManager {
     /**
      * Validates that a path is a valid string and doesn't contain invalid characters
      * @private
-     * @param {string|null|undefined} path - Path to validate
+     * @param {string|null|undefined} path Path to validate
      * @throws {Error} If path is not a string or contains invalid characters (//, .. as path component)
      */
     _validatePath(path) {
@@ -60,7 +137,7 @@ export class FileSystemManager {
     /**
      * Validates that an entry name is valid (non-empty, no path separators)
      * @private
-     * @param {string} name - Entry name to validate
+     * @param {string} name Entry name to validate
      * @throws {Error} If name is empty or contains path separators
      */
     _validateName(name) {
@@ -75,7 +152,7 @@ export class FileSystemManager {
     /**
      * Gets the parent directory of a given path
      * @private
-     * @param {string} path - Path to get parent directory for
+     * @param {string} path Path to get parent directory for
      * @returns {DirectoryEntry} Parent directory entry, or root if path is at root level
      */
     _getParentDirectory(path) {
@@ -90,8 +167,8 @@ export class FileSystemManager {
     /**
      * Creates a directory at the specified path
      * Creates parent directories if they don't exist
-     * @param {string} path - Path where the directory should be created
-     * @param {boolean} overwrite - If true, removes existing entry at path before creating (default: false)
+     * @param {string} path Path where the directory should be created
+     * @param {boolean} overwrite If true, removes existing entry at path before creating (default: false)
      * @returns {DirectoryEntry} The created directory entry
      * @throws {Error} If creating the directory fails
      */
@@ -119,21 +196,21 @@ export class FileSystemManager {
         for (let part of parts) {
             let directory = currentDirectory.getEntry(part);
             if (!directory) {
-                directory = new DirectoryEntry(part);
+                directory = this._createDirectoryEntry(part);
                 currentDirectory.addEntry(directory);
             } else if (!(directory instanceof DirectoryEntry)) {
                 throw new Error(`Cannot create directory: ${part} is a file`);
             }
             currentDirectory = directory;
         }
-        const directory = new DirectoryEntry(name);
+        const directory = this._createDirectoryEntry(name);
         currentDirectory.addEntry(directory);
         return directory;
     }
 
     /**
      * Creates multiple directories at once
-     * @param {string[]} paths - Array of paths where directories should be created
+     * @param {string[]} paths Array of paths where directories should be created
      * @returns {DirectoryEntry[]} Array of created directory entries
      * @throws {Error} If creating the directories fails
      */
@@ -147,9 +224,9 @@ export class FileSystemManager {
     /**
      * Creates a file at the specified path with the given content
      * Creates parent directories if they don't exist
-     * @param {string} path - Path where the file should be created
-     * @param {string} content - Initial file content (default: '')
-     * @param {boolean} overwrite - If true, overwrites existing file or removes directory at path (default: false)
+     * @param {string} path Path where the file should be created
+     * @param {string} content Initial file content (default: '')
+     * @param {boolean} overwrite If true, overwrites existing file or removes directory at path (default: false)
      * @returns {FileEntry} The created file entry
      * @throws {Error} If creating the file fails
      */
@@ -180,22 +257,22 @@ export class FileSystemManager {
         for (let part of parts) {
             let directory = currentDirectory.getEntry(part);
             if (!directory) {
-                directory = new DirectoryEntry(part);
+                directory = this._createDirectoryEntry(part);
                 currentDirectory.addEntry(directory);
             } else if (!(directory instanceof DirectoryEntry)) {
                 throw new Error(`Cannot create file: ${part} is a file, not a directory`);
             }
             currentDirectory = directory;
         }
-        const file = new FileEntry(name, content);
+        const file = this._createFileEntry(name, content);
         currentDirectory.addEntry(file);
         return file;
     }
 
     /**
      * Creates multiple files at once
-     * @param {string[]} paths - Array of paths where files should be created
-     * @param {string} content - Initial content for all files (default: '')
+     * @param {string[]} paths Array of paths where files should be created
+     * @param {string} content Initial content for all files (default: '')
      * @returns {FileEntry[]} Array of created file entries
      * @throws {Error} If creating the files fails
      */
@@ -208,7 +285,7 @@ export class FileSystemManager {
 
     /**
      * Gets a directory entry at the specified path
-     * @param {string|null|undefined|''} path - Path to the directory (empty string or null returns root)
+     * @param {string|null|undefined|''} path Path to the directory (empty string or null returns root)
      * @returns {DirectoryEntry|null} The directory entry, or null if not found or path points to a file
      */
     getDirectory(path) {
@@ -226,7 +303,7 @@ export class FileSystemManager {
 
     /**
      * Gets multiple directory entries by their paths
-     * @param {...string} paths - Variable number of paths to get directories for
+     * @param {...string} paths Variable number of paths to get directories for
      * @returns {DirectoryEntry[]} Array of directory entries (null entries are filtered out)
      */
     getDirectories(...paths) {
@@ -235,7 +312,7 @@ export class FileSystemManager {
 
     /**
      * Gets a file entry at the specified path
-     * @param {string|null|undefined|''} path - Path to the file
+     * @param {string|null|undefined|''} path Path to the file
      * @returns {FileEntry|null} The file entry, or null if not found or path points to a directory
      */
     getFile(path) {
@@ -254,7 +331,7 @@ export class FileSystemManager {
 
     /**
      * Gets multiple file entries by their paths
-     * @param {...string} paths - Variable number of paths to get files for
+     * @param {...string} paths Variable number of paths to get files for
      * @returns {FileEntry[]} Array of file entries (null entries are filtered out)
      */
     getFiles(...paths) {
@@ -263,7 +340,7 @@ export class FileSystemManager {
 
     /**
      * Gets any entry (file or directory) at the specified path
-     * @param {string|null|undefined|''} path - Path to the entry (empty string or null returns root)
+     * @param {string|null|undefined|''} path Path to the entry (empty string or null returns root)
      * @returns {DirectoryEntry|FileEntry|null} The entry, or null if not found
      */
     getEntry(path) {
@@ -282,7 +359,7 @@ export class FileSystemManager {
 
     /**
      * Gets multiple entries (files or directories) by their paths
-     * @param {...string} paths - Variable number of paths to get entries for
+     * @param {...string} paths Variable number of paths to get entries for
      * @returns {Array<DirectoryEntry|FileEntry>} Array of entries (null entries are filtered out)
      */
     getEntries(...paths) {
@@ -291,8 +368,8 @@ export class FileSystemManager {
 
     /**
      * Removes a directory at the specified path
-     * @param {string} path - Path to the directory to remove
-     * @param {boolean} recursive - If true, removes directory and all its contents (default: false)
+     * @param {string} path Path to the directory to remove
+     * @param {boolean} recursive If true, removes directory and all its contents (default: false)
      * @returns {DirectoryEntry|null} The removed directory entry, or null if not found
      * @throws {Error} If directory is not empty
      */
@@ -329,8 +406,8 @@ export class FileSystemManager {
     /**
      * Removes multiple directories by their paths
      * Supports both: removeDirectories(...paths) and removeDirectories(...paths, recursive)
-     * @param {...string} paths - Variable number of paths to remove directories from
-     * @param {boolean} recursive - If true, removes directory and all its contents
+     * @param {...string} paths Variable number of paths to remove directories from
+     * @param {boolean} recursive If true, removes directory and all its contents
      * @returns {DirectoryEntry[]} Array of removed directory entries (null entries are filtered out)
      */
     removeDirectories(...paths) {
@@ -345,7 +422,7 @@ export class FileSystemManager {
 
     /**
      * Removes a file at the specified path
-     * @param {string} path - Path to the file to remove
+     * @param {string} path Path to the file to remove
      * @returns {FileEntry|null} The removed file entry, or null if not found
      */
     removeFile(path) {
@@ -365,7 +442,7 @@ export class FileSystemManager {
 
     /**
      * Removes multiple files by their paths
-     * @param {...string} paths - Variable number of paths to remove files from
+     * @param {...string} paths Variable number of paths to remove files from
      * @returns {FileEntry[]} Array of removed file entries (null entries are filtered out)
      */
     removeFiles(...paths) {
@@ -374,7 +451,7 @@ export class FileSystemManager {
 
     /**
      * Removes any entry (file or directory) at the specified path
-     * @param {string} path - Path to the entry to remove
+     * @param {string} path Path to the entry to remove
      * @returns {DirectoryEntry|FileEntry|null} The removed entry, or null if not found
      * @throws {Error} If directory is not empty
      */
@@ -398,7 +475,7 @@ export class FileSystemManager {
 
     /**
      * Removes multiple entries (files or directories) by their paths
-     * @param {...string} paths - Variable number of paths to remove entries from
+     * @param {...string} paths Variable number of paths to remove entries from
      * @returns {Array<DirectoryEntry|FileEntry>} Array of removed entries (null entries are filtered out)
      * @throws {Error} If removing the entries fails
      */
@@ -408,8 +485,8 @@ export class FileSystemManager {
 
     /**
      * Gets comprehensive statistics about a directory and its contents
-     * @param {string} path - Path to the directory (default: '' for root)
-     * @returns {Object|null} Statistics object with files, directories, totalSize, maxDepth, isEmpty, or null if directory doesn't exist
+     * @param {string} path Path to the directory (default: '' for root)
+     * @returns {object|null} Statistics object with files, directories, totalSize, maxDepth, isEmpty, or null if directory doesn't exist
      */
     getStatistics(path = '') {
         const directory = path === '' ? this.rootDirectory : this.getDirectory(path);
@@ -444,7 +521,7 @@ export class FileSystemManager {
 
     /**
      * Gets the maximum depth of a directory tree (deepest nested directory)
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {number} Maximum depth, or -1 if directory doesn't exist
      */
     getDepth(path = '') {
@@ -467,7 +544,7 @@ export class FileSystemManager {
 
     /**
      * Checks if an entry exists at the specified path
-     * @param {string} path - Path to check
+     * @param {string} path Path to check
      * @returns {boolean} True if entry exists, false otherwise
      */
     exists(path) {
@@ -476,7 +553,7 @@ export class FileSystemManager {
 
     /**
      * Checks if the path points to a directory
-     * @param {string} path - Path to check
+     * @param {string} path Path to check
      * @returns {boolean} True if path points to a directory, false otherwise
      */
     directoryExists(path) {
@@ -485,7 +562,7 @@ export class FileSystemManager {
 
     /**
      * Checks if the path points to a file
-     * @param {string} path - Path to check
+     * @param {string} path Path to check
      * @returns {boolean} True if path points to a file, false otherwise
      */
     fileExists(path) {
@@ -494,7 +571,7 @@ export class FileSystemManager {
 
     /**
      * Gets the full path string for a given entry object
-     * @param {DirectoryEntry|FileEntry} entry - Entry object to get path for
+     * @param {DirectoryEntry|FileEntry} entry Entry object to get path for
      * @returns {string|null} Full path string (empty string for root), or null if entry not found
      */
     getPath(entry) {
@@ -524,7 +601,7 @@ export class FileSystemManager {
 
     /**
      * Gets all entries (files and directories) in a directory
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {Array<DirectoryEntry|FileEntry>} Array of entries in the directory
      */
     getEntriesAt(path = '') {
@@ -535,7 +612,7 @@ export class FileSystemManager {
 
     /**
      * Gets only directories in a directory
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {DirectoryEntry[]} Array of directory entries in the directory
      */
     getDirectoriesAt(path = '') {
@@ -544,7 +621,7 @@ export class FileSystemManager {
 
     /**
      * Gets only files in a directory
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {FileEntry[]} Array of file entries in the directory
      */
     getFilesAt(path = '') {
@@ -553,7 +630,7 @@ export class FileSystemManager {
 
     /**
      * Gets the count of entries (files and directories) in a directory
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {number} Number of entries in the directory
      */
     getEntryCount(path = '') {
@@ -562,7 +639,7 @@ export class FileSystemManager {
 
     /**
      * Gets the count of directories in a directory
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {number} Number of directories in the directory
      */
     getDirectoryCount(path = '') {
@@ -571,7 +648,7 @@ export class FileSystemManager {
 
     /**
      * Gets the count of files in a directory
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {number} Number of files in the directory
      */
     getFileCount(path = '') {
@@ -581,9 +658,9 @@ export class FileSystemManager {
     /**
      * Moves any entry (file or directory) from source path to destination path
      * Automatically determines entry type and calls appropriate move method
-     * @param {string} sourcePath - Current path of the entry
-     * @param {string} destinationPath - New path for the entry
-     * @param {boolean} overwrite - If true, replaces existing entry at destination (default: false)
+     * @param {string} sourcePath Current path of the entry
+     * @param {string} destinationPath New path for the entry
+     * @param {boolean} overwrite If true, replaces existing entry at destination (default: false)
      * @returns {DirectoryEntry|FileEntry} The moved entry
      * @throws {Error} If moving the entry fails
      */
@@ -642,8 +719,8 @@ export class FileSystemManager {
 
     /**
      * Copies an entry (file or directory) from source path to destination path
-     * @param {string} sourcePath - Path of the source entry
-     * @param {string} destinationPath - Path where the entry should be copied
+     * @param {string} sourcePath Path of the source entry
+     * @param {string} destinationPath Path where the entry should be copied
      * @returns {DirectoryEntry|FileEntry} The copied entry
      * @throws {Error} If copying the entry fails
      */
@@ -692,13 +769,13 @@ export class FileSystemManager {
         }
         const cloneEntry = (entryToCopy, name) => {
             if (entryToCopy instanceof DirectoryEntry) {
-                const directory = new DirectoryEntry(name);
+                const directory = this._createDirectoryEntry(name);
                 for (const childEntry of entryToCopy.getEntries()) {
                     directory.addEntry(cloneEntry(childEntry, childEntry.getName()));
                 }
                 return directory;
             }
-            return new FileEntry(name, new Uint8Array(entryToCopy.read()));
+            return this._createFileEntry(name, new Uint8Array(entryToCopy.read()));
         };
         const newName = Path.getName(finalDestinationPath);
         const copiedEntry = cloneEntry(entry, newName);
@@ -708,8 +785,8 @@ export class FileSystemManager {
 
     /**
      * Renames an entry (file or directory)
-     * @param {string} path - Path to the entry
-     * @param {string} name - New name for the entry
+     * @param {string} path Path to the entry
+     * @param {string} name New name for the entry
      * @returns {DirectoryEntry|FileEntry} The renamed entry
      * @throws {Error} If entry does not exist
      */
@@ -726,7 +803,7 @@ export class FileSystemManager {
 
     /**
      * Gets all paths in the filesystem using depth-first search
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {EntryPath[]} Array of EntryPath objects containing entry and path information
      */
     getEntryPaths(path = '') {
@@ -738,7 +815,7 @@ export class FileSystemManager {
 
     /**
      * Gets all paths in a directory as strings (not EntryPath objects)
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {string[]} Array of path strings
      */
     getPaths(path = '') {
@@ -748,7 +825,7 @@ export class FileSystemManager {
 
     /**
      * Gets all file paths as strings
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {string[]} Array of file path strings
      */
     getFilePaths(path = '') {
@@ -760,7 +837,7 @@ export class FileSystemManager {
 
     /**
      * Gets all directory paths as strings
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {string[]} Array of directory path strings (with trailing '/')
      */
     getDirectoryPaths(path = '') {
@@ -772,8 +849,8 @@ export class FileSystemManager {
 
     /**
      * Filters all paths in the filesystem using a callback function
-     * @param {Function} callback - Function that receives EntryPath and returns boolean
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {Function} callback Function that receives EntryPath and returns boolean
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {EntryPath[]} Array of EntryPath objects that match the filter
      */
     filter(callback, path = '') {
@@ -783,8 +860,8 @@ export class FileSystemManager {
 
     /**
      * Searches for entries whose names contain the search string
-     * @param {string} search - String to search for in entry names
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} search String to search for in entry names
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {EntryPath[]} Array of EntryPath objects matching the search
      */
     search(search, path = '') {
@@ -794,12 +871,12 @@ export class FileSystemManager {
 
     /**
      * Finds entry paths matching a pattern with advanced options
-     * @param {string} pattern - Pattern to search for
-     * @param {object} options - Search options
-     * @param {string} options.type - Filter by type: 'all', 'file', or 'directory' (default: 'all')
-     * @param {boolean} options.caseSensitive - Whether search is case sensitive (default: false)
-     * @param {boolean} options.useRegex - Whether pattern is a regex (default: false)
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} pattern Pattern to search for
+     * @param {object} options Search options
+     * @param {string} options.type Filter by type: 'all', 'file', or 'directory' (default: 'all')
+     * @param {boolean} options.caseSensitive Whether search is case sensitive (default: false)
+     * @param {boolean} options.useRegex Whether pattern is a regex (default: false)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {EntryPath[]} Array of EntryPath objects matching the pattern
      * @throws {Error} If the pattern is invalid
      */
@@ -838,9 +915,9 @@ export class FileSystemManager {
 
     /**
      * Finds entries matching a pattern
-     * @param {string} pattern - Pattern to search for
-     * @param {object} options - Search options (see find() for details)
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} pattern Pattern to search for
+     * @param {object} options Search options (see find() for details)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {Array<FileEntry|DirectoryEntry>} Array of file or directory entries matching the pattern
      */
     findEntries(pattern, options = {}, path = '') {
@@ -849,9 +926,9 @@ export class FileSystemManager {
 
     /**
      * Finds paths of entries matching a pattern
-     * @param {string} pattern - Pattern to search for
-     * @param {object} options - Search options (see find() for details)
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} pattern Pattern to search for
+     * @param {object} options Search options (see find() for details)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {string[]} Array of path strings matching the pattern
      */
     findPaths(pattern, options = {}, path = '') {
@@ -860,9 +937,9 @@ export class FileSystemManager {
 
     /**
      * Finds file entry paths matching a pattern
-     * @param {string} pattern - Pattern to search for
-     * @param {object} options - Search options (see find() for details)
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} pattern Pattern to search for
+     * @param {object} options Search options (see find() for details)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {EntryPath[]} Array of EntryPath objects for matching files
      */
     findFileEntryPaths(pattern, options = {}, path = '') {
@@ -871,9 +948,9 @@ export class FileSystemManager {
 
     /**
      * Finds file entries matching a pattern
-     * @param {string} pattern - Pattern to search for
-     * @param {object} options - Search options (see find() for details)
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} pattern Pattern to search for
+     * @param {object} options Search options (see find() for details)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {FileEntry[]} Array of FileEntry objects for matching files
      */
     findFiles(pattern, options = {}, path = '') {
@@ -882,9 +959,9 @@ export class FileSystemManager {
 
     /**
      * Finds paths of file entries matching a pattern
-     * @param {string} pattern - Pattern to search for
-     * @param {object} options - Search options (see find() for details)
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} pattern Pattern to search for
+     * @param {object} options Search options (see find() for details)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {string[]} Array of file path strings matching the pattern
      */
     findFilePaths(pattern, options = {}, path = '') {
@@ -893,9 +970,9 @@ export class FileSystemManager {
 
     /**
      * Finds directory entry paths matching a pattern
-     * @param {string} pattern - Pattern to search for
-     * @param {object} options - Search options (see find() for details)
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} pattern Pattern to search for
+     * @param {object} options Search options (see find() for details)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {EntryPath[]} Array of EntryPath objects for matching directories
      */
     findDirectoryEntryPaths(pattern, options = {}, path = '') {
@@ -904,9 +981,9 @@ export class FileSystemManager {
 
     /**
      * Finds directory entries matching a pattern
-     * @param {string} pattern - Pattern to search for
-     * @param {object} options - Search options (see find() for details)
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} pattern Pattern to search for
+     * @param {object} options Search options (see find() for details)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {DirectoryEntry[]} Array of DirectoryEntry objects for matching directories
      */
     findDirectories(pattern, options = {}, path = '') {
@@ -915,9 +992,9 @@ export class FileSystemManager {
 
     /**
      * Finds paths of directory entries matching a pattern
-     * @param {string} pattern - Pattern to search for
-     * @param {object} options - Search options (see find() for details)
-     * @param {string} path - Path to the directory (default: '' for root)
+     * @param {string} pattern Pattern to search for
+     * @param {object} options Search options (see find() for details)
+     * @param {string} path Path to the directory (default: '' for root)
      * @returns {string[]} Array of directory path strings matching the pattern
      */
     findDirectoryPaths(pattern, options = {}, path = '') {
@@ -926,7 +1003,7 @@ export class FileSystemManager {
 
     /**
      * Serializes the entire filesystem to a JSON object
-     * @returns {Object} JSON object representing the filesystem structure
+     * @returns {object} JSON object representing the filesystem structure
      */
     toJSON() {
         const serializeEntry = (entry) => {
@@ -953,8 +1030,8 @@ export class FileSystemManager {
 
     /**
      * Creates a directory from a JSON object
-     * @param {string} path - Path where the directory should be created
-     * @param {object} json - JSON object representing the directory structure
+     * @param {string} path Path where the directory should be created
+     * @param {object} json JSON object representing the directory structure
      * @returns {DirectoryEntry} The created directory entry
      */
     createFromJSON(path, json = {}) {
@@ -964,7 +1041,7 @@ export class FileSystemManager {
         }
         const deserializeEntry = (data) => {
             if (data.type === 'directory') {
-                const dir = new DirectoryEntry(data.name);
+                const dir = this._createDirectoryEntry(data.name);
                 if (data.entries && Array.isArray(data.entries)) {
                     data.entries.forEach(entryData => {
                         const entry = deserializeEntry(entryData);
@@ -975,7 +1052,7 @@ export class FileSystemManager {
                 }
                 return dir;
             } else if (data.type === 'file') {
-                return new FileEntry(data.name, data.content || '');
+                return this._createFileEntry(data.name, data.content || '');
             }
             return null;
         };
@@ -991,7 +1068,7 @@ export class FileSystemManager {
     /**
      * Deserializes a filesystem from a JSON object
      * @static
-     * @param {object} json - JSON object representing the filesystem structure
+     * @param {object} json JSON object representing the filesystem structure
      * @returns {FileSystemManager} New FileSystemManager instance with deserialized filesystem
      * @throws {Error} If the JSON structure is invalid
      */

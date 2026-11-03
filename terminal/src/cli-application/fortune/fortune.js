@@ -20,8 +20,8 @@ export class Fortune extends Application {
 
     /**
      * Executes the `fortune` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @returns {Promise<string>} - A random fortune string
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @returns {Promise<string>} A random fortune string
      */
     async main(commandLine) {
         const options = commandLine.getOptions();
@@ -44,9 +44,9 @@ export class Fortune extends Application {
 
     /**
      * Builds weighted pools of fortune entries
-     * @param {string[]} args - The positional arguments, e.g. `90% computers 10% zippy`
-     * @param {object} options - The options object
-     * @returns {Promise<Array<{name: string, group: string, filename: string, offensive: boolean, weight: number|null, entries: Array}>>}
+     * @param {string[]} args The positional arguments, e.g. `90% computers 10% zippy`
+     * @param {object} options The options object
+     * @returns {Promise<Array<{name: string, group: string, filename: string, offensive: boolean, weight: number|null, entries: Array}>>} The weighted pools
      */
     async _getPools(args, options = {}) {
         let pools = this._parseSources(args, options);
@@ -61,9 +61,9 @@ export class Fortune extends Application {
 
     /**
      * Parses the positional arguments into catalog sources, each optionally carrying a percentage
-     * @param {string[]} args - The positional arguments, e.g. `90% computers 10% zippy`
-     * @param {object} options - The options object
-     * @returns {Array<{name: string, group: string, filename: string, offensive: boolean, weight: number|null}>}
+     * @param {string[]} args The positional arguments, e.g. `90% computers 10% zippy`
+     * @param {object} options The options object
+     * @returns {Array<{name: string, group: string, filename: string, offensive: boolean, weight: number|null}>} The parsed sources
      */
     _parseSources(args = [], options = {}) {
         const pools = [];
@@ -95,8 +95,8 @@ export class Fortune extends Application {
 
     /**
      * Finds every catalog source in the group matching a name or group token
-     * @param {string} token - The name or group from the command line
-     * @returns {Object[]}
+     * @param {string} token The name or group from the command line
+     * @returns {object[]} The found sources
      */
     _findSources(token) {
         const catalog = this._getCatalog();
@@ -109,9 +109,9 @@ export class Fortune extends Application {
 
     /**
      * Keeps catalog sources matching -a / -o, same rule as the default pool
-     * @param {Object[]} sources - The sources to filter
-     * @param {object} options - The options object
-     * @returns {Object[]}
+     * @param {object[]} sources The sources to filter
+     * @param {object} options The options object
+     * @returns {object[]} The filtered sources
      */
     _filterByOffensive(sources, options = {}) {
         const all = Boolean(options['all']);
@@ -122,9 +122,9 @@ export class Fortune extends Application {
 
     /**
      * Returns the default catalog sources
-     * @param {object} options - The options object
-     * @returns {Array<{name: string, group: string, filename: string, offensive: boolean, weight: null}>}
-     */
+     * @param {object} options The options object
+     * @returns {Array<{name: string, group: string, filename: string, offensive: boolean, weight: null}>} The default sources
+     */ 
     _defaultSources(options = {}) {
         const sources = this._filterByOffensive(Object.values(this._getCatalog()), options);
         return sources.map(source => ({ ...source, weight: null }));
@@ -133,7 +133,7 @@ export class Fortune extends Application {
     /**
      * Loads the cookie entries for each pool
      * @param {Array<{name: string, filename: string, weight: number|null}>} pools
-     * @returns {Promise<Array>}
+     * @returns {Promise<Array>} The loaded pools
      */
     async _loadPools(pools) {
         const loaded = await Promise.all(pools.map(pool => this._loadEntries(pool)));
@@ -146,7 +146,7 @@ export class Fortune extends Application {
     /**
      * Merges offensive and inoffensive sources of the same group into one pool
      * @param {Array} pools
-     * @returns {Array}
+     * @returns {Array} The merged pools
      */
     _mergePools(pools) {
         const mergedPools = new Map();
@@ -170,8 +170,8 @@ export class Fortune extends Application {
     /**
      * Drops empty pools and splits leftover probability among pools with no percentage
      * @param {Array} pools
-     * @param {object} options - The options object
-     * @returns {Array}
+     * @param {object} options The options object
+     * @returns {Array} The weighted pools
      */
     _assignWeights(pools, options = {}) {
         const nonempty = pools.filter(pool => pool.entries.length > 0);
@@ -192,7 +192,7 @@ export class Fortune extends Application {
     /**
      * Lists the pools that would be drawn from, with their probabilities
      * @param {Array} pools
-     * @returns {string}
+     * @returns {string} The list of pools
      */
     _listPools(pools) {
         return pools
@@ -203,8 +203,8 @@ export class Fortune extends Application {
     /**
      * Filters cookies, then picks one according to pool weights
      * @param {Array} pools
-     * @param {object} options - The options object
-     * @returns {{text: string, group: string}|null}
+     * @param {object} options The options object
+     * @returns {{text: string, group: string}|null} The generated fortune
      */
     _generateFortune(pools, options = {}) {
         const filtered = pools.map(pool => ({
@@ -217,7 +217,7 @@ export class Fortune extends Application {
     /**
      * Picks a pool according to its probability, then a random entry inside it
      * @param {Array} pools
-     * @returns {{text: string, group: string}|null}
+     * @returns {{text: string, group: string}|null} The chosen entry
      */
     _pickEntry(pools) {
         if (pools.length === 0) return null;
@@ -241,9 +241,9 @@ export class Fortune extends Application {
 
     /**
      * Keeps only the entries matching the requested length and pattern
-     * @param {Array} entries - The entries to filter
-     * @param {object} options - The options object
-     * @returns {Array}
+     * @param {Array} entries The entries to filter
+     * @param {object} options The options object
+     * @returns {Array} The filtered entries
      */
     _filterEntries(entries, options = {}) {
         const matchingLength = this._filterByLength(entries, options);
@@ -254,9 +254,9 @@ export class Fortune extends Application {
 
     /**
      * Keeps only the entries matching the requested pattern
-     * @param {Array} entries - The entries to filter
-     * @param {object} options - The options object
-     * @returns {Array}
+     * @param {Array} entries The entries to filter
+     * @param {object} options The options object
+     * @returns {Array} The filtered entries
      */
     _filterByPattern(entries, options = {}) {
         const flags = Boolean(options['ignore-case']) ? 'i' : '';
@@ -266,9 +266,9 @@ export class Fortune extends Application {
 
     /**
      * Keeps only the entries matching the requested length
-     * @param {Array} entries - The entries to filter
-     * @param {object} options - The options object
-     * @returns {Array}
+     * @param {Array} entries The entries to filter
+     * @param {object} options The options object
+     * @returns {Array} The filtered entries
      */
     _filterByLength(entries, options = {}) {
         const short = Boolean(options['short']);
@@ -281,8 +281,8 @@ export class Fortune extends Application {
 
     /**
      * Loads and caches cookie entries for a catalog source
-     * @param {object} source - The catalog source to load
-     * @returns {Promise<Array>}
+     * @param {object} source The catalog source to load
+     * @returns {Promise<Array>} The loaded entries
      */
     async _loadEntries(source) {
         if (this._fortuneCache[source.name]) return this._fortuneCache[source.name];
@@ -303,7 +303,7 @@ export class Fortune extends Application {
     /**
      * Fetches the raw content of a fortune file
      * @param {string} filename
-     * @returns {Promise<string>}
+     * @returns {Promise<string>} The raw content of the file
      */
     async _readFile(filename) {
         const path = `${this._fortuneFilesPath}/${filename}`;
@@ -313,7 +313,7 @@ export class Fortune extends Application {
 
     /**
      * Returns the fortune catalog
-     * @returns {Object}
+     * @returns {object} The fortune catalog
      */
     _getCatalog() {
         return FORTUNES;

@@ -10,8 +10,8 @@ import { Path } from './path.js'
 export class FileSystemExplorer {
     /**
      * Creates a FileSystemExplorer instance
-     * @param {FileSystemManager} fileSystemManager - The file system manager to use
-     * @param {string} initialPath - Initial path to start at (default: '' for root)
+     * @param {FileSystemManager} fileSystemManager The file system manager to use
+     * @param {string} initialPath Initial path to start at (default: '' for root)
      */
     constructor(fileSystemManager, initialPath = '') {
         if (!fileSystemManager || !(fileSystemManager instanceof FileSystemManager)) {
@@ -33,7 +33,7 @@ export class FileSystemExplorer {
 
     /**
      * Gets the absolute path of a path relative to the current directory
-     * @param {string} relativePath - Relative path (relative or absolute)
+     * @param {string} relativePath Relative path (relative or absolute)
      * @returns {string} Absolute path
      */
     getAbsolutePath(path) {
@@ -42,7 +42,7 @@ export class FileSystemExplorer {
 
     /**
      * Gets the relative path from the current directory to a path
-     * @param {string} path - Relative path from the current directory to a path
+     * @param {string} path Relative path from the current directory to a path
      * @returns {string} Relative path (e.g., '../dir/file' or '.' for same path)
      */
     getRelativePathTo(path) {
@@ -51,7 +51,7 @@ export class FileSystemExplorer {
 
     /**
      * Gets the relative path to the current directory from a path
-     * @param {string} path - Relative path to the current directory from a path
+     * @param {string} path Relative path to the current directory from a path
      * @returns {string} Relative path (e.g., '../dir/file' or '.' for same path)
      */
     getRelativePathFrom(path) {
@@ -101,7 +101,7 @@ export class FileSystemExplorer {
     /**
      * Changes the current directory to the specified path
      * Supports relative paths (../, ../../, ./dir, etc.) and absolute paths
-     * @param {string} path - Path to navigate to (relative or absolute)
+     * @param {string} path Path to navigate to (relative or absolute)
      * @returns {boolean} True if navigation was successful, false otherwise
      */
     changeDirectory(path) {
@@ -195,7 +195,7 @@ export class FileSystemExplorer {
 
     /**
      * Checks if a path exists relative to current directory
-     * @param {string} path - Path to check (relative or absolute)
+     * @param {string} path Path to check (relative or absolute)
      * @returns {boolean} True if path exists
      */
     exists(path) {
@@ -204,7 +204,7 @@ export class FileSystemExplorer {
 
     /**
      * Checks if a path points to a directory relative to current directory
-     * @param {string} path - Path to check (relative or absolute)
+     * @param {string} path Path to check (relative or absolute)
      * @returns {boolean} True if path points to a directory
      */
     directoryExists(path) {
@@ -213,7 +213,7 @@ export class FileSystemExplorer {
 
     /**
      * Checks if a path points to a file relative to current directory
-     * @param {string} path - Path to check (relative or absolute)
+     * @param {string} path Path to check (relative or absolute)
      * @returns {boolean} True if path points to a file
      */
     fileExists(path) {
@@ -222,7 +222,7 @@ export class FileSystemExplorer {
 
     /**
      * Gets all entries (files and directories) in the current directory
-     * @param {string} path - Path to the directory (default: '' for current directory)
+     * @param {string} path Path to the directory (default: '' for current directory)
      * @returns {Array<DirectoryEntry|FileEntry>} Array of entries in current directory
      */
     getEntries(path = '') {
@@ -231,7 +231,7 @@ export class FileSystemExplorer {
 
     /**
      * Gets only files in the current directory
-     * @param {string} path - Path to the directory (default: '' for current directory)
+     * @param {string} path Path to the directory (default: '' for current directory)
      * @returns {FileEntry[]} Array of file entries
      */
     getFiles(path = '') {
@@ -240,7 +240,7 @@ export class FileSystemExplorer {
 
     /**
      * Gets only directories in the current directory
-     * @param {string} path - Path to the directory (default: '' for current directory)
+     * @param {string} path Path to the directory (default: '' for current directory)
      * @returns {DirectoryEntry[]} Array of directory entries
      */
     getDirectories(path = '') {
@@ -249,7 +249,7 @@ export class FileSystemExplorer {
 
     /**
      * Gets an entry at the specified path relative to current directory
-     * @param {string} path - Path to entry (relative or absolute)
+     * @param {string} path Path to entry (relative or absolute)
      * @returns {DirectoryEntry|FileEntry|null} Entry if found, null otherwise
      */
     getEntry(path) {
@@ -258,7 +258,7 @@ export class FileSystemExplorer {
 
     /**
      * Gets a file at the specified path relative to current directory
-     * @param {string} path - Path to file (relative or absolute)
+     * @param {string} path Path to file (relative or absolute)
      * @returns {FileEntry|null} File entry if found, null otherwise
      */
     getFile(path) {
@@ -267,7 +267,7 @@ export class FileSystemExplorer {
 
     /**
      * Gets a directory at the specified path relative to current directory
-     * @param {string} path - Path to directory (relative or absolute)
+     * @param {string} path Path to directory (relative or absolute)
      * @returns {DirectoryEntry|null} Directory entry if found, null otherwise
      */
     getDirectory(path) {
@@ -276,7 +276,7 @@ export class FileSystemExplorer {
 
     /**
      * Gets information about the current directory
-     * @returns {Object} Directory information object
+     * @returns {object} Directory information object
      */
     getCurrentDirectoryInfo() {
         const directory = this.getCurrentDirectory();

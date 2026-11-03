@@ -15,9 +15,9 @@ export class DeleteFile extends Application {
 
     /**
      * Executes the `del` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the del command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the del command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();

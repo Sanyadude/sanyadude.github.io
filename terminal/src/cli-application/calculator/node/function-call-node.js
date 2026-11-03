@@ -4,8 +4,8 @@
 export class FunctionCallNode {
     /**
      * Creates a new FunctionCallNode
-     * @param {string} name - The function name
-     * @param {Array<NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode>} args - The function argument nodes
+     * @param {string} name The function name
+     * @param {Array<NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode>} args The function argument nodes
      */
     constructor(name, args) {
         this.name = name;

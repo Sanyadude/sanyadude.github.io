@@ -3,7 +3,7 @@ import { COWS } from '../../cowsay/cows.js'
 /**
  * Generates smoke tests for every cowsay and cowthink cow file.
  * Each test runs the command and passes if it produces any non-error output.
- * @returns {Array<{input: string}>}
+ * @returns {Array<{input: string}>} The tests
  */
 function generateTests() {
     const tests = [];

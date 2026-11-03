@@ -24,8 +24,8 @@ export class Cowsay extends Application {
 
     /**
      * Executes the `cowsay` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @returns {Promise<string>} - The result of the cowsay command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @returns {Promise<string>} The result of the cowsay command execution
      */
     async main(commandLine) {
         const program = commandLine.getProgram();
@@ -48,9 +48,9 @@ export class Cowsay extends Application {
 
     /**
      * Transforms the message to cowsay output string
-     * @param {string} message - The message for cow to say
-     * @param {object} options - The options object
-     * @returns {Promise<string>} - The cowsay output string
+     * @param {string} message The message for cow to say
+     * @param {object} options The options object
+     * @returns {Promise<string>} The cowsay output string
      */
     async _transformToCowsay(message, options) {
         const cowType = this._getCowType(options);
@@ -63,9 +63,9 @@ export class Cowsay extends Application {
 
     /**
      * Transforms the message to cowthink output string
-     * @param {string} message - The message for cow to think
-     * @param {object} options - The options object
-     * @returns {Promise<string>} - The cowthink output string
+     * @param {string} message The message for cow to think
+     * @param {object} options The options object
+     * @returns {Promise<string>} The cowthink output string
      */
     async _transformToCowthink(message, options) {
         const cowType = this._getCowType(options);
@@ -78,8 +78,8 @@ export class Cowsay extends Application {
 
     /**
      * Gets the cow type from options
-     * @param {object} options - The options object
-     * @returns {string} - The cow type
+     * @param {object} options The options object
+     * @returns {string} The cow type
      */
     _getCowType(options = {}) {
         let cowType = Object.keys(this._getCows()).includes(options['file']) ? options['file'] : DEFAULT_FILE;
@@ -92,9 +92,9 @@ export class Cowsay extends Application {
 
     /**
      * Get cow parts from options
-     * @param {object} options - The options object
-     * @param {string} type - The type of cow
-     * @returns {Object} - The cow parts
+     * @param {object} options The options object
+     * @param {string} type The type of cow
+     * @returns {object} The cow parts
      */
     _getCowParts(options = {}, type = DEFAULT_FILE) {
         let eyes = typeof options['eyes'] === 'string' ? options['eyes']?.slice(0, 2).padEnd(2, ' ') : DEFAULT_EYES;
@@ -120,8 +120,8 @@ export class Cowsay extends Application {
 
     /**
      * Gets the width from options or default width but not less than 1
-     * @param {object} options - The options object
-     * @returns {number} - The width
+     * @param {object} options The options object
+     * @returns {number} The width
      */
     _getWidth(options = {}) {
         return Math.max(options['width'] && !isNaN(options['width']) ? Number(options['width']) : DEFAULT_WIDTH, 1);
@@ -129,9 +129,9 @@ export class Cowsay extends Application {
 
     /**
      * Build speech bubble for given message
-     * @param {string} message - The message to build the bubble for
-     * @param {object} options - The options object
-     * @param {string[]} bubbleBlocks - The building blocks of the bubble (consists of 8 elements)
+     * @param {string} message The message to build the bubble for
+     * @param {object} options The options object
+     * @param {string[]} bubbleBlocks The building blocks of the bubble (consists of 8 elements)
      * @returns {string}
      */
     _buildBubble(message = '', options = {}, bubbleBlocks = DEFAULT_BUBBLE_BLOCKS) {
@@ -158,9 +158,9 @@ export class Cowsay extends Application {
 
     /**
      * Separates the message into lines array based on width and no wrap options
-     * @param {string} message - The message to separate into lines
-     * @param {object} options - The options object
-     * @returns {string[]} - The lines array
+     * @param {string} message The message to separate into lines
+     * @param {object} options The options object
+     * @returns {string[]} The lines array
      */
     _getMessageLines(message = '', options = {}) {
         const width = this._getWidth(options);
@@ -180,11 +180,11 @@ export class Cowsay extends Application {
 
     /**
      * Fills the cow template with the given eyes, tongue and thoughts
-     * @param {string} template - The cow template
-     * @param {string} eyes - The eyes of the cow
-     * @param {string} tongue - The tongue of the cow
-     * @param {string} thoughts - The thoughts of the cow
-     * @returns {string} - The filled cow template
+     * @param {string} template The cow template
+     * @param {string} eyes The eyes of the cow
+     * @param {string} tongue The tongue of the cow
+     * @param {string} thoughts The thoughts of the cow
+     * @returns {string} The filled cow template
      */
     _buildCow(template = '', eyes = DEFAULT_EYES, tongue = DEFAULT_TONGUE, thoughts = DEFAULT_SAY) {
         return template
@@ -196,8 +196,8 @@ export class Cowsay extends Application {
 
     /**
      * Gets a cow, loading and parsing if necessary
-     * @param {string} cowName - The name of the cow
-     * @returns {Promise<string>} - The parsed cow body
+     * @param {string} cowName The name of the cow
+     * @returns {Promise<string>} The parsed cow body
      */
     async _getCow(cowName) {
         if (this._cowCache[cowName]) return this._cowCache[cowName];
@@ -209,8 +209,8 @@ export class Cowsay extends Application {
 
     /**
      * Loads the cow file
-     * @param {string} cowName - The name of the cow
-     * @returns {Promise<string>} - The cow file content
+     * @param {string} cowName The name of the cow
+     * @returns {Promise<string>} The cow file content
      */
     async _loadCow(cowName) {
         const path = `${this._cowFilesPath}/${cowName}.cow`;
@@ -220,7 +220,7 @@ export class Cowsay extends Application {
 
     /**
      * Get available cows map
-     * @returns {Object} - The available cows
+     * @returns {object} The available cows
      */
     _getCows() {
         return COWS;

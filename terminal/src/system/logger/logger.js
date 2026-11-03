@@ -8,9 +8,9 @@ import { LogTarget } from './log-target.js'
 export class Logger {
     /**
      * Creates a new Logger
-     * @param {object} options - The options for the Logger
-     * @param {string} options.level - The level of the Logger
-     * @param {Array} options.targets - The targets for the Logger
+     * @param {object} options The options for the Logger
+     * @param {string} options.level The level of the Logger
+     * @param {Array} options.targets The targets for the Logger
      */
     constructor(options = {}) {
         const defaultOptions = {
@@ -29,8 +29,8 @@ export class Logger {
 
     /**
      * Logs a message
-     * @param {string} level - The level of the message
-     * @param {string} message - The message to log
+     * @param {string} level The level of the message
+     * @param {string} message The message to log
      */
     log(level, message) {
         if (typeof message !== 'string' && typeof message !== 'object') return;
@@ -54,7 +54,7 @@ export class Logger {
 
     /**
      * Logs a debug message
-     * @param {string} message - The message to log
+     * @param {string} message The message to log
      */
     debug(message) {
         this.log(LOG_LEVEL.DEBUG, message);
@@ -62,7 +62,7 @@ export class Logger {
 
     /**
      * Logs an info message
-     * @param {string} message - The message to log
+     * @param {string} message The message to log
      */
     info(message) {
         this.log(LOG_LEVEL.INFO, message);
@@ -70,7 +70,7 @@ export class Logger {
 
     /**
      * Logs a warning message
-     * @param {string} message - The message to log
+     * @param {string} message The message to log
      */
     warn(message) {
         this.log(LOG_LEVEL.WARN, message);
@@ -78,7 +78,7 @@ export class Logger {
 
     /**
      * Logs an error message
-     * @param {string} message - The message to log
+     * @param {string} message The message to log
      */
     error(message) {
         this.log(LOG_LEVEL.ERROR, message);
@@ -86,7 +86,7 @@ export class Logger {
 
     /**
      * Adds a target to the Logger
-     * @param {LogTarget} target - The target to add
+     * @param {LogTarget} target The target to add
      * @returns {Logger} The Logger
      */
     addTarget(target) {
@@ -96,7 +96,7 @@ export class Logger {
 
     /**
      * Removes a target from the Logger
-     * @param {string} name - The name of the target to remove
+     * @param {string} name The name of the target to remove
      * @returns {Logger} The Logger
      */
     removeTarget(name) {

@@ -1,50 +1,28 @@
 import { ACTIONS } from './actions.js'
-import { CompletionReverseCommand } from '../commands/completion-reverse.js'
-import { CompletionCommand } from '../commands/completion.js'
 import { CopyCommand } from '../commands/copy.js'
-import { InterruptCommand } from '../commands/interrupt.js'
-import { DeleteBackwardCommand } from '../commands/delete-backward.js'
-import { DeleteForwardCommand } from '../commands/delete-forward.js'
-import { HistoryDownCommand } from '../commands/history-down.js'
-import { HistoryUpCommand } from '../commands/history-up.js'
-import { InsertCharCommand } from '../commands/insert-char.js'
-import { PasteCommand } from '../commands/paste.js'
 import { SelectionExtendDownCommand } from '../commands/selection-extend-down.js'
 import { SelectionExtendLeftCommand } from '../commands/selection-extend-left.js'
 import { SelectionExtendRightCommand } from '../commands/selection-extend-right.js'
 import { SelectionExtendUpCommand } from '../commands/selection-extend-up.js'
-import { SubmitCommand } from '../commands/submit.js'
-import { MoveCursorLeftCommand } from '../commands/move-cursor-left.js'
-import { MoveCursorRightCommand } from '../commands/move-cursor-right.js'
-import { MoveCursorWordLeftCommand } from '../commands/move-cursor-word-left.js'
-import { MoveCursorWordRightCommand } from '../commands/move-cursor-word-right.js'
-import { MoveCursorToCoordinatesCommand } from '../commands/move-cursor-to-coordinates.js'
-import { MoveCursorToStartCommand } from '../commands/move-cursor-to-start.js'
-import { MoveCursorToEndCommand } from '../commands/move-cursor-to-end.js'
+import { SelectLineCommand } from '../commands/select-line.js'
+import { SelectWordCommand } from '../commands/select-word.js'
+import { ScrollHomeCommand } from '../commands/scroll-home.js'
+import { ScrollEndCommand } from '../commands/scroll-end.js'
+import { ScrollPageUpCommand } from '../commands/scroll-page-up.js'
+import { ScrollPageDownCommand } from '../commands/scroll-page-down.js'
 
 export const COMMANDS = Object.freeze({
-    [ACTIONS.COMPLETION]: new CompletionCommand(),
-    [ACTIONS.COMPLETION_REVERSE]: new CompletionReverseCommand(),
     [ACTIONS.COPY]: new CopyCommand(),
-    [ACTIONS.INTERRUPT]: new InterruptCommand(),
-    [ACTIONS.DELETE_BACKWARD]: new DeleteBackwardCommand(),
-    [ACTIONS.DELETE_FORWARD]: new DeleteForwardCommand(),
-    [ACTIONS.HISTORY_DOWN]: new HistoryDownCommand(),
-    [ACTIONS.HISTORY_UP]: new HistoryUpCommand(),
-    [ACTIONS.INSERT_CHAR]: new InsertCharCommand(),
-    [ACTIONS.PASTE]: new PasteCommand(),
     [ACTIONS.SELECTION_EXTEND_DOWN]: new SelectionExtendDownCommand(),
     [ACTIONS.SELECTION_EXTEND_LEFT]: new SelectionExtendLeftCommand(),
     [ACTIONS.SELECTION_EXTEND_RIGHT]: new SelectionExtendRightCommand(),
     [ACTIONS.SELECTION_EXTEND_UP]: new SelectionExtendUpCommand(),
-    [ACTIONS.SUBMIT]: new SubmitCommand(),
-    [ACTIONS.MOVE_CURSOR_LEFT]: new MoveCursorLeftCommand(),
-    [ACTIONS.MOVE_CURSOR_RIGHT]: new MoveCursorRightCommand(),
-    [ACTIONS.MOVE_CURSOR_WORD_LEFT]: new MoveCursorWordLeftCommand(),
-    [ACTIONS.MOVE_CURSOR_WORD_RIGHT]: new MoveCursorWordRightCommand(),
-    [ACTIONS.MOVE_CURSOR_TO_COORDINATES]: new MoveCursorToCoordinatesCommand(),
-    [ACTIONS.MOVE_CURSOR_TO_START]: new MoveCursorToStartCommand(),
-    [ACTIONS.MOVE_CURSOR_TO_END]: new MoveCursorToEndCommand(),
+    [ACTIONS.SELECT_LINE]: new SelectLineCommand(),
+    [ACTIONS.SELECT_WORD]: new SelectWordCommand(),
+    [ACTIONS.SCROLL_HOME]: new ScrollHomeCommand(),
+    [ACTIONS.SCROLL_END]: new ScrollEndCommand(),
+    [ACTIONS.SCROLL_PAGE_UP]: new ScrollPageUpCommand(),
+    [ACTIONS.SCROLL_PAGE_DOWN]: new ScrollPageDownCommand(),
 });
 
 export default COMMANDS

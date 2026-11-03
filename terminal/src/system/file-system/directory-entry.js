@@ -7,7 +7,7 @@ import { Entry } from './entry.js'
 export class DirectoryEntry extends Entry {
     /**
      * Creates a new directory entry
-     * @param {string} name - The name of the directory
+     * @param {string} name The name of the directory
      */
     constructor(name) {
         super(name);
@@ -33,7 +33,7 @@ export class DirectoryEntry extends Entry {
 
     /**
      * Gets an entry by name
-     * @param {string} name - The name of the entry
+     * @param {string} name The name of the entry
      * @returns {Entry} The entry
      */
     getEntry(name) {
@@ -43,7 +43,7 @@ export class DirectoryEntry extends Entry {
 
     /**
      * Adds an entry to the directory
-     * @param {Entry} entry - The entry to add
+     * @param {Entry} entry The entry to add
      */
     addEntry(entry) {
         this.entries.push(entry);
@@ -78,7 +78,7 @@ export class DirectoryEntry extends Entry {
 
     /**
      * Checks if the entry is a directory
-     * @returns {boolean} returns true
+     * @returns {boolean} True if the entry is a directory, false otherwise
      */
     isDirectory() {
         return true;

@@ -24,8 +24,8 @@ export class JSRuntime extends Application {
 
     /**
      * Called when the application is uninstalled
-     * @param {ApplicationInstaller} applicationInstaller - The application installer instance
-     * @returns {JSRuntime} - The JSRuntime instance
+     * @param {ApplicationInstaller} applicationInstaller The application installer instance
+     * @returns {JSRuntime} The JSRuntime instance
      */
     onUninstall(applicationInstaller) {
         this.dispose();
@@ -34,9 +34,9 @@ export class JSRuntime extends Application {
 
     /**
      * Executes the `js` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {Promise<string>} - A promise that resolves to the result of the code execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {Promise<string>} A promise that resolves to the result of the code execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();
@@ -54,8 +54,8 @@ export class JSRuntime extends Application {
 
     /**
      * Runs the given code
-     * @param {string} code - The code to run
-     * @returns {Promise<string>} - A promise that resolves to the result of the code execution
+     * @param {string} code The code to run
+     * @returns {Promise<string>} A promise that resolves to the result of the code execution
      */
     run(code) {
         if (!this._worker) {
@@ -70,7 +70,7 @@ export class JSRuntime extends Application {
 
     /**
      * Disposes the JS runtime
-     * @returns {JSRuntime} - The JSRuntime instance
+     * @returns {JSRuntime} The JSRuntime instance
      */
     dispose() {
         if (this._worker) {

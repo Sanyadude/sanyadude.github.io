@@ -5,7 +5,7 @@ import {
     DEFAULT_FORMAT, DEFAULT_SORT_TYPE, DEFAULT_TIME_TYPE, 
     DEFAULT_INDICATOR_STYLE, DEFAULT_COLOR_RULE, DEFAULT_TIME_STYLE, DEFAULT_QUOTING_STYLE, 
     TIME_STYLES, QUOTING_STYLES, SORT_TYPES, TIME_TYPES, FORMATS, INDICATOR_STYLES, COLOR_RULES,
-    COLORS, AUTO_COLOR_ENABLED, C_ESCAPE_MAP,
+    COLORS, AUTO_COLOR_ENABLED, C_ESCAPE_MAP, OWNER_EXECUTE, MODE_SYMBOLS, MODE_BITS,
     BINARY_UNITS_SIZE_MAP, DECIMAL_UNITS_SIZE_MAP, SI_UNITS_SIZE_MAP
 } from './config.js'
 import { StrftimeFormatter } from '../../core/datetime/strftime-formatter.js'
@@ -27,9 +27,9 @@ export class List extends Application {
 
     /**
      * Executes the `ls` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the ls command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the ls command execution
      */
     main(commandLine, context) {
         const options = commandLine.getOptions();
@@ -42,20 +42,21 @@ export class List extends Application {
         }
         const entries = context.fileSystemManager.getEntriesAt(fullPath);
         if (options['recursive']) {
-            return this._getRecursiveDirectoryInfo(entries, '.', options);
+            return this._getRecursiveDirectoryInfo(entries, '.', options, context);
         }
-        return this._getDirectoryInfo(entries, options);
+        return this._getDirectoryInfo(entries, options, context);
     }
 
     /**
      * Lists the entries recursively
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @param {string} path - The path
-     * @param {object} options - The options
-     * @returns {string} - The list of the entries
+     * @param {Array<DirectoryEntry|FileEntry>} entries The entries
+     * @param {string} path The path
+     * @param {object} options The options
+     * @param {object} context The context of the command execution
+     * @returns {string} The list of the entries
      */
-    _getRecursiveDirectoryInfo(entries, path = '.', options = {}) {
-        const directoryInfo = this._getDirectoryInfo(entries, options);
+    _getRecursiveDirectoryInfo(entries, path = '.', options = {}, context = {}) {
+        const directoryInfo = this._getDirectoryInfo(entries, options, context);
         const section = `${path}:\n${directoryInfo}${directoryInfo ? '\n' : ''}`;
         const sections = [section];
         const filteredEntries = this._filterEntries(entries, options);
@@ -63,7 +64,7 @@ export class List extends Application {
         for (const entry of visibleEntries) {
             if (!entry.isDirectory()) continue;
             const childPath = `${path}/${entry.getName()}`;
-            const nestedSection = this._getRecursiveDirectoryInfo(entry.getEntries(), childPath, options);
+            const nestedSection = this._getRecursiveDirectoryInfo(entry.getEntries(), childPath, options, context);
             if (!nestedSection) continue;
             sections.push(nestedSection);
         }
@@ -72,26 +73,27 @@ export class List extends Application {
 
     /**
      * Lists the directory information
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @param {object} options - The options
-     * @returns {string} - The directory information
+     * @param {Array<DirectoryEntry|FileEntry>} entries The entries
+     * @param {object} options The options
+     * @param {object} context The context of the command execution
+     * @returns {string} The directory information
      */
-    _getDirectoryInfo(entries, options = {}) {
+    _getDirectoryInfo(entries, options = {}, context = {}) {
         const filteredEntries = this._filterEntries(entries, options);
         const sortedEntries = this._sortEntries(filteredEntries, options);
         const groupEntries = this._groupEntries(sortedEntries, options);
         const format = this._getFormat(options);
         if (format === 'long' || format === 'verbose') {
-            return this._formatLongList(groupEntries, options);
+            return this._formatLongList(groupEntries, options, context);
         }
         return this._formatList(groupEntries, options);
     }
 
     /**
      * Filters the entries
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @param {object} options - The options
-     * @returns {Array<DirectoryEntry|FileEntry>} - The filtered entries
+     * @param {Array<DirectoryEntry|FileEntry>} entries The entries
+     * @param {object} options The options
+     * @returns {Array<DirectoryEntry|FileEntry>} The filtered entries
      */
     _filterEntries(entries, options = {}) {
         const all = Boolean(options['all'] || options['unsorted']);
@@ -116,9 +118,9 @@ export class List extends Application {
 
     /**
      * Sorts the entries
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @param {object} options - The options
-     * @returns {Array<DirectoryEntry|FileEntry>} - The sorted entries
+     * @param {Array<DirectoryEntry|FileEntry>} entries The entries
+     * @param {object} options The options
+     * @returns {Array<DirectoryEntry|FileEntry>} The sorted entries
      */
     _sortEntries(entries, options = {}) {
         const sortType = this._getSortType(options);
@@ -160,7 +162,7 @@ export class List extends Application {
 
     /**
      * Gets the extension of a name
-     * @param {string} name - The name
+     * @param {string} name The name
      * @returns {string} The extension of the name
      */
     _getExtension(name) {
@@ -170,8 +172,8 @@ export class List extends Application {
 
     /**
      * Compares the extensions of two names
-     * @param {string} nameA - The first name
-     * @param {string} nameB - The second name
+     * @param {string} nameA The first name
+     * @param {string} nameB The second name
      * @returns {number} The comparison result
      */
     _compareExtensions(nameA, nameB) {
@@ -185,8 +187,8 @@ export class List extends Application {
     }
     /**
      * Compares the version of two names
-     * @param {string} nameA - The first name
-     * @param {string} nameB - The second name
+     * @param {string} nameA The first name
+     * @param {string} nameB The second name
      * @returns {number} The comparison result
      */
     _compareVersionNames(nameA, nameB) {
@@ -215,9 +217,9 @@ export class List extends Application {
 
     /**
      * Groups the entries by directories and files
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @param {object} options - The options
-     * @returns {Array<DirectoryEntry|FileEntry>} - The grouped entries
+     * @param {Array<DirectoryEntry|FileEntry>} entries The entries
+     * @param {object} options The options
+     * @returns {Array<DirectoryEntry|FileEntry>} The grouped entries
      */
     _groupEntries(entries, options = {}) {
         const groupDirectoriesFirst = Boolean(options['group-directories-first']);
@@ -236,9 +238,9 @@ export class List extends Application {
 
     /**
      * Formats the list of the entries into a string
-     * @param {string[]} list - The list
-     * @param {object} options - The options
-     * @returns {string} - The formatted list
+     * @param {string[]} list The list
+     * @param {object} options The options
+     * @returns {string} The formatted list
      */
     _formatList(entries, options = {}) {
         if (entries.length === 0) return '';
@@ -261,10 +263,10 @@ export class List extends Application {
 
     /**
      * Formats the columns
-     * @param {string[]} list - The list
-     * @param {string} fillDirection - The fill direction (row or column)
-     * @param {object} options - The options
-     * @returns {string} - The formatted columns
+     * @param {string[]} list The list
+     * @param {string} fillDirection The fill direction (row or column)
+     * @param {object} options The options
+     * @returns {string} The formatted columns
      */
     _formatColumns(list, fillDirection = 'row', options = {}) {
         if (list.length === 0) return '';
@@ -304,8 +306,8 @@ export class List extends Application {
 
     /**
      * Visible length of text, ignoring ANSI SGR codes
-     * @param {string} text - The text that may contain ANSI codes
-     * @returns {number} - The visible character count
+     * @param {string} text The text that may contain ANSI codes
+     * @returns {number} The visible character count
      */
     _getVisibleLength(text) {
         return String(text).replace(/\x1b\[[0-9;]*m/g, '').length;
@@ -313,19 +315,21 @@ export class List extends Application {
 
     /**
      * Formats entries in long listing format
-     * @param {Array<DirectoryEntry|FileEntry>} entries - The entries
-     * @returns {string} - The formatted long list
+     * @param {Array<DirectoryEntry|FileEntry>} entries The entries
+     * @param {object} options The options
+     * @param {object} context The context of the command execution
+     * @returns {string} The formatted long list
      */
-    _formatLongList(entries, options = {}) {
+    _formatLongList(entries, options = {}, context = {}) {
         const total = `total ${entries.length}`;
         if (entries.length === 0) return total;
         const timeType = this._getTimeType(options);
         const rows = entries.map(entry => {
-            const mode = `${entry.isDirectory() ? 'd' : '-'}${entry.getPermissions()}`;
+            const mode = `${entry.isDirectory() ? 'd' : '-'}${this._formatMode(entry.getMode())}`;
             const link = entry.isDirectory() ? 2 : 1;
-            const author = entry.getAuthor();
-            const owner = entry.getOwner();
-            const group = entry.getGroup();
+            const author = this._userName(entry.getAuthor(), context);
+            const owner = this._userName(entry.getOwner(), context);
+            const group = this._groupName(entry.getGroup(), context);
             const size = this._formatSize(entry.getSize(), options);
             const timestamp = this._getTime(entry, timeType);
             const date = this._formatDate(timestamp, options);
@@ -358,10 +362,34 @@ export class List extends Application {
     }
 
     /**
+     * Resolves a user id to the current user name
+     * @param {number} id The user id
+     * @param {object} context The context of the command execution
+     * @returns {string} The user name, or the id when the user does not exist
+     */
+    _userName(id, context = {}) {
+        if (!id) return '';
+        const user = context.userManager.getUserById(id);
+        return user ? user.getName() : String(id);
+    }
+
+    /**
+     * Resolves a group id to the current group name
+     * @param {number} id The group id
+     * @param {object} context The context of the command execution
+     * @returns {string} The group name, or the id when the group does not exist
+     */
+    _groupName(id, context = {}) {
+        if (!id) return '';
+        const group = context.userManager.getGroupById(id);
+        return group ? group.getName() : String(id);
+    }
+
+    /**
      * Formats the size
-     * @param {number} size - The size
-     * @param {object} options - The options
-     * @returns {string} - The formatted size
+     * @param {number} size The size
+     * @param {object} options The options
+     * @returns {string} The formatted size
      */
     _formatSize(bytes, options = {}) {
         const cacheKey = options['block-size'];
@@ -384,10 +412,10 @@ export class List extends Application {
 
     /**
      * Formats the human readable size
-     * @param {number} bytes - The bytes
-     * @param {number} base - The base
-     * @param {object} unitMap - The unit map
-     * @returns {string} - The formatted human readable size
+     * @param {number} bytes The bytes
+     * @param {number} base The base
+     * @param {object} unitMap The unit map
+     * @returns {string} The formatted human readable size
      */
     _formatHumanSize(bytes, base, unitMap) {
         const size = Number.isFinite(bytes) ? Math.max(0, bytes) : 0;
@@ -402,9 +430,9 @@ export class List extends Application {
 
     /**
      * Gets the time of the entry
-     * @param {DirectoryEntry|FileEntry} entry - The entry
-     * @param {string} timeType - The time type
-     * @returns {number} - The time
+     * @param {DirectoryEntry|FileEntry} entry The entry
+     * @param {string} timeType The time type
+     * @returns {number} The time
      */
     _getTime(entry, timeType) {
         if (timeType === 'access' || timeType === 'atime' || timeType === 'use') {
@@ -424,9 +452,9 @@ export class List extends Application {
 
     /**
      * Gets the formatted name of the entry
-     * @param {DirectoryEntry|FileEntry} entry - The entry
-     * @param {object} options - The options
-     * @returns {string} - The formatted name
+     * @param {DirectoryEntry|FileEntry} entry The entry
+     * @param {object} options The options
+     * @returns {string} The formatted name
      */
     _getFormattedEntryName(entry, options = {}) {
         const indicatorStyle = this._getIndicatorStyle(options);
@@ -441,9 +469,9 @@ export class List extends Application {
 
     /**
      * Formats the display name of the entry
-     * @param {string} name - The name
-     * @param {object} options - The options
-     * @returns {string} - The formatted display name
+     * @param {string} name The name
+     * @param {object} options The options
+     * @returns {string} The formatted display name
      */
     _formatDisplayName(name, options = {}) {
         const quotingStyle = this._getQuotingStyle(options);
@@ -474,11 +502,11 @@ export class List extends Application {
 
     /**
      * Quotes a name for a POSIX shell
-     * @param {string} name - The name
-     * @param {boolean} always - Quote even when the name is shell-safe
-     * @param {boolean} dollar - Use $'...' when the name has control characters
-     * @param {boolean} hideControlCharacters - Replace control characters with ?
-     * @returns {string} - The quoted name
+     * @param {string} name The name
+     * @param {boolean} always Quote even when the name is shell-safe
+     * @param {boolean} dollar Use $'...' when the name has control characters
+     * @param {boolean} hideControlCharacters Replace control characters with ?
+     * @returns {string} The quoted name
      */
     _quoteShell(name, always, dollar, hideControlCharacters) {
         const displayName = hideControlCharacters ? this._hideControlCharacters(name) : name;
@@ -493,9 +521,9 @@ export class List extends Application {
 
     /**
      * Quotes a name using locale-style ASCII double quotes when needed
-     * @param {string} name - The name
-     * @param {boolean} hideControlCharacters - Replace control characters with ?
-     * @returns {string} - The quoted name
+     * @param {string} name The name
+     * @param {boolean} hideControlCharacters Replace control characters with ?
+     * @returns {string} The quoted name
      */
     _quoteLocale(name, hideControlCharacters) {
         const displayName = hideControlCharacters ? this._hideControlCharacters(name) : name;
@@ -506,8 +534,8 @@ export class List extends Application {
 
     /**
      * Checks whether a name can be left unquoted in a POSIX shell
-     * @param {string} name - The name
-     * @returns {boolean} - True if the name is safe unquoted
+     * @param {string} name The name
+     * @returns {boolean} True if the name is safe unquoted
      */
     _isShellSafeName(name) {
         return !/[^A-Za-z0-9._+\-\/@=,:%]/.test(name);
@@ -515,9 +543,9 @@ export class List extends Application {
 
     /**
      * C-style escapes for nongraphic characters (-b / -Q / shell `$'...'`)
-     * @param {string} name - The name
-     * @param {string} extraCharacters - The extra characters to escape
-     * @returns {string} - The escaped name
+     * @param {string} name The name
+     * @param {string} extraCharacters The extra characters to escape
+     * @returns {string} The escaped name
      */
     _escapeNongraphicCStyle(name, extraCharacters = '') {
         return [...name].map(char => {
@@ -530,8 +558,8 @@ export class List extends Application {
 
     /**
      * Hides the control characters in the name
-     * @param {string} name - The name
-     * @returns {string} - The hidden name
+     * @param {string} name The name
+     * @returns {string} The hidden name
      */
     _hideControlCharacters(name) {
         return [...name].map(char => this._isControlCharacter(char) ? '?' : char).join('');
@@ -539,8 +567,8 @@ export class List extends Application {
 
     /**
      * Checks if the character is a nongraphic (control) character
-     * @param {string} char - The character
-     * @returns {boolean} - True if the character is a control character
+     * @param {string} char The character
+     * @returns {boolean} True if the character is a control character
      */
     _isControlCharacter(char) {
         const codePoint = char.codePointAt(0);
@@ -548,10 +576,21 @@ export class List extends Application {
     }
 
     /**
+     * Formats a mode as nine permission characters
+     * @param {number} mode The mode
+     * @returns {string} The mode, such as rw-rw-rw-
+     */
+    _formatMode(mode) {
+        return MODE_BITS.map(operation => {
+            return (mode & operation.bit) === operation.bit ? MODE_SYMBOLS[operation.name] : MODE_SYMBOLS.none;
+        }).join('');
+    }
+
+    /**
      * Gets the indicator for the entry
-     * @param {DirectoryEntry|FileEntry} entry - The entry
-     * @param {string} indicatorStyle - The indicator style
-     * @returns {string} - The indicator
+     * @param {DirectoryEntry|FileEntry} entry The entry
+     * @param {string} indicatorStyle The indicator style
+     * @returns {string} The indicator
      */
     _getIndicator(entry, indicatorStyle) {
         if (indicatorStyle === 'none') {
@@ -565,7 +604,7 @@ export class List extends Application {
         }
         if (indicatorStyle === 'classify') {
             const isDirectory = entry.isDirectory();
-            const isExecutable = entry.getPermissions().charAt(2) === 'x';
+            const isExecutable = (entry.getMode() & OWNER_EXECUTE) !== 0;
             if (isDirectory) return '/';
             return isExecutable ? '*' : '';
         }
@@ -574,9 +613,9 @@ export class List extends Application {
 
     /**
      * Gets the color for the entry
-     * @param {DirectoryEntry|FileEntry} entry - The entry
-     * @param {string} colorRule - The color rule
-     * @returns {number} - The color
+     * @param {DirectoryEntry|FileEntry} entry The entry
+     * @param {string} colorRule The color rule
+     * @returns {number} The color
      */
     _getColor(entry, colorRule) {
         if (colorRule === 'never') {
@@ -584,7 +623,7 @@ export class List extends Application {
         }
         if (colorRule === 'auto' && AUTO_COLOR_ENABLED || colorRule === 'always') {
             const isDirectory = entry.isDirectory();
-            const isExecutable = entry.getPermissions().charAt(2) === 'x';
+            const isExecutable = (entry.getMode() & OWNER_EXECUTE) !== 0;
             if (isDirectory) return COLORS.DIRECTORY;
             if (isExecutable) return COLORS.EXECUTABLE;
             return COLORS.DEFAULT;
@@ -594,9 +633,9 @@ export class List extends Application {
 
     /**
      * Formats the date (`Mon DD HH:MM`, or `Mon DD  YYYY` if older than six months)
-     * @param {number} timestamp - The timestamp to format
-     * @param {object} options - The options
-     * @returns {string} - The formatted date
+     * @param {number} timestamp The timestamp to format
+     * @param {object} options The options
+     * @returns {string} The formatted date
      */
     _formatDate(timestamp, options = {}) {
         const style = this._getTimeStyle(options);
@@ -617,8 +656,8 @@ export class List extends Application {
 
     /**
      * Gets the block size
-     * @param {object} options - The options
-     * @returns {object} - The block size
+     * @param {object} options The options
+     * @returns {object} The block size
      */
     _getBlockSize(options = {}) {
         const blockSize = options['block-size'];
@@ -661,8 +700,8 @@ export class List extends Application {
 
     /**
      * Gets the format from options or default format
-     * @param {object} options - The options object
-     * @returns {string} - The format
+     * @param {object} options The options object
+     * @returns {string} The format
      */
     _getFormat(options = {}) {
         const format = options['format'];
@@ -677,8 +716,8 @@ export class List extends Application {
 
     /**
      * Gets the sort type from options or default sort type
-     * @param {object} options - The options object
-     * @returns {string} - The sort type
+     * @param {object} options The options object
+     * @returns {string} The sort type
      */
     _getSortType(options = {}) {
         const sortType = options['sort'];
@@ -694,8 +733,8 @@ export class List extends Application {
 
     /**
      * Gets the time type from options or default time type
-     * @param {object} options - The options object
-     * @returns {string} - The time type
+     * @param {object} options The options object
+     * @returns {string} The time type
      */
     _getTimeType(options = {}) {
         const timeType = options['time'];
@@ -707,8 +746,8 @@ export class List extends Application {
 
     /**
      * Gets the indicator style from options or default indicator style
-     * @param {object} options - The options object
-     * @returns {string} - The indicator style
+     * @param {object} options The options object
+     * @returns {string} The indicator style
      */
     _getIndicatorStyle(options = {}) {
         const indicatorStyle = options['indicator-style'];
@@ -721,8 +760,8 @@ export class List extends Application {
 
     /**
      * Gets the color rule from options or default color rule
-     * @param {object} options - The options object
-     * @returns {string} - The color rule
+     * @param {object} options The options object
+     * @returns {string} The color rule
      */
     _getColoringRule(options = {}) {
         const colorRule = options['color'];
@@ -732,8 +771,8 @@ export class List extends Application {
 
     /**
      * Gets the time style from options or default time style
-     * @param {object} options - The options object
-     * @returns {string} - The time style
+     * @param {object} options The options object
+     * @returns {string} The time style
      */
     _getTimeStyle(options = {}) {
         const timeStyle = options['time-style'];
@@ -746,8 +785,8 @@ export class List extends Application {
 
     /**
      * Gets the quoting style from options or the default style
-     * @param {object} options - The options object
-     * @returns {string} - The quoting style
+     * @param {object} options The options object
+     * @returns {string} The quoting style
      */
     _getQuotingStyle(options = {}) {
         const quotingStyle = options['quoting-style'];
@@ -762,9 +801,9 @@ export class List extends Application {
      * Gets the width from options or default width but not less than 1
      * Gets the width from options or default width.
      * 0 means unlimited (no line wrapping / as many columns as needed).
-     * @param {object} options - The options object
-     * @returns {number} - The width
-     * @returns {number} - The width, or 0 for unlimited
+     * @param {object} options The options object
+     * @returns {number} The width
+     * @returns {number} The width, or 0 for unlimited
      */
     _getWidth(options = {}) {
         const rawWidth = options['width'];
@@ -778,8 +817,8 @@ export class List extends Application {
 
     /**
      * Gets the terminating character from options or default terminating character
-     * @param {object} options - The options object
-     * @returns {string} - The terminating character
+     * @param {object} options The options object
+     * @returns {string} The terminating character
      */
     _getTerminatingCharacter(options = {}) {
         const zero = Boolean(options['zero']);

@@ -15,9 +15,9 @@ export class Declare extends Application {
 
     /**
      * Declares or unsets variables for shell commands
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the declare/unset command
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the declare/unset command
      */
     main(commandLine, context) {
         const program = commandLine.getProgram();
@@ -34,9 +34,9 @@ export class Declare extends Application {
 
     /**
      * Declares a variable for the shell command
-     * @param {string[]} args - The arguments of the command
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the declare command
+     * @param {string[]} args The arguments of the command
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the declare command
      */
     _declareVariable(args, context) {
         let argIndex = 0;
@@ -61,10 +61,10 @@ export class Declare extends Application {
 
     /**
      * Unsets a variable for the shell command
-     * @param {string[]} args - The arguments of the command
-     * @param {object} options - The options of the command
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the unset command
+     * @param {string[]} args The arguments of the command
+     * @param {object} options The options of the command
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the unset command
      */
     _unsetVariable(args, options, context) {
         if (options['all']) {

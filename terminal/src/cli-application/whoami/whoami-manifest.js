@@ -3,7 +3,7 @@ export const WHOAMI_MANIFEST = {
     version: '0.1.0',
     description: 'Prints the current user name',
     type: 'cli',
-    dependencies: ['systemUser'],
+    dependencies: ['shell'],
     programs: [{
         name: 'whoami',
         description: 'Prints the current user name',

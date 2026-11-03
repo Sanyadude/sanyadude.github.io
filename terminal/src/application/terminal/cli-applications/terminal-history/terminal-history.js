@@ -15,9 +15,9 @@ export class TerminalHistory extends Application {
 
     /**
      * Executes the `history` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the history command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the history command execution
      */
     main(commandLine, context) {
         const inputs = context.terminal.getInputHistory();

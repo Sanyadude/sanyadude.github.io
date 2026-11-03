@@ -11,10 +11,10 @@ export class FIGTransformer {
     }
     /**
      * Transforms given text into ASCII art based on font configuration and options
-     * @param {string} text - The text to transform
-     * @param {object} font - The font configuration
-     * @param {object} transformOptions - The options object
-     * @returns {string} - The ASCII art text
+     * @param {string} text The text to transform
+     * @param {object} font The font configuration
+     * @param {object} transformOptions The options object
+     * @returns {string} The ASCII art text
      */
     transform(text, font, transformOptions = {}) {
         if (!text || text.length === 0) return [];
@@ -60,8 +60,8 @@ export class FIGTransformer {
 
     /**
      * Gets maximum width which can be used for wrapping
-     * @param {number} width - The width
-     * @returns {number} - The width
+     * @param {number} width The width
+     * @returns {number} The width
      */
     _getMaxWidth(width = null) {
         return width && !isNaN(width) ? Number(width) : this._defaultWidth;
@@ -69,8 +69,8 @@ export class FIGTransformer {
 
     /**
      * Gets the width based on the options (can be null if not provided)
-     * @param {number} width - The width
-     * @returns {number} - The width
+     * @param {number} width The width
+     * @returns {number} The width
      */
     _getWidth(width = null) {
         return width && !isNaN(width) ? Number(width) : null;
@@ -78,9 +78,9 @@ export class FIGTransformer {
 
     /**
      * Gets the direction based on the print direction and options
-     * @param {object} font - The font object
-     * @param {string} direction - The direction ('ltr' or 'rtl' or null)
-     * @returns {number} - The direction (0: left to right, 1: right to left)
+     * @param {object} font The font object
+     * @param {string} direction The direction ('ltr' or 'rtl' or null)
+     * @returns {number} The direction (0: left to right, 1: right to left)
      */
     _getDirection(font, direction = null) {
         return (direction === 'rtl' || (direction !== 'ltr' && font.printDirection === 1)) ? 1 : 0;
@@ -88,9 +88,9 @@ export class FIGTransformer {
 
     /**
      * Gets the justification based on the options and direction
-     * @param {number} direction - The direction (0: left to right, 1: right to left)
-     * @param {string} justificationType - The justification type ('left', 'center', 'right' or null)
-     * @returns {number} - The justification (0: left, 1: center, 2: right)
+     * @param {number} direction The direction (0: left to right, 1: right to left)
+     * @param {string} justificationType The justification type ('left', 'center', 'right' or null)
+     * @returns {number} The justification (0: left, 1: center, 2: right)
      */
     _getJustification(direction, justificationType = null) {
         let justification = direction === 1 ? 2 : 0;
@@ -106,9 +106,9 @@ export class FIGTransformer {
 
     /**
      * Gets the horizontal layout based on the full layout
-     * @param {object} font - The font object
-     * @param {string} layoutType - The layout type (smushing, kerning, full-width)
-     * @returns {Object} - The horizontal layout object
+     * @param {object} font The font object
+     * @param {string} layoutType The layout type (smushing, kerning, full-width)
+     * @returns {object} The horizontal layout object
      */
     _getHorizontalLayout(font, layoutType = null) {
         const layoutOptions = Object.assign({}, font.layout.horizontal);
@@ -129,9 +129,9 @@ export class FIGTransformer {
 
     /**
      * Gets the vertical layout based on the full layout
-     * @param {object} font - The font object
-     * @param {string} layoutType - The layout type (smushing, kerning, full-width)
-     * @returns {Object} - The vertical layout object
+     * @param {object} font The font object
+     * @param {string} layoutType The layout type (smushing, kerning, full-width)
+     * @returns {object} The vertical layout object
      */
     _getVerticalLayout(font, layoutType = null) {
         return Object.assign({}, font.layout.vertical);
@@ -139,9 +139,9 @@ export class FIGTransformer {
 
     /**
      * Gets the FIG character based on the character code and font
-     * @param {number} characterCode - The character code
-     * @param {object} font - The font object
-     * @returns {string[]} - The FIG character
+     * @param {number} characterCode The character code
+     * @param {object} font The font object
+     * @returns {string[]} The FIG character
      */
     _getFigCharacter(characterCode, font) {
         return (font.characters[characterCode] || font.characters[this._defaultCharacterCode]).slice(); // Use space if character not found
@@ -149,8 +149,8 @@ export class FIGTransformer {
 
     /**
      * Gets the new lines based on the font height
-     * @param {object} font - The font object
-     * @returns {string[]} - The new lines
+     * @param {object} font The font object
+     * @returns {string[]} The new lines
      */
     _getNewFigLine(font) {
         return Array(font.height).fill('');
@@ -158,12 +158,12 @@ export class FIGTransformer {
 
     /**
      * Checks if the line should be wrapped
-     * @param {string[]} figLine - Lines of current FIG line
-     * @param {string[]} figCharacter - Lines of current FIG character
-     * @param {number} direction - The direction (0: left to right, 1: right to left)
-     * @param {number} maxWidth - The maximum width
-     * @param {object} horizontalLayout - The horizontal layout object
-     * @returns {boolean} - True if the line should be wrapped, false otherwise
+     * @param {string[]} figLine Lines of current FIG line
+     * @param {string[]} figCharacter Lines of current FIG character
+     * @param {number} direction The direction (0: left to right, 1: right to left)
+     * @param {number} maxWidth The maximum width
+     * @param {object} horizontalLayout The horizontal layout object
+     * @returns {boolean} True if the line should be wrapped, false otherwise
      */
     _shouldWrapLine(figLine, figCharacter, direction, maxWidth, horizontalLayout) {
         const spaces = (horizontalLayout.kerning || horizontalLayout.smushing)
@@ -175,10 +175,10 @@ export class FIGTransformer {
 
     /**
      * Calculates the minimum number of spaces to trim from the end of the FIG line and beginning of the FIG character
-     * @param {string[]} figLine - Lines of current FIG line
-     * @param {string[]} figCharacter - Lines of current FIG character
-     * @param {number} direction - The text direction (0: left to right, 1: right to left)
-     * @returns {number} - The minimum number of spaces to trim
+     * @param {string[]} figLine Lines of current FIG line
+     * @param {string[]} figCharacter Lines of current FIG character
+     * @param {number} direction The text direction (0: left to right, 1: right to left)
+     * @returns {number} The minimum number of spaces to trim
      */
     _calculateHorizontalKerningSpaces(figLine, figCharacter, direction = 0) {
         const spaceCounts = [];
@@ -211,9 +211,9 @@ export class FIGTransformer {
 
     /**
      * Trims spaces from the end of FIG line and beginning of FIG character
-     * @param {string[]} figLine - Lines of current FIG line
-     * @param {string[]} figCharacter - Lines of current FIG character
-     * @param {number} direction - The text direction (0: left to right, 1: right to left)
+     * @param {string[]} figLine Lines of current FIG line
+     * @param {string[]} figCharacter Lines of current FIG character
+     * @param {number} direction The text direction (0: left to right, 1: right to left)
      */
     _applyHorizontalKerning(figLine, figCharacter, direction = 0) {
         const spaces = this._calculateHorizontalKerningSpaces(figLine, figCharacter, direction);
@@ -243,11 +243,11 @@ export class FIGTransformer {
 
     /**
      * If smushing is enabled, applies smushing on kerned FIG lines and FIG characters, otherwise adds FIG lines and FIG characters without smushing
-     * @param {string[]} figLine - Lines of current FIG line
-     * @param {string[]} figCharacter - Lines of current FIG character
-     * @param {number} direction - The text direction (0: left to right, 1: right to left)
-     * @param {object} font - The font object
-     * @param {object} layoutOptions - The layout options object
+     * @param {string[]} figLine Lines of current FIG line
+     * @param {string[]} figCharacter Lines of current FIG character
+     * @param {number} direction The text direction (0: left to right, 1: right to left)
+     * @param {object} font The font object
+     * @param {object} layoutOptions The layout options object
      */
     _applyHorizontalSmushing(figLine, figCharacter, direction, font, layoutOptions) {
         let smushable = this._isHorizontalSmushable(figLine, figCharacter, direction, font.hardblank, layoutOptions);
@@ -260,12 +260,12 @@ export class FIGTransformer {
 
     /**
      * Checks if FIG lines and FIG characters are smushable
-     * @param {string[]} figLine - Lines of current FIG line
-     * @param {string[]} figCharacter - Lines of current FIG character
-     * @param {number} direction - The text direction (0: left to right, 1: right to left)
-     * @param {string} hardblank - The hardblank character
-     * @param {object} layoutOptions - The layout options object
-     * @returns {boolean} - True if FIG lines and FIG characters are smushable, false otherwise
+     * @param {string[]} figLine Lines of current FIG line
+     * @param {string[]} figCharacter Lines of current FIG character
+     * @param {number} direction The text direction (0: left to right, 1: right to left)
+     * @param {string} hardblank The hardblank character
+     * @param {object} layoutOptions The layout options object
+     * @returns {boolean} True if FIG lines and FIG characters are smushable, false otherwise
      */
     _isHorizontalSmushable(figLine, figCharacter, direction, hardblank, layoutOptions) {
         if (!layoutOptions.smushing) return false;
@@ -286,11 +286,11 @@ export class FIGTransformer {
 
     /**
      * Smushes FIG lines and FIG characters horizontally
-     * @param {string[]} figLine - Lines of current FIG line
-     * @param {string[]} figCharacter - Lines of current FIG character
-     * @param {number} direction - The text direction (0: left to right, 1: right to left)
-     * @param {string} hardblank - The hardblank character
-     * @param {object} layoutOptions - The layout options object
+     * @param {string[]} figLine Lines of current FIG line
+     * @param {string[]} figCharacter Lines of current FIG character
+     * @param {number} direction The text direction (0: left to right, 1: right to left)
+     * @param {string} hardblank The hardblank character
+     * @param {object} layoutOptions The layout options object
      */
     _smushLinesHorizontal(figLine, figCharacter, direction, hardblank, layoutOptions) {
         for (let i = 0; i < figLine.length; i++) {
@@ -315,11 +315,11 @@ export class FIGTransformer {
 
     /**
      * Smushes two characters based on the smushing rules
-     * @param {string} leftCharacter - The left character
-     * @param {string} rightCharacter - The right character
-     * @param {string} hardblank - The hardblank character
-     * @param {object} layoutOptions - The layout options object
-     * @returns {string} - The smushed character
+     * @param {string} leftCharacter The left character
+     * @param {string} rightCharacter The right character
+     * @param {string} hardblank The hardblank character
+     * @param {object} layoutOptions The layout options object
+     * @returns {string} The smushed character
      */
     _smushCharactersHorizontal(leftCharacter, rightCharacter, hardblank, layoutOptions) {
         // SPACE SMUSHING
@@ -361,9 +361,9 @@ export class FIGTransformer {
 
     /**
      * Adds FIG lines and FIG characters without smushing
-     * @param {string[]} figLine - Lines of current FIG line
-     * @param {string[]} figCharacter - Lines of current FIG character
-     * @param {number} direction - The text direction (0: left to right, 1: right to left)
+     * @param {string[]} figLine Lines of current FIG line
+     * @param {string[]} figCharacter Lines of current FIG character
+     * @param {number} direction The text direction (0: left to right, 1: right to left)
      */
     _addLinesHorizontal(figLine, figCharacter, direction) {
         for (let i = 0; i < figLine.length; i++) {
@@ -377,8 +377,8 @@ export class FIGTransformer {
 
     /**
      * Replaces the hardblank with space in the FIG lines
-     * @param {string[][]} figLines - The lines of FIG text
-     * @param {object} font - The font object
+     * @param {string[][]} figLines The lines of FIG text
+     * @param {object} font The font object
      */
     _replaceHardblank(figLines, font) {
         for (let i = 0; i < figLines.length; i++) {
@@ -390,9 +390,9 @@ export class FIGTransformer {
 
     /**
      * Aligns FIG lines to the specified width
-     * @param {string[][]} figLines - The lines of FIG text
-     * @param {number} justification - The justification (0: left, 1: center, 2: right)
-     * @param {number} width - The width of lines (if not provided, the width of the first FIG line is used)
+     * @param {string[][]} figLines The lines of FIG text
+     * @param {number} justification The justification (0: left, 1: center, 2: right)
+     * @param {number} width The width of lines (if not provided, the width of the first FIG line is used)
      */
     _alignLines(figLines, justification, width = null) {
         if (figLines.length === 0) return;
@@ -419,8 +419,8 @@ export class FIGTransformer {
 
     /**
      * Applies the vertical kerning to the rows
-     * @param {string[][]} figLines - The lines of FIG text
-     * @param {object} layoutOptions - The layout options object
+     * @param {string[][]} figLines The lines of FIG text
+     * @param {object} layoutOptions The layout options object
      */
     _applyVerticalKerning(figLines, layoutOptions) {
         if (!layoutOptions.kerning && !layoutOptions.smushing) return;
@@ -447,8 +447,8 @@ export class FIGTransformer {
 
     /**
      * If smushing is enabled, applies vertical smushing
-     * @param {string[][]} figLines - The lines of FIG text
-     * @param {object} layoutOptions - The layout options object
+     * @param {string[][]} figLines The lines of FIG text
+     * @param {object} layoutOptions The layout options object
      */
     _applyVerticalSmushing(figLines, layoutOptions) {
         for (let i = 0; i < figLines.length; i++) {
@@ -474,10 +474,10 @@ export class FIGTransformer {
 
     /**
      * Checks if FIG lines are smushable
-     * @param {string[]} topLines - Lines of current top FIG line
-     * @param {string[]} bottomLines - Lines of current bottom FIG line
-     * @param {object} layoutOptions - The layout options object
-     * @returns {boolean} - True if FIG lines are smushable, false otherwise
+     * @param {string[]} topLines Lines of current top FIG line
+     * @param {string[]} bottomLines Lines of current bottom FIG line
+     * @param {object} layoutOptions The layout options object
+     * @returns {boolean} True if FIG lines are smushable, false otherwise
      */
     _isVerticalSmushable(topLines, bottomLines, layoutOptions) {
         if (!layoutOptions.smushing) return false;
@@ -486,10 +486,10 @@ export class FIGTransformer {
 
     /**
      * Smushes two characters based on the smushing rules
-     * @param {string} topCharacter - The top character
-     * @param {string} bottomCharacter - The bottom character
-     * @param {object} layoutOptions - The layout options object
-     * @returns {string} - The smushed character
+     * @param {string} topCharacter The top character
+     * @param {string} bottomCharacter The bottom character
+     * @param {object} layoutOptions The layout options object
+     * @returns {string} The smushed character
      */
     _smushCharactersVertical(topCharacter, bottomCharacter, layoutOptions) {
         // SPACE SMUSHING

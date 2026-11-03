@@ -4,7 +4,7 @@
 export class Database {
     /**
      * Creates a new Database instance
-     * @param {object} adapter - The adapter for the database
+     * @param {object} adapter The adapter for the database
      * @returns {Database} The database instance
      */
     constructor(adapter) {
@@ -32,8 +32,8 @@ export class Database {
 
     /**
      * Gets a value from the database
-     * @param {string} store - The store to get the value from
-     * @param {string} key - The key to get the value from
+     * @param {string} store The store to get the value from
+     * @param {string} key The key to get the value from
      * @returns {Promise} The promise that resolves to the value
      */
     async get(store, key) {
@@ -42,7 +42,7 @@ export class Database {
 
     /**
      * Gets all values from the database
-     * @param {string} store - The store to get the values from
+     * @param {string} store The store to get the values from
      * @returns {Promise} The promise that resolves to the values
      */
     async getAll(store) {
@@ -51,8 +51,8 @@ export class Database {
 
     /**
      * Checks if a value exists in the database
-     * @param {string} store - The store to check the value in
-     * @param {string} key - The key to check the value in
+     * @param {string} store The store to check the value in
+     * @param {string} key The key to check the value in
      * @returns {Promise} The promise that resolves to the value
      */
     async has(store, key) {
@@ -61,9 +61,9 @@ export class Database {
 
     /**
      * Puts a value into the database
-     * @param {string} store - The store to put the value into
-     * @param {any} value - The value to put into the database
-     * @param {string} key - The key to put the value into
+     * @param {string} store The store to put the value into
+     * @param {any} value The value to put into the database
+     * @param {string} key The key to put the value into
      * @returns {Promise} The promise that resolves to the value
      */
     async put(store, value, key) {
@@ -72,8 +72,8 @@ export class Database {
 
     /**
      * Deletes a value from the database
-     * @param {string} store - The store to delete the value from
-     * @param {string} key - The key to delete the value from
+     * @param {string} store The store to delete the value from
+     * @param {string} key The key to delete the value from
      * @returns {Promise} The promise that resolves to the value
      */
     async delete(store, key) {
@@ -82,7 +82,7 @@ export class Database {
 
     /**
      * Clears a store from the database
-     * @param {string} store - The store to clear from the database
+     * @param {string} store The store to clear from the database
      * @returns {Promise} The promise that resolves to the database
      */
     async clear(store) {

@@ -15,9 +15,9 @@ export class Move extends Application {
 
     /**
      * Executes the `move` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the move command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the move command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();
