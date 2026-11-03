@@ -9,15 +9,35 @@ export class ProcessStream {
         this._queue = [];
         this._readers = [];
         this._closed = false;
+        this._sink = null;
+    }
+
+    /**
+     * Sends every write straight to a consumer instead of queuing it for read
+     * Used by the pty master so terminal output is written as the process produces it
+     * @param {Function|null} sink The consumer, or null to queue for readers again
+     * @returns {ProcessStream} The stream
+     */
+    setSink(sink = null) {
+        this._sink = typeof sink === 'function' ? sink : null;
+        if (!this._sink) return this;
+        while (this._queue.length > 0) {
+            this._sink(this._queue.shift());
+        }
+        return this;
     }
 
     /**
      * Writes data to the stream
-     * @param {any} data - The data to write
-     * @returns {boolean} - True if the data was written, false otherwise
+     * @param {any} data The data to write
+     * @returns {boolean} True if the data was written, false otherwise
      */
     write(data) {
         if (this._closed) return false;
+        if (this._sink) {
+            this._sink(data);
+            return true;
+        }
         if (this._readers.length > 0) {
             const resolve = this._readers.shift();
             resolve(data);
@@ -28,8 +48,17 @@ export class ProcessStream {
     }
 
     /**
+     * Returns queued data as one string and removes it from the stream
+     * @returns {string} The queued text
+     */
+    collect() {
+        const chunks = this._queue.splice(0, this._queue.length);
+        return chunks.map((chunk) => String(chunk)).join('');
+    }
+
+    /**
      * Reads the next available data
-     * @returns {Promise<any>} - A promise that resolves to the data
+     * @returns {Promise<any>} A promise that resolves to the data
      */
     read() {
         if (this._queue.length > 0) {
@@ -45,7 +74,7 @@ export class ProcessStream {
 
     /**
      * Closes the stream
-     * @returns {boolean} - True if the stream was closed, false otherwise
+     * @returns {boolean} True if the stream was closed, false otherwise
      */
     close() {
         if (this._closed) return false;
@@ -59,7 +88,7 @@ export class ProcessStream {
 
     /**
      * Checks if the stream is closed
-     * @returns {boolean} - True if the stream is closed, false otherwise
+     * @returns {boolean} True if the stream is closed, false otherwise
      */
     isClosed() {
         return this._closed;

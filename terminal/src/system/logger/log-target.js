@@ -5,8 +5,8 @@
 export class LogTarget {
     /**
      * Creates a new LogTarget
-     * @param {object} options - The options for the LogTarget
-     * @param {string} options.name - The name of the LogTarget
+     * @param {object} options The options for the LogTarget
+     * @param {string} options.name The name of the LogTarget
      */
     constructor(options = {}) {
         const defaultOptions = {
@@ -18,7 +18,7 @@ export class LogTarget {
 
     /**
      * Handles a log entry
-     * @param {object} logEntry - The log entry to handle
+     * @param {object} logEntry The log entry to handle
      * @returns {LogTarget} The LogTarget
      */
     handle(logEntry) {

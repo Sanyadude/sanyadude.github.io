@@ -16,9 +16,9 @@ export class Head extends Application {
 
     /**
      * Executes the `head` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the head command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the head command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();
@@ -43,8 +43,8 @@ export class Head extends Application {
 
     /**
      * Returns the line delimiter for the given options
-     * @param {object} options - The options object
-     * @returns {string} - The line delimiter
+     * @param {object} options The options object
+     * @returns {string} The line delimiter
      */
     _getLineDelimiter(options) {
         return options['zero-terminated'] ? '\0' : '\n';
@@ -52,9 +52,9 @@ export class Head extends Application {
 
     /**
      * Splits text into lines using the delimiter for the given options
-     * @param {string} text - The text to split
-     * @param {object} options - The options object
-     * @returns {string[]} - The lines
+     * @param {string} text The text to split
+     * @param {object} options The options object
+     * @returns {string[]} The lines
      */
     _splitLines(text, options) {
         if (options['zero-terminated']) return text.split('\0');
@@ -63,9 +63,9 @@ export class Head extends Application {
 
     /**
      * Reads the stdin and returns the last part of the stdin
-     * @param {string} stdin - The stdin to read
-     * @param {object} options - The options object
-     * @returns {string} - The last part of the stdin
+     * @param {string} stdin The stdin to read
+     * @param {object} options The options object
+     * @returns {string} The last part of the stdin
      */
     _readFromStdin(stdin, options) {
         if (options['bytes']) {
@@ -88,17 +88,17 @@ export class Head extends Application {
     }
 
     /**
-     * Reads the file and returns the last part of the file
-     * @param {FileEntry} file - The file to read
-     * @param {object} options - The options object
-     * @returns {string} - The last part of the file
+     * Reads the file and returns the first part of the file
+     * @param {FileEntry} file The file to read
+     * @param {object} options The options object
+     * @returns {string} The first part of the file
      */
     _readFromFile(file, options) {
+        const bytes = file.read();
         if (options['bytes']) {
             const bytesCount = !isNaN(parseInt(options['bytes'])) 
                 ? parseInt(options['bytes']) 
                 : DEFAULT_BYTES_NUMBER;
-            const bytes = file.read();
             const bytesToDisplay = bytes.slice(0, bytesCount);
             const decoder = new TextDecoder();
             return decoder.decode(bytesToDisplay);
@@ -107,9 +107,34 @@ export class Head extends Application {
         const linesCount = !isNaN(parseInt(options['lines'])) 
             ? parseInt(options['lines']) 
             : DEFAULT_LINES_NUMBER;
-        const lines = this._splitLines(file.readAsString(), options);
+        const delimiterByte = options['zero-terminated'] ? 0 : 10;
+        const text = linesCount > 0
+            ? this._decodeFirstLines(bytes, linesCount, delimiterByte)
+            : new TextDecoder().decode(bytes);
+        const lines = this._splitLines(text, options);
         const linesToDisplay = lines.slice(0, linesCount);
         return linesToDisplay.join(delimiter);
+    }
+
+    /**
+     * Decodes the first lines of a file, leaving the rest undecoded
+     * @param {Uint8Array} bytes The file bytes
+     * @param {number} lineCount The number of lines to include
+     * @param {number} delimiter The delimiter byte
+     * @returns {string} The decoded prefix
+     */
+    _decodeFirstLines(bytes, lineCount, delimiter) {
+        let found = 0;
+        let end = bytes.length;
+        for (let i = 0; i < bytes.length; i++) {
+            if (bytes[i] !== delimiter) continue;
+            found++;
+            if (found === lineCount) {
+                end = i + 1;
+                break;
+            }
+        }
+        return new TextDecoder().decode(bytes.subarray(0, end));
     }
 }
 

@@ -15,9 +15,9 @@ export class Type extends Application {
 
     /**
      * Executes the `type` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the TYPE command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the TYPE command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();

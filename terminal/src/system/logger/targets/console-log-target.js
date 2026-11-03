@@ -8,10 +8,10 @@ import { LOG_TARGET_TYPE } from '../log-target-type.js'
 export class ConsoleLogTarget extends LogTarget {
     /**
      * Creates a new ConsoleLogTarget
-     * @param {object} options - The options for the ConsoleLogTarget
-     * @param {string} options.name - The name of the ConsoleLogTarget
-     * @param {string} options.template - The template to use for the log entry
-     * @param {boolean} options.useNativeLog - Whether to use the native log method
+     * @param {object} options The options for the ConsoleLogTarget
+     * @param {string} options.name The name of the ConsoleLogTarget
+     * @param {string} options.template The template to use for the log entry
+     * @param {boolean} options.useNativeLog Whether to use the native log method
      */
     constructor(options = {}) {
         const defaultOptions = {
@@ -34,7 +34,7 @@ export class ConsoleLogTarget extends LogTarget {
 
     /**
      * Formats a log entry
-     * @param {object} logEntry - The log entry to format
+     * @param {object} logEntry The log entry to format
      * @returns {string} The formatted log entry
      */
     _format(logEntry) {
@@ -49,7 +49,7 @@ export class ConsoleLogTarget extends LogTarget {
 
     /**
      * Handles a log entry
-     * @param {object} logEntry - The log entry to handle
+     * @param {object} logEntry The log entry to handle
      * @returns {ConsoleLogTarget} The ConsoleLogTarget
      */
     handle(logEntry) {

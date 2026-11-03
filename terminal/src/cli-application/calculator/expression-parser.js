@@ -27,7 +27,7 @@ export class ExpressionParser {
 
     /**
      * Returns the token at the current position
-     * @returns {{type: string, value: string|null}} - The current token
+     * @returns {{type: string, value: string|null}} The current token
      */
     _current() {
         return this._tokens[this._position];
@@ -35,8 +35,8 @@ export class ExpressionParser {
 
     /**
      * Consumes the current token if it matches the expected type, otherwise throws
-     * @param {string} type - The expected token type
-     * @returns {{type: string, value: string|null}} - The consumed token
+     * @param {string} type The expected token type
+     * @returns {{type: string, value: string|null}} The consumed token
      * @throws {Error} If the current token does not match the expected type
      */
     _consume(type) {
@@ -50,8 +50,8 @@ export class ExpressionParser {
 
     /**
      * Parses the given token list into an AST
-     * @param {Array<{type: string, value: string|null}>} tokens - The token list from the tokenizer
-     * @returns {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} - The root AST node
+     * @param {Array<{type: string, value: string|null}>} tokens The token list from the tokenizer
+     * @returns {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} The root AST node
      * @throws {Error} If the token list contains syntax errors
      */
     parse(tokens) {
@@ -64,7 +64,7 @@ export class ExpressionParser {
 
     /**
      * Parses an expression (addition and subtraction)
-     * @returns {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} - The parsed AST node
+     * @returns {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} The parsed AST node
      */
     _expression() {
         let left = this._term();
@@ -78,7 +78,7 @@ export class ExpressionParser {
 
     /**
      * Parses a term (multiplication and division)
-     * @returns {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} - The parsed AST node
+     * @returns {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} The parsed AST node
      */
     _term() {
         let left = this._power();
@@ -92,7 +92,7 @@ export class ExpressionParser {
 
     /**
      * Parses a power expression (right-associative exponentiation)
-     * @returns {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} - The parsed AST node
+     * @returns {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} The parsed AST node
      */
     _power() {
         let base = this._unary();
@@ -105,7 +105,7 @@ export class ExpressionParser {
 
     /**
      * Parses a unary expression (unary minus or plus)
-     * @returns {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} - The parsed AST node
+     * @returns {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} The parsed AST node
      */
     _unary() {
         if (this._current().type === TOKEN_TYPE.MINUS) {
@@ -121,7 +121,7 @@ export class ExpressionParser {
 
     /**
      * Parses a function call or resolves a named constant
-     * @returns {NumberNode|FunctionCallNode} - The parsed AST node
+     * @returns {NumberNode|FunctionCallNode} The parsed AST node
      * @throws {Error} If the identifier is not a known function or constant
      */
     _call() {
@@ -150,7 +150,7 @@ export class ExpressionParser {
 
     /**
      * Parses a primary expression (number literal or parenthesized expression)
-     * @returns {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} - The parsed AST node
+     * @returns {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} The parsed AST node
      * @throws {Error} If an unexpected token is encountered
      */
     _primary() {

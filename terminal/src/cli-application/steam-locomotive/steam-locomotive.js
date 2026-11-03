@@ -20,9 +20,9 @@ export class SteamLocomotive extends Application {
 
     /**
      * Executes the `sl` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {Promise<string>} - The result of the sl command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {Promise<string>} The result of the sl command execution
      */
     async main(commandLine, context) {
         const options = commandLine.getOptions();
@@ -33,22 +33,26 @@ export class SteamLocomotive extends Application {
         const runtime = context.getRuntime();
         const terminal = context.terminal;
         let width = terminal.getSize().columns || DEFAULT_WIDTH;
-        let x = width - 1;
+        let x = width;
         let drawn = 0;
         terminal.scrollInputToTop();
-        terminal.hidePrompt();
+        if (!terminal.isCursorAddressingSupported()) {
+            const sprite = this._compose(model, x, cars, flying, accident);
+            const lines = sprite.map(line => line.slice(0, width));
+            terminal.write(lines.join('\n'));
+            return '';
+        }
         while (true) {
             if (runtime.isAborted()) break;
             const sprite = this._compose(model, x, cars, flying, accident);
             if (x < -this._getLinesMaxWidth(sprite)) break;
             const size = terminal.getSize();
             width = size.columns || DEFAULT_WIDTH;
-            const rows = (size.lines || DEFAULT_ROWS) - 2;
+            const rows = (size.rows || DEFAULT_ROWS) - 2;
             const frame = this._toScreen(sprite, x, width, rows, flying, model.FLY_DIVISOR);
-            for (let i = 0; i < drawn; i++) {
-                terminal.removeOutputLine();
-            }
-            frame.forEach(line => terminal.writeOutputLine(line));
+            const frameText = `${frame.join('\n')}\n`;
+            const output = drawn > 0 ? `\x1b[${drawn}F\x1b[J${frameText}` : frameText;
+            terminal.write(output);
             drawn = frame.length;
             await runtime.sleep(DELAY_MS);
             x -= 1;
@@ -58,12 +62,12 @@ export class SteamLocomotive extends Application {
 
     /**
      * Assembles engine, tender, cars, passengers, and smoke into one sprite
-     * @param {object} model - The locomotive model
-     * @param {number} x - The left column of the engine on screen
-     * @param {number} cars - The number of passenger cars
-     * @param {boolean} flying - Whether the locomotive is flying
-     * @param {boolean} accident - Whether people cry for help
-     * @returns {string[]} - The sprite lines
+     * @param {object} model The locomotive model
+     * @param {number} x The left column of the engine on screen
+     * @param {number} cars The number of passenger cars
+     * @param {boolean} flying Whether the locomotive is flying
+     * @param {boolean} accident Whether people cry for help
+     * @returns {string[]} The sprite lines
      */
     _compose(model, x, cars, flying, accident) {
         const wheels = model.WHEELS[this._getValidIndex(model.LENGTH + x, model.PATTERNS)];
@@ -110,13 +114,13 @@ export class SteamLocomotive extends Application {
 
     /**
      * Places the sprite in a padded viewport and clips it to the terminal
-     * @param {string[]} sprite - The sprite lines
-     * @param {number} x - The left column of the engine on screen
-     * @param {number} width - The terminal width
-     * @param {number} rows - The terminal height
-     * @param {boolean} flying - Whether the locomotive is flying
-     * @param {number} flyDivisor - Columns per row of lift in fly mode
-     * @returns {string[]} - Visible lines
+     * @param {string[]} sprite The sprite lines
+     * @param {number} x The left column of the engine on screen
+     * @param {number} width The terminal width
+     * @param {number} rows The terminal height
+     * @param {boolean} flying Whether the locomotive is flying
+     * @param {number} flyDivisor Columns per row of lift in fly mode
+     * @returns {string[]} Visible lines
      */
     _toScreen(sprite, x, width, rows, flying, flyDivisor) {
         const sky = Math.max(SKY_PADDING, Math.floor(rows / 2) - 5);
@@ -148,10 +152,10 @@ export class SteamLocomotive extends Application {
 
     /**
      * Draws a waving passenger; pose flips every 12 screen columns
-     * @param {string[][]} canvas - The canvas
-     * @param {number} y - The top row of the passenger
-     * @param {number} manX - The passenger column on the sprite
-     * @param {number} engineX - The left column of the engine on screen
+     * @param {string[][]} canvas The canvas
+     * @param {number} y The top row of the passenger
+     * @param {number} manX The passenger column on the sprite
+     * @param {number} engineX The left column of the engine on screen
      */
     _blitMan(canvas, y, manX, engineX) {
         const pose = MAN.POSES[this._getValidIndex(Math.trunc((MAN.LENGTH + engineX + manX) / MAN.FRAME_DIVISOR), 2)];
@@ -162,9 +166,9 @@ export class SteamLocomotive extends Application {
 
     /**
      * Builds the smoke trail from the funnel
-     * @param {number} funnelX - The funnel column
-     * @param {number} engineX - The left column of the engine on screen
-     * @param {boolean} flying - Whether smoke drifts upward
+     * @param {number} funnelX The funnel column
+     * @param {number} engineX The left column of the engine on screen
+     * @param {boolean} flying Whether smoke drifts upward
      * @returns {{puffs: {x: number, y: number, text: string}[], width: number, rise: number}}
      */
     _smoke(funnelX, engineX, flying) {
@@ -189,10 +193,10 @@ export class SteamLocomotive extends Application {
 
     /**
      * Blits string lines onto the canvas
-     * @param {string[][]} canvas - The canvas
-     * @param {string[]} lines - The lines to blit
-     * @param {number} x - The left column
-     * @param {number} y - The top row
+     * @param {string[][]} canvas The canvas
+     * @param {string[]} lines The lines to blit
+     * @param {number} x The left column
+     * @param {number} y The top row
      */
     _blit(canvas, lines, x, y) {
         if (!lines) return;
@@ -210,9 +214,9 @@ export class SteamLocomotive extends Application {
 
     /**
      * Creates a space-filled character canvas
-     * @param {number} width - The canvas width
-     * @param {number} height - The canvas height
-     * @returns {string[][]} - The canvas
+     * @param {number} width The canvas width
+     * @param {number} height The canvas height
+     * @returns {string[][]} The canvas
      */
     _createCanvas(width, height) {
         return Array.from({ length: height }, () => Array.from({ length: width }, () => ' '));
@@ -220,8 +224,8 @@ export class SteamLocomotive extends Application {
 
     /**
      * Parses the optional passenger-car count
-     * @param {string[]} args - The command arguments
-     * @returns {number} - The number of cars
+     * @param {string[]} args The command arguments
+     * @returns {number} The number of cars
      */
     _carCount(args) {
         const parsed = parseInt(args[0], 10);
@@ -231,9 +235,9 @@ export class SteamLocomotive extends Application {
 
     /**
      * Returns a wrapped non-negative index
-     * @param {number} value - The value to wrap
-     * @param {number} size - The cycle length
-     * @returns {number} - The wrapped index
+     * @param {number} value The value to wrap
+     * @param {number} size The cycle length
+     * @returns {number} The wrapped index
      */
     _getValidIndex(value, size) {
         return ((value % size) + size) % size;
@@ -241,8 +245,8 @@ export class SteamLocomotive extends Application {
 
     /**
      * Returns the longest string length in a list
-     * @param {string[]} lines - The lines
-     * @returns {number} - The maximum length
+     * @param {string[]} lines The lines
+     * @returns {number} The maximum length
      */
     _getLinesMaxWidth(lines) {
         if (!lines || lines.length === 0) return 0;

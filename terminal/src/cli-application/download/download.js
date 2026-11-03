@@ -16,9 +16,9 @@ export class Download extends Application {
 
     /**
      * Executes the `dl` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the dl command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the dl command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();

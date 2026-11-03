@@ -6,8 +6,8 @@ import { HORIZONTAL_MIRROR_MAP, VERTICAL_MIRROR_MAP, BORDER_STYLES } from './con
 export class FIGFilter {
     /**
      * Applies the horizontal mirroring to lines of text
-     * @param {string[]} lines - The lines of text
-     * @returns {string[]} - The flipped lines
+     * @param {string[]} lines The lines of text
+     * @returns {string[]} The flipped lines
      */
     flipHorizontalFilter(lines) {
         return lines.map(line => {
@@ -25,8 +25,8 @@ export class FIGFilter {
 
     /**
      * Applies the vertical mirroring to lines of text
-     * @param {string[]} lines - The lines of text
-     * @returns {string[]} - The flipped lines
+     * @param {string[]} lines The lines of text
+     * @returns {string[]} The flipped lines
      */
     flipVerticalFilter(lines) {
         return lines.reverse().map(line => {
@@ -44,8 +44,8 @@ export class FIGFilter {
 
     /**
      * Crops all blanks around the text
-     * @param {string[]} lines - The lines of text
-     * @returns {string[]} - The cropped lines
+     * @param {string[]} lines The lines of text
+     * @returns {string[]} The cropped lines
      */
     cropFilter(lines) {
         if (!lines || lines.length === 0) return lines;
@@ -77,9 +77,9 @@ export class FIGFilter {
 
     /**
      * Adds padding around text lines
-     * @param {string[]} lines - The lines of text
-     * @param {number} padding - The padding (horizontal = padding, vertical = padding/2)
-     * @returns {string[]} - The lines with padding
+     * @param {string[]} lines The lines of text
+     * @param {number} padding The padding (horizontal = padding, vertical = padding/2)
+     * @returns {string[]} The lines with padding
      */
     paddingFilter(lines, padding = 0) {
         const verticalPadding = Math.floor(padding / 2);
@@ -100,10 +100,10 @@ export class FIGFilter {
 
     /**
      * Adds a border around text lines
-     * @param {string[]} lines - The lines of text
-     * @param {string} style - The style of the border (single, double, rounded, ascii, none)
-     * @param {number} padding - The padding of the border
-     * @returns {string[]} - The lines with the border
+     * @param {string[]} lines The lines of text
+     * @param {string} style The style of the border (single, double, rounded, ascii, none)
+     * @param {number} padding The padding of the border
+     * @returns {string[]} The lines with the border
      */
     borderFilter(lines, style = 'single', padding = 0) {
         const borderStyle = Object.keys(BORDER_STYLES).includes(style) ? BORDER_STYLES[style] : BORDER_STYLES.single;
@@ -138,11 +138,11 @@ export class FIGFilter {
 
     /**
      * Applies a color filter to lines of text using a discrete set of ANSI colors
-     * @param {string[]} lines - The lines of text
-     * @param {Array<Array<number>>} colors - Array of RGB arrays defining the gradient stops, e.g., [[255,0,0], [255,255,0], [0,0,255]]
-     * @param {number} frequency - How fast colors cycle
-     * @param {number} angle - Angle of the rainbow in degrees
-     * @returns {string[]} - Rainbow-colored lines
+     * @param {string[]} lines The lines of text
+     * @param {Array<Array<number>>} colors Array of RGB arrays defining the gradient stops, e.g., [[255,0,0], [255,255,0], [0,0,255]]
+     * @param {number} frequency How fast colors cycle
+     * @param {number} angle Angle of the rainbow in degrees
+     * @returns {string[]} Rainbow-colored lines
      */
     colorFilter(lines, colors, frequency = 1, angle = 45) {
         const numColors = colors.length;
@@ -172,11 +172,11 @@ export class FIGFilter {
 
     /**
      * Applies a gradient color filter to lines of text
-     * @param {string[]} lines - The lines of text
-     * @param {Array<Array<number>>} colors - Array of RGB arrays defining the gradient stops, e.g., [[255,0,0], [255,255,0], [0,0,255]]
-     * @param {number} frequency - Frequency of sine wave modulation
-     * @param {number} angle - Angle in degrees for directional gradient
-     * @returns {string[]} - The filtered lines
+     * @param {string[]} lines The lines of text
+     * @param {Array<Array<number>>} colors Array of RGB arrays defining the gradient stops, e.g., [[255,0,0], [255,255,0], [0,0,255]]
+     * @param {number} frequency Frequency of sine wave modulation
+     * @param {number} angle Angle in degrees for directional gradient
+     * @returns {string[]} The filtered lines
      */
     gradientFilter(lines, colors, frequency = 1, angle = 45) {
         const radians = angle * Math.PI / 180;

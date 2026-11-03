@@ -5,22 +5,19 @@
 export class Entry {
     /**
      * Creates a new entry
-     * @param {string} name - The name of the entry (file or directory)
+     * @param {string} name The name of the entry (file or directory)
      */
     constructor(name) {
         this.name = name;
 
         const now = Date.now();
         this.metadata = {
-            author: 'root',
-            owner: 'root',
-            group: 'root',
             created: now,
             modified: now,
             accessed: now,
             changed: now,
             hidden: false,
-            permissions: 'rw-rw-rw-'
+            mode: 0
         };
     }
 
@@ -34,7 +31,7 @@ export class Entry {
 
     /**
      * Renames the entry
-     * @param {string} name - The new name of the entry
+     * @param {string} name The new name of the entry
      */
     rename(name) {
         this.name = name;
@@ -44,7 +41,7 @@ export class Entry {
 
     /**
      * Gets all metadata
-     * @returns {Object} Metadata object
+     * @returns {object} Metadata object
      */
     getMetadata() {
         return { ...this.metadata };
@@ -52,7 +49,7 @@ export class Entry {
 
     /**
      * Sets metadata (merges with existing metadata)
-     * @param {object} metadata - Metadata to set
+     * @param {object} metadata The metadata to set
      */
     setMetadata(metadata) {
         if (typeof metadata !== 'object' || metadata === null) {
@@ -64,8 +61,8 @@ export class Entry {
 
     /**
      * Gets a specific metadata field
-     * @param {string} key - Metadata key
-     * @returns {*} Metadata value or undefined
+     * @param {string} key Metadata key
+     * @returns {object} Metadata value or undefined
      */
     getMetadataField(key) {
         return this.metadata[key];
@@ -73,8 +70,8 @@ export class Entry {
 
     /**
      * Sets a specific metadata field
-     * @param {string} key - Metadata key
-     * @param {*} value - Metadata value
+     * @param {string} key Metadata key
+     * @param {*} value Metadata value
      */
     setMetadataField(key, value) {
         this.metadata[key] = value;
@@ -138,16 +135,16 @@ export class Entry {
     }
 
     /**
-     * Gets the permissions of the entry
-     * @returns {string} The permissions of the entry
+     * Gets the mode of the entry
+     * @returns {number} The mode of the entry
      */
-    getPermissions() {
-        return this.metadata.permissions;
+    getMode() {
+        return this.metadata.mode;
     }
 
     /**
      * Checks if the entry is hidden
-     * @returns {boolean} returns false by default
+     * @returns {boolean} True if the entry is hidden, false otherwise
      */
     isHidden() {
         return this.metadata.hidden;
@@ -155,7 +152,7 @@ export class Entry {
 
     /**
      * Checks if the entry is a directory
-     * @returns {boolean} returns false by default
+     * @returns {boolean} True if the entry is a directory, false otherwise
      */
     isDirectory() {
         return false;
@@ -163,7 +160,7 @@ export class Entry {
 
     /**
      * Checks if the entry is a file
-     * @returns {boolean} returns false by default
+     * @returns {boolean} True if the entry is a file, false otherwise
      */
     isFile() {
         return false;

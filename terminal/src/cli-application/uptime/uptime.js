@@ -15,9 +15,9 @@ export class Uptime extends Application {
 
     /**
      * Executes the `uptime` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the uptime command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the uptime command execution
      */
     main(commandLine, context) {
         const options = commandLine.getOptions();
@@ -35,9 +35,9 @@ export class Uptime extends Application {
 
     /**
      * Formats the uptime in all formats
-     * @param {number} since - The start date of the system
-     * @param {number} uptime - The uptime to format
-     * @returns {string} - The formatted uptime
+     * @param {number} since The start date of the system
+     * @param {number} uptime The uptime to format
+     * @returns {string} The formatted uptime
      */
     _formatAll(since, uptime) {
         return `${this._formatSince(since)}, ${this._formatPretty(uptime)}`;
@@ -45,8 +45,8 @@ export class Uptime extends Application {
 
     /**
      * Formats the uptime in raw format
-     * @param {number} uptime - The uptime to format
-     * @returns {string} - The formatted uptime
+     * @param {number} uptime The uptime to format
+     * @returns {string} The formatted uptime
      */
     _formatRaw(uptime) {
         return Math.round(uptime / 1000);
@@ -54,8 +54,8 @@ export class Uptime extends Application {
 
     /**
      * Formats the date in the format yyyy-mm-dd HH:MM:SS
-     * @param {number} timestamp - The timestamp to format
-     * @returns {string} - The formatted date
+     * @param {number} timestamp The timestamp to format
+     * @returns {string} The formatted date
      */
     _formatSince(timestamp) {
         const pad = (value) => value.toString().padStart(2, '0');
@@ -71,8 +71,8 @@ export class Uptime extends Application {
 
     /**
      * Formats the uptime in pretty format
-     * @param {number} uptime - The uptime to format
-     * @returns {string} - The formatted uptime
+     * @param {number} uptime The uptime to format
+     * @returns {string} The formatted uptime
      */
     _formatPretty(uptime) {
         let totalSeconds = Math.floor(uptime / 1000);

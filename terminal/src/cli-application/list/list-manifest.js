@@ -3,7 +3,7 @@ export const LIST_MANIFEST = {
     version: '0.1.0',
     description: 'Lists directory contents',
     type: 'cli',
-    dependencies: ['fileSystemExplorer', 'fileSystemManager'],
+    dependencies: ['fileSystemExplorer', 'fileSystemManager', 'userManager'],
     programs: [{
         name: 'ls',
         options: [

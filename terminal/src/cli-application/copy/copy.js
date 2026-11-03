@@ -15,9 +15,9 @@ export class Copy extends Application {
 
     /**
      * Executes the `copy` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the copy command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the copy command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();

@@ -6,9 +6,9 @@ import { OPERATIONS, WEEKDAYS, MONTHS } from './date-parser-config.js'
 export class DateExpressionEvaluator {
     /**
      * Evaluates the operations and returns a Date object
-     * @param {Array<{operation: string, unit: string, value: number, modifier: string}>} operations - The operations to evaluate
-     * @param {Date} baseDate - The base date to evaluate the operations from
-     * @returns {Date} - The evaluated Date object
+     * @param {Array<{operation: string, unit: string, value: number, modifier: string}>} operations The operations to evaluate
+     * @param {Date} baseDate The base date to evaluate the operations from
+     * @returns {Date} The evaluated Date object
      */
     evaluate(operations, baseDate = new Date()) {
         const date = new Date(baseDate);
@@ -43,8 +43,8 @@ export class DateExpressionEvaluator {
 
     /**
      * Applies a shift operation to a date
-     * @param {Date} date - The date to apply the shift operation to
-     * @param {object} operation - The operation to apply
+     * @param {Date} date The date to apply the shift operation to
+     * @param {object} operation The operation to apply
      */
     _applyShift(date, operation) {
         const { unit, value } = operation;
@@ -73,8 +73,8 @@ export class DateExpressionEvaluator {
 
     /**
      * Applies a date operation to a date
-     * @param {Date} date - The date to apply the date operation to
-     * @param {object} operation - The operation to apply
+     * @param {Date} date The date to apply the date operation to
+     * @param {object} operation The operation to apply
      */
     _applyDate(date, operation) {
         const { value } = operation;
@@ -84,8 +84,8 @@ export class DateExpressionEvaluator {
 
     /**
      * Applies a time operation to a date
-     * @param {Date} date - The date to apply the time operation to
-     * @param {object} operation - The operation to apply
+     * @param {Date} date The date to apply the time operation to
+     * @param {object} operation The operation to apply
      */
     _applyTime(date, operation) {
         const { value } = operation;
@@ -95,8 +95,8 @@ export class DateExpressionEvaluator {
 
     /**
      * Applies a timezone operation to a date
-     * @param {Date} date - The date to apply the timezone operation to
-     * @param {object} operation - The operation to apply
+     * @param {Date} date The date to apply the timezone operation to
+     * @param {object} operation The operation to apply
      */
     _applyTimezone(date, operation) {
         const { value } = operation;
@@ -115,8 +115,8 @@ export class DateExpressionEvaluator {
 
     /**
      * Applies a day operation to a date
-     * @param {Date} date - The date to apply the day operation to
-     * @param {object} operation - The operation to apply
+     * @param {Date} date The date to apply the day operation to
+     * @param {object} operation The operation to apply
      */
     _applyDay(date, operation) {
         const { value } = operation;
@@ -125,8 +125,8 @@ export class DateExpressionEvaluator {
 
     /**
      * Applies a weekday operation to a date
-     * @param {Date} date - The date to apply the weekday operation to
-     * @param {object} operation - The operation to apply
+     * @param {Date} date The date to apply the weekday operation to
+     * @param {object} operation The operation to apply
      */
     _applyWeekday(date, operation, weekStart = 'monday') {
         const { value, modifier } = operation;
@@ -149,8 +149,8 @@ export class DateExpressionEvaluator {
 
     /**
      * Applies a month operation to a date
-     * @param {Date} date - The date to apply the month operation to
-     * @param {object} operation - The operation to apply
+     * @param {Date} date The date to apply the month operation to
+     * @param {object} operation The operation to apply
      */
     _applyMonth(date, operation) {
         const { value, modifier } = operation;

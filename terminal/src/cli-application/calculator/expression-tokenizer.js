@@ -33,8 +33,8 @@ export class ExpressionTokenizer {
 
     /**
      * Tokenizes the given expression string and returns the token list
-     * @param {string} input - The raw expression string
-     * @returns {Array<{type: string, value: string|null}>} - The token list
+     * @param {string} input The raw expression string
+     * @returns {Array<{type: string, value: string|null}>} The token list
      * @throws {Error} If an unexpected character is encountered
      */
     tokenize(input) {

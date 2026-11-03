@@ -51,7 +51,7 @@ export class SystemMediaControl {
     
     /**
      * Normalizes the audio volume value
-     * @param {number} value - The value to normalize
+     * @param {number} value The value to normalize
      * @returns {number} The normalized value
      */
     static normalizeAudioVolumeValue(value) {
@@ -78,7 +78,7 @@ export class SystemMediaControl {
 
     /**
      * Sets the audio device name
-     * @param {string} name - The name of the audio device
+     * @param {string} name The name of the audio device
      */
     setAudioDevice(name) {
         this.audioOutputDeviceName = name;
@@ -86,7 +86,7 @@ export class SystemMediaControl {
 
     /**
      * Sets the audio volume step
-     * @param {number} value - The value of the audio volume step
+     * @param {number} value The value of the audio volume step
      */
     setVolumeStep(value = SystemMediaControl.DEFAULT_VOLUME_STEP) {
         this.audioVolumeStep = typeof value === 'number'
@@ -96,7 +96,7 @@ export class SystemMediaControl {
 
     /**
      * Sets the audio volume
-     * @param {number} value - The value of the audio volume
+     * @param {number} value The value of the audio volume
      */
     setVolume(value = SystemMediaControl.DEFAULT_AUDIO_VOLUME) {
         this.audioVolume = typeof value === 'number'
@@ -106,7 +106,7 @@ export class SystemMediaControl {
 
     /**
      * Increases the audio volume
-     * @param {number} value - The value of the audio volume step
+     * @param {number} value The value of the audio volume step
      */
     volumeUp(value) {
         const volumeStep = typeof value === 'number'
@@ -117,7 +117,7 @@ export class SystemMediaControl {
 
     /**
      * Decreases the audio volume
-     * @param {number} value - The value of the audio volume step
+     * @param {number} value The value of the audio volume step
      */
     volumeDown(value) {
         const volumeStep = typeof value === 'number'

@@ -29,9 +29,9 @@ export class Figlet extends Application {
 
     /**
      * Executes the `figlet` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the figlet command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the figlet command execution
      */
     async main(commandLine, context) {
         const options = commandLine.getOptions();
@@ -51,8 +51,8 @@ export class Figlet extends Application {
 
     /**
      * Gets a font, loading and parsing if necessary
-     * @param {string} fontName - The font name
-     * @returns {Promise<Object>} - The parsed font object
+     * @param {string} fontName The font name
+     * @returns {Promise<Object>} The parsed font object
      */
     async _getFont(fontName) {
         if (this._fontCache[fontName]) return this._fontCache[fontName];
@@ -66,8 +66,8 @@ export class Figlet extends Application {
 
     /**
      * Loads the font
-     * @param {string} fileName - The font name
-     * @returns {Promise<string>} - The font file content
+     * @param {string} fileName The font name
+     * @returns {Promise<string>} The font file content
      */
     async _loadFont(fileName) {
         const path = `${this._fontFilesPath}/${fileName}`;
@@ -77,7 +77,7 @@ export class Figlet extends Application {
 
     /**
      * Gets all available fonts
-     * @returns {Object} - The available fonts
+     * @returns {object} The available fonts
      */
     _getFonts() {
         return FONTS;
@@ -85,9 +85,9 @@ export class Figlet extends Application {
 
     /**
      * Parses the font file based on the type
-     * @param {string} fontFile - The font file content
-     * @param {string} fontType - The font type
-     * @returns {Object} - The parsed font object
+     * @param {string} fontFile The font file content
+     * @param {string} fontType The font type
+     * @returns {object} The parsed font object
      */
     _parseFont(fontFile, fontType) {
         switch (fontType) {
@@ -102,11 +102,11 @@ export class Figlet extends Application {
 
     /**
      * Transforms given text into ASCII art based on font configuration and options
-     * @param {string} text - The text to transform
-     * @param {object} font - The font configuration
-     * @param {object} options - The options object
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The ASCII art text
+     * @param {string} text The text to transform
+     * @param {object} font The font configuration
+     * @param {object} options The options object
+     * @param {object} context The context of the command execution
+     * @returns {string} The ASCII art text
      */
     _transformText(text, font, options = {}, context = {}) {
         const transformOptions = {
@@ -122,9 +122,9 @@ export class Figlet extends Application {
 
     /**
      * Gets the width based on the options (can be null if not provided)
-     * @param {object} options - The options object
-     * @param {object} context - The context of the command execution
-     * @returns {number} - The width
+     * @param {object} options The options object
+     * @param {object} context The context of the command execution
+     * @returns {number} The width
      */
     _getWidth(options = {}, context = {}) {
         if (options['terminal'] && context.terminal) {
@@ -135,8 +135,8 @@ export class Figlet extends Application {
 
     /**
      * Gets the layout based on the options (can be null if not provided)
-     * @param {object} options - The options object
-     * @returns {number} - The width
+     * @param {object} options The options object
+     * @returns {number} The width
      */
     _getLayout(options = {}) {
         let layout = null;
@@ -152,8 +152,8 @@ export class Figlet extends Application {
 
     /**
      * Gets the direction based on the options
-     * @param {object} options - The options object
-     * @returns {string} - The direction ('ltr' or 'rtl')
+     * @param {object} options The options object
+     * @returns {string} The direction ('ltr' or 'rtl')
      */
     _getDirection(options = {}) {
         let direction = null;
@@ -168,8 +168,8 @@ export class Figlet extends Application {
 
     /**
      * Gets the justification based on the options
-     * @param {object} options - The options object
-     * @returns {string} - The justification ('left', 'center', 'right')
+     * @param {object} options The options object
+     * @returns {string} The justification ('left', 'center', 'right')
      */
     _getJustification(options = {}) {
         let justification = null;
@@ -185,8 +185,8 @@ export class Figlet extends Application {
 
     /**
      * Converts FIG lines to lines
-     * @param {string[][]} figLines - The lines of FIG text
-     * @returns {string[]} - The lines containing FIG sub-characters
+     * @param {string[][]} figLines The lines of FIG text
+     * @returns {string[]} The lines containing FIG sub-characters
      */
     _figLinesToLines(figLines) {
         const lines = [];

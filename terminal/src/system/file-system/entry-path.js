@@ -7,8 +7,8 @@ import { DirectoryEntry } from './directory-entry.js'
 export class EntryPath {
     /**
      * Creates a new entry path
-     * @param {FileEntry|DirectoryEntry} entry - The entry to represent
-     * @param {string} path - The path to the entry
+     * @param {FileEntry|DirectoryEntry} entry The entry to represent
+     * @param {string} path The path to the entry
      */
     constructor(entry, path = '') {
         this.entry = entry;

@@ -16,9 +16,9 @@ export class Zip extends Application {
 
     /**
      * Executes the `zip` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the zip command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the zip command execution
      */
     main(commandLine, context) {
         const options = commandLine.getOptions();
@@ -49,9 +49,9 @@ export class Zip extends Application {
 
     /**
      * Zips a directory
-     * @param {string} fullPath - The full path to the directory to zip
-     * @param {object} context - The context of the command execution
-     * @returns {Blob} - The zipped directory
+     * @param {string} fullPath The full path to the directory to zip
+     * @param {object} context The context of the command execution
+     * @returns {Blob} The zipped directory
      */
     _zipDirectory(fullPath, context) {
         const paths = context.fileSystemManager.getEntryPaths(fullPath);
@@ -90,9 +90,9 @@ export class Zip extends Application {
 
     /**
      * Zips a file
-     * @param {string} fullPath - The full path to the file to zip
-     * @param {object} context - The context of the command execution
-     * @returns {Uint8Array} - The zipped file
+     * @param {string} fullPath The full path to the file to zip
+     * @param {object} context The context of the command execution
+     * @returns {Uint8Array} The zipped file
      */
     _zipFile(fullPath, context) {
         const file = context.fileSystemManager.getFile(fullPath);
@@ -114,8 +114,8 @@ export class Zip extends Application {
 
     /**
      * Merges bytes into a single Uint8Array
-     * @param {ArrayBufferLike[]} parts - The parts to merge
-     * @returns {Uint8Array} - The merged bytes
+     * @param {ArrayBufferLike[]} parts The parts to merge
+     * @returns {Uint8Array} The merged bytes
      */
     _mergeBytes(parts) {
         const uint8Arrays = parts.map(chunk => new Uint8Array(chunk.buffer));
@@ -131,12 +131,12 @@ export class Zip extends Application {
 
     /**
      * Creates the Local File Header
-     * @param {number} dosTime - The DOS time
-     * @param {number} dosDate - The DOS date
-     * @param {number} crc32 - The CRC32
-     * @param {number} dataLength - The length of the data
-     * @param {number} nameLength - The length of the name
-     * @returns {DataView<ArrayBuffer>} - The Local File Header
+     * @param {number} dosTime The DOS time
+     * @param {number} dosDate The DOS date
+     * @param {number} crc32 The CRC32
+     * @param {number} dataLength The length of the data
+     * @param {number} nameLength The length of the name
+     * @returns {DataView<ArrayBuffer>} The Local File Header
      */
     _createLocalFileHeader(dosTime, dosDate, crc32, dataLength, nameLength) {
         const lfh = new DataView(new ArrayBuffer(30));
@@ -158,14 +158,14 @@ export class Zip extends Application {
 
     /**
      * Creates the Central Directory File Header
-     * @param {number} dosTime - The DOS time
-     * @param {number} dosDate - The DOS date
-     * @param {number} crc32 - The CRC32
-     * @param {number} dataLength - The length of the data
-     * @param {number} nameLength - The length of the name
-     * @param {number} externalFileAttributes - The external file attributes
-     * @param {number} localFileHeaderOffset - The offset of the local file header
-     * @returns {DataView<ArrayBuffer>} - The Central Directory File Header
+     * @param {number} dosTime The DOS time
+     * @param {number} dosDate The DOS date
+     * @param {number} crc32 The CRC32
+     * @param {number} dataLength The length of the data
+     * @param {number} nameLength The length of the name
+     * @param {number} externalFileAttributes The external file attributes
+     * @param {number} localFileHeaderOffset The offset of the local file header
+     * @returns {DataView<ArrayBuffer>} The Central Directory File Header
      */
     _createCentralDirectoryFileHeader(dosTime, dosDate, crc32, dataLength, nameLength, externalFileAttributes, localFileHeaderOffset) {
         const cdfh = new DataView(new ArrayBuffer(46));
@@ -193,10 +193,10 @@ export class Zip extends Application {
 
     /**
      * Creates the End of Central Directory
-     * @param {number} count - The number of entries in the central directory
-     * @param {number} centralDirectorySize - The size of the central directory
-     * @param {number} centralDirectoryOffset - The offset of the central directory
-     * @returns {DataView<ArrayBuffer>} - The End of Central Directory
+     * @param {number} count The number of entries in the central directory
+     * @param {number} centralDirectorySize The size of the central directory
+     * @param {number} centralDirectoryOffset The offset of the central directory
+     * @returns {DataView<ArrayBuffer>} The End of Central Directory
      */
     _createEndOfCentralDirectory(count, centralDirectorySize, centralDirectoryOffset) {
         const eocd = new DataView(new ArrayBuffer(22));
@@ -215,8 +215,8 @@ export class Zip extends Application {
 
     /**
      * Converts a timestamp to DOS time and date
-     * @param {number} timestamp - The timestamp
-     * @returns {Object} - The DOS time and date { dosTime, dosDate }
+     * @param {number} timestamp The timestamp
+     * @returns {object} The DOS time and date { dosTime, dosDate }
      */
     _toDosTimeDate(timestamp = Date.now()) {
         const date = new Date(timestamp);
@@ -239,7 +239,7 @@ export class Zip extends Application {
 
     /**
      * Makes the CRC table
-     * @returns {Array} - The CRC table
+     * @returns {Array} The CRC table
      */
     _makeCRCTable() {
         let c;
@@ -256,8 +256,8 @@ export class Zip extends Application {
 
     /**
      * Gets the CRC32 of the data
-     * @param {Uint8Array} data - The data to get the CRC32 of
-     * @returns {number} - The CRC32 of the data
+     * @param {Uint8Array} data The data to get the CRC32 of
+     * @returns {number} The CRC32 of the data
      */
     _getCRC32(data) {
         const crcTable = this._makeCRCTable();

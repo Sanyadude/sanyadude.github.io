@@ -17,18 +17,17 @@ export class Yes extends Application {
 
     /**
      * Executes the `yes` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {ApplicationExecutionContext} context - The execution context
-     * @returns {Promise<string>} - Empty string when finished
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {ApplicationExecutionContext} context The execution context
+     * @returns {Promise<string>} Empty string when finished
      */
     async main(commandLine, context) {
         const args = commandLine.getArguments();
         const text = args.length > 0 ? args.join(' ') : 'y';
         const runtime = context.getRuntime();
         const terminal = context.terminal;
-        terminal.hidePrompt();
         while (!runtime.isAborted()) {
-            terminal.writeOutputLine(text);
+            terminal.write(`${text}\n`);
             await runtime.sleep(DELAY_MS);
         }
         return '';

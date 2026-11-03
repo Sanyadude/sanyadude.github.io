@@ -15,9 +15,9 @@ export class TerminalClear extends Application {
 
     /**
      * Executes the `clear` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the clear command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the clear command execution
      */
     main(commandLine, context) {
         context.terminal.clear();

@@ -15,8 +15,8 @@ export class Echo extends Application {
 
     /**
      * Executes the `echo` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @returns {string} - The result of the echo command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @returns {string} The result of the echo command execution
      */
     main(commandLine) {
         const args = commandLine.getArguments();
@@ -33,7 +33,7 @@ export class Echo extends Application {
 
     /**
      * Interprets common backslash escape sequences
-     * @param {string} text - The text to interpret
+     * @param {string} text The text to interpret
      * @returns {string}
      */
     _interpretEscapes(text) {

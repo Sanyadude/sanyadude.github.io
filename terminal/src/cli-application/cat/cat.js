@@ -15,9 +15,9 @@ export class Cat extends Application {
 
     /**
      * Executes the `cat` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the cat command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the cat command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();
@@ -44,9 +44,9 @@ export class Cat extends Application {
 
     /**
      * Formats the output
-     * @param {string} output - The output to format
-     * @param {object} options - The options of the command
-     * @returns {string} - The formatted output
+     * @param {string} output The output to format
+     * @param {object} options The options of the command
+     * @returns {string} The formatted output
      */
     _formatOutput(output, options = {}) {
         const showNonprinting = options['show-nonprinting'];
@@ -82,8 +82,8 @@ export class Cat extends Application {
 
     /**
      * Filters the output to show non-printing characters
-     * @param {string} output - The output to filter
-     * @returns {string} - The filtered output
+     * @param {string} output The output to filter
+     * @returns {string} The filtered output
      */
     _showNonprintingFilter(output) {
         let result = '';
@@ -124,8 +124,8 @@ export class Cat extends Application {
 
     /**
      * Filters the output to show tabs
-     * @param {string} output - The output to filter
-     * @returns {string} - The filtered output
+     * @param {string} output The output to filter
+     * @returns {string} The filtered output
      */
     _showTabsFilter(output) {
         const result = output.replace(/\t/g, '^I');
@@ -134,8 +134,8 @@ export class Cat extends Application {
 
     /**
      * Filters the output to show ends
-     * @param {string} output - The output to filter
-     * @returns {string} - The filtered output
+     * @param {string} output The output to filter
+     * @returns {string} The filtered output
      */
     _showEndsFilter(output) {
         let result = '';
@@ -158,8 +158,8 @@ export class Cat extends Application {
 
     /**
      * Filters the output to squeeze blank lines
-     * @param {string} output - The output to filter
-     * @returns {string} - The filtered output
+     * @param {string} output The output to filter
+     * @returns {string} The filtered output
      */
     _squeezeBlankFilter(output) {
         let result = '';
@@ -187,8 +187,8 @@ export class Cat extends Application {
 
     /**
      * Filters the output to number non-blank lines
-     * @param {string} output - The output to filter
-     * @returns {string} - The filtered output
+     * @param {string} output The output to filter
+     * @returns {string} The filtered output
      */
     _numberNonblankFilter(output) {
         const lines = output.split('\n');
@@ -204,8 +204,8 @@ export class Cat extends Application {
 
     /**
      * Filters the output to number all lines
-     * @param {string} output - The output to filter
-     * @returns {string} - The filtered output
+     * @param {string} output The output to filter
+     * @returns {string} The filtered output
      */
     _numberFilter(output) {
         const lines = output.split('\n');

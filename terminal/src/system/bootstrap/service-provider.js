@@ -11,9 +11,9 @@ export class ServiceProvider {
 
     /**
      * Adds a service to the service provider
-     * @param {string} name - The name of the service
-     * @param {object} service - The service to add
-     * @returns {ServiceProvider} - The service provider instance
+     * @param {string} name The name of the service
+     * @param {object} service The service to add
+     * @returns {ServiceProvider} The service provider instance
      */
     add(name, service) {
         this._services.set(name, service);
@@ -22,8 +22,8 @@ export class ServiceProvider {
 
     /**
      * Removes a service from the service provider
-     * @param {string} name - The name of the service
-     * @returns {ServiceProvider} - The service provider instance
+     * @param {string} name The name of the service
+     * @returns {ServiceProvider} The service provider instance
      */
     remove(name) {
         this._services.delete(name);
@@ -32,8 +32,8 @@ export class ServiceProvider {
 
     /**
      * Gets a service from the service provider
-     * @param {string} name - The name of the service
-     * @returns {object} - The service
+     * @param {string} name The name of the service
+     * @returns {object} The service
      */
     get(name) {
         return this._services.get(name);
@@ -41,8 +41,8 @@ export class ServiceProvider {
 
     /**
      * Checks if a service is registered by name
-     * @param {string} name - The name of the service
-     * @returns {boolean} - True if the service is registered, false otherwise
+     * @param {string} name The name of the service
+     * @returns {boolean} True if the service is registered, false otherwise
      */
     has(name) {
         return this._services.has(name);

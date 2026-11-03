@@ -4,8 +4,8 @@
 export class EventEmitter {
     /**
      * Creates a new EventEmitter
-     * @param {object} options - The options for the EventEmitter
-     * @param {string} options.name - The name of the EventEmitter
+     * @param {object} options The options for the EventEmitter
+     * @param {string} options.name The name of the EventEmitter
      */
     constructor(options = {}) {
         const defaultOptions = {
@@ -18,9 +18,9 @@ export class EventEmitter {
 
     /**
      * Subscribes to an event
-     * @param {string} name - The name of the event
-     * @param {Function} callback - The callback to call when the event is emitted
-     * @param {object} options - The options for the event
+     * @param {string} name The name of the event
+     * @param {Function} callback The callback to call when the event is emitted
+     * @param {object} options The options for the event
      * @returns {EventEmitter} The EventEmitter
      * @throws {Error} If the event name is not a non-empty string or the callback is not a function
      */
@@ -47,9 +47,9 @@ export class EventEmitter {
 
     /**
      * Alias for subscribe
-     * @param {string} name - The name of the event
-     * @param {Function} callback - The callback to call when the event is emitted
-     * @param {object} options - The options for the event
+     * @param {string} name The name of the event
+     * @param {Function} callback The callback to call when the event is emitted
+     * @param {object} options The options for the event
      * @returns {EventEmitter} The EventEmitter
      */
     on(name, callback, options = {}) {
@@ -58,9 +58,9 @@ export class EventEmitter {
 
     /**
      * Subscribes to an event once
-     * @param {string} name - The name of the event
-     * @param {Function} callback - The callback to call when the event is emitted
-     * @param {object} options - The options for the event
+     * @param {string} name The name of the event
+     * @param {Function} callback The callback to call when the event is emitted
+     * @param {object} options The options for the event
      * @returns {EventEmitter} The EventEmitter
      */
     subscribeOnce(name, callback, options = {}) {
@@ -70,9 +70,9 @@ export class EventEmitter {
 
     /**
      * Alias for subscribeOnce
-     * @param {string} name - The name of the event
-     * @param {Function} callback - The callback to call when the event is emitted
-     * @param {object} options - The options for the event
+     * @param {string} name The name of the event
+     * @param {Function} callback The callback to call when the event is emitted
+     * @param {object} options The options for the event
      * @returns {EventEmitter} The EventEmitter
      */
     once(name, callback, options = {}) {
@@ -81,8 +81,8 @@ export class EventEmitter {
 
     /**
      * Unsubscribes from an event
-     * @param {string} name - The name of the event
-     * @param {Function} callback - The callback to unsubscribe
+     * @param {string} name The name of the event
+     * @param {Function} callback The callback to unsubscribe
      * @returns {EventEmitter} The EventEmitter
      */
     unsubscribe(name, callback) {
@@ -98,8 +98,8 @@ export class EventEmitter {
 
     /**
      * Alias for unsubscribe
-     * @param {string} name - The name of the event
-     * @param {Function} callback - The callback to unsubscribe
+     * @param {string} name The name of the event
+     * @param {Function} callback The callback to unsubscribe
      * @returns {EventEmitter} The EventEmitter
      */
     off(name, callback) {
@@ -108,8 +108,8 @@ export class EventEmitter {
 
     /**
      * Emits an event
-     * @param {string} name - The name of the event
-     * @param {object} payload - The payload to emit
+     * @param {string} name The name of the event
+     * @param {object} payload The payload to emit
      * @returns {EventEmitter} The EventEmitter
      */
     emit(name, payload) {
@@ -127,8 +127,8 @@ export class EventEmitter {
 
     /**
      * Alias for emit
-     * @param {string} name - The name of the event
-     * @param {object} payload - The payload to emit
+     * @param {string} name The name of the event
+     * @param {object} payload The payload to emit
      * @returns {EventEmitter} The EventEmitter
      */
     trigger(name, payload) {
@@ -138,8 +138,8 @@ export class EventEmitter {
 
 /**
  * Creates a event emitter factory
- * @param {object} options - The options for the event emitter factory
- * @returns {Object} The event emitter factory
+ * @param {object} options The options for the event emitter factory
+ * @returns {object} The event emitter factory
  */
 export const createEventEmitterFactory = () => {
     return {

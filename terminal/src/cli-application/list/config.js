@@ -110,6 +110,25 @@ export const C_ESCAPE_MAP = Object.freeze({
     '\r': '\\r',
     '\\': '\\\\',
 });
+export const OWNER_EXECUTE = 0o100;
+export const MODE_SYMBOLS = Object.freeze({
+    read: 'r',
+    write: 'w',
+    execute: 'x',
+    none: '-',
+});
+export const MODE_BITS = Object.freeze([
+    Object.freeze({ name: 'read', bit: 0o400 }),
+    Object.freeze({ name: 'write', bit: 0o200 }),
+    Object.freeze({ name: 'execute', bit: 0o100 }),
+    Object.freeze({ name: 'read', bit: 0o040 }),
+    Object.freeze({ name: 'write', bit: 0o020 }),
+    Object.freeze({ name: 'execute', bit: 0o010 }),
+    Object.freeze({ name: 'read', bit: 0o004 }),
+    Object.freeze({ name: 'write', bit: 0o002 }),
+    Object.freeze({ name: 'execute', bit: 0o001 }),
+]);
+
 export const COLORS = Object.freeze({
     DIRECTORY: '34',
     EXECUTABLE: '32',
@@ -135,6 +154,9 @@ export const CONFIG = Object.freeze({
     INDICATOR_STYLES,
     COLOR_RULES,
     C_ESCAPE_MAP,
+    OWNER_EXECUTE,
+    MODE_SYMBOLS,
+    MODE_BITS,
     COLORS,
     AUTO_COLOR_ENABLED,
     SI_UNITS_SIZE_MAP,

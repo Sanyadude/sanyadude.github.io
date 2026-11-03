@@ -4,32 +4,32 @@
 export class ExecutionRuntime {
     /**
      * Creates a new ExecutionRuntime instance
-     * @param {AbortSignal|null} abortSignal - The abort signal of the owning job
-     * @param {string} command - The command that started the run
+     * @param {AbortSignal|null} abortSignal The abort signal of the owning job
+     * @param {string} command The command that started the run
      */
     constructor(abortSignal = null, command = '') {
         this._abortSignal = abortSignal ?? new AbortController().signal;
         this._command = command;
         this._process = null;
-        this._session = null;
+        this._resources = {};
     }
 
     /**
      * Creates a runtime for a process, inheriting the abort signal of this runtime
-     * @param {Process} process - The process of the run
-     * @param {TerminalSession|null} session - The terminal session of the process
-     * @returns {ExecutionRuntime} - The runtime of the process
+     * @param {Process} process The process of the run
+     * @param {object} resources Named resources the caller attached to the process
+     * @returns {ExecutionRuntime} The runtime of the process
      */
-    forProcess(process, session = null) {
+    forProcess(process, resources = {}) {
         const runtime = new ExecutionRuntime(this._abortSignal, this._command);
         runtime._process = process;
-        runtime._session = session;
+        runtime._resources = { ...resources };
         return runtime;
     }
 
     /**
      * Gets the command that started the run
-     * @returns {string} - The command
+     * @returns {string} The command
      */
     getCommand() {
         return this._command;
@@ -37,23 +37,24 @@ export class ExecutionRuntime {
 
     /**
      * Gets the process of the run
-     * @returns {Process|null} - The process
+     * @returns {Process|null} The process
      */
     getProcess() {
         return this._process;
     }
 
     /**
-     * Gets the terminal session of the run
-     * @returns {TerminalSession|null} - The session
+     * Gets a resource the caller attached to the process
+     * @param {string} name The resource name
+     * @returns {any|null} The resource, or null when it was not attached
      */
-    getSession() {
-        return this._session;
+    getResource(name) {
+        return this._resources[name] ?? null;
     }
 
     /**
      * Gets the abort signal of the run
-     * @returns {AbortSignal} - The abort signal
+     * @returns {AbortSignal} The abort signal
      */
     getAbortSignal() {
         return this._abortSignal;
@@ -61,7 +62,7 @@ export class ExecutionRuntime {
 
     /**
      * Checks whether the run was aborted
-     * @returns {boolean} - True if the run was aborted
+     * @returns {boolean} True if the run was aborted
      */
     isAborted() {
         return this._abortSignal.aborted;
@@ -69,8 +70,8 @@ export class ExecutionRuntime {
 
     /**
      * Adds a listener for the abort of the run
-     * @param {Function} listener - The listener to call on abort
-     * @returns {Function} - A function to remove the listener
+     * @param {Function} listener The listener to call on abort
+     * @returns {Function} A function to remove the listener
      */
     onAbort(listener) {
         if (this._abortSignal.aborted) {
@@ -83,7 +84,7 @@ export class ExecutionRuntime {
 
     /**
      * Waits for the run to be aborted
-     * @returns {Promise<void>} - A promise that resolves when the run is aborted
+     * @returns {Promise<void>} A promise that resolves when the run is aborted
      */
     whenAborted() {
         return new Promise((resolve) => this.onAbort(resolve));
@@ -91,8 +92,8 @@ export class ExecutionRuntime {
 
     /**
      * Waits for the given number of milliseconds
-     * @param {number} ms - The number of milliseconds to wait
-     * @returns {Promise<void>} - A promise that resolves when the time has elapsed
+     * @param {number} ms The number of milliseconds to wait
+     * @returns {Promise<void>} A promise that resolves when the time has elapsed
      */
     sleep(ms) {
         if (this.isAborted()) {

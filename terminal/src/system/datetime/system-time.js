@@ -37,7 +37,7 @@ export class SystemTime {
 
     /**
      * Sets the start date of the system
-     * @param {number} startDate - The start date of the system
+     * @param {number} startDate The start date of the system
      */
     setTime(timestamp = new Date().getTime()) {
         this._startDate = timestamp;

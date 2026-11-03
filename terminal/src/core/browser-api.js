@@ -7,7 +7,7 @@ import { IndexedDatabaseAdapter } from './database/indexed-database-adapter.js'
 export class BrowserAPI {
     /**
      * Creates a new browser API
-     * @param {object} options - The options for the browser API
+     * @param {object} options The options for the browser API
      */
     constructor(options = {}) {
         const defaultOptions = {};
@@ -16,7 +16,7 @@ export class BrowserAPI {
 
     /**
      * Creates a new database
-     * @param {object} options - The options for the database
+     * @param {object} options The options for the database
      * @returns {Database} The database
      */
     createDatabase(options = {}) {
@@ -25,7 +25,7 @@ export class BrowserAPI {
 
     /**
      * Gets the URL parameters as a JSON object
-     * @returns {Object} The URL parameters as a JSON object
+     * @returns {object} The URL parameters as a JSON object
      */
     getUrlParamsAsJson() {
         const params = new URLSearchParams(window.location.search);
@@ -38,9 +38,9 @@ export class BrowserAPI {
 
     /**
      * Downloads a file
-     * @param {string} name - The name of the file
-     * @param {ArrayBuffer} content - The content of the file
-     * @param {string} type - The type of the file
+     * @param {string} name The name of the file
+     * @param {ArrayBuffer} content The content of the file
+     * @param {string} type The type of the file
      */
     downloadFile(name, content = new ArrayBuffer(0), type = 'application/octet-stream') {
         const blob = new Blob([content], { type });
@@ -53,8 +53,8 @@ export class BrowserAPI {
 
     /**
      * Fetches a file
-     * @param {URL} url - The URL of the file
-     * @returns {Promise<ArrayBuffer>} - The content of the file
+     * @param {URL} url The URL of the file
+     * @returns {Promise<ArrayBuffer>} The content of the file
      * @throws {Error} If the file fails to fetch
      */
     async fetchFile(url) {
@@ -62,12 +62,36 @@ export class BrowserAPI {
         if (!response.ok) throw new Error('Failed to fetch file');
         return response.arrayBuffer();
     }
+
+    /**
+     * Listens for file drops on an element
+     * @param {HTMLElement} element The element that accepts drops
+     * @param {Function} listener The listener called with the drop event
+     * @returns {Function} A function to remove the listeners
+     */
+    onDrop(element, listener) {
+        if (!element) return () => {};
+        const handleDragOver = (event) => {
+            event.preventDefault();
+        };
+        const handleDrop = (event) => {
+            event.preventDefault();
+            if (!listener) return;
+            listener(event);
+        };
+        element.addEventListener('dragover', handleDragOver);
+        element.addEventListener('drop', handleDrop);
+        return () => {
+            element.removeEventListener('dragover', handleDragOver);
+            element.removeEventListener('drop', handleDrop);
+        };
+    }
 }
 
 /**
  * Creates a browser API factory
- * @param {object} options - The options for the browser API factory
- * @returns {Object} The browser API factory
+ * @param {object} options The options for the browser API factory
+ * @returns {object} The browser API factory
  */
 export const createBrowserAPIFactory = () => {
     return {

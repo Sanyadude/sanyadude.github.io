@@ -7,7 +7,7 @@ export const TEST_RUNNER_MANIFEST = {
     programs: [{
         name: 'test',
         description: 'Runs test suites and reports results',
-        commands: [
+        subcommands: [
             { name: 'calc', description: 'Run calculator test suite' },
             { name: 'echo', description: 'Run echo test suite' },
             { name: 'date', description: 'Run date test suite' },

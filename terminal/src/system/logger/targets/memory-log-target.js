@@ -8,9 +8,9 @@ import { LOG_TARGET_TYPE } from '../log-target-type.js'
 export class MemoryLogTarget extends LogTarget {
     /**
      * Creates a new MemoryLogTarget
-     * @param {object} options - The options for the MemoryLogTarget
-     * @param {string} options.name - The name of the MemoryLogTarget
-     * @param {number} options.maxLogs - The maximum number of logs to store
+     * @param {object} options The options for the MemoryLogTarget
+     * @param {string} options.name The name of the MemoryLogTarget
+     * @param {number} options.maxLogs The maximum number of logs to store
      */
     constructor(options = {}) {
         const defaultOptions = {
@@ -32,7 +32,7 @@ export class MemoryLogTarget extends LogTarget {
 
     /**
      * Handles a log entry
-     * @param {object} logEntry - The log entry to handle
+     * @param {object} logEntry The log entry to handle
      * @returns {MemoryLogTarget} The MemoryLogTarget
      */
     handle(logEntry) {

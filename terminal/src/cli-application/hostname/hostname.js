@@ -15,9 +15,9 @@ export class Hostname extends Application {
 
     /**
      * Executes the `hostname` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the hostname command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the hostname command execution
      */
     main(commandLine, context) {
         return context.systemHost.getName();

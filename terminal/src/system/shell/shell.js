@@ -1,15 +1,17 @@
 import { ShellInfo } from './shell-info.js'
-import { ShellCommandContext } from './shell-command-context.js'
-import { ShellJob } from './shell-job.js'
-import { ShellInterruptedError } from './shell-interrupted-error.js'
 import { PosixShellCommandParser } from './parsers/posix-shell-command-parser.js'
 import { DosShellCommandParser } from './parsers/dos-shell-command-parser.js'
-import { VARIABLES } from './shell-config.js'
-import { ShellGlobExpander } from './shell-glob-expander.js'
-import { ShellQuoteSplitter } from './shell-quote-splitter.js'
-import { ShellAliases } from './shell-aliases.js'
-import { ShellVariables } from './shell-variables.js'
-import { ShellProgramRegistry } from './shell-program-registry.js'
+import { ShellCommandContext } from './pipeline/shell-command-context.js'
+import { ShellJob } from './pipeline/shell-job.js'
+import { ShellInterruptedError } from './pipeline/shell-interrupted-error.js'
+import { ShellGlobExpander } from './pipeline/shell-glob-expander.js'
+import { ShellQuoteSplitter } from './pipeline/shell-quote-splitter.js'
+import { ShellAliases } from './pipeline/shell-aliases.js'
+import { ShellVariables } from './pipeline/shell-variables.js'
+import { ShellProgramRegistry } from './program/shell-program-registry.js'
+import { ShellReadline } from './readline/shell-readline.js'
+import { ShellInput } from './input/shell-input.js'
+import { VARIABLES, SHELL_STARTUP_LINES } from './config/config.js'
 
 /**
  * Represents a Shell instance
@@ -17,8 +19,8 @@ import { ShellProgramRegistry } from './shell-program-registry.js'
 export class Shell {
     /**
      * Creates a new Shell instance
-     * @param {ServiceProvider} serviceProvider - The service provider instance
-     * @param {SystemSettingsProvider} settingsProvider - The settings provider instance
+     * @param {ServiceProvider} serviceProvider The service provider instance
+     * @param {SystemSettingsProvider} settingsProvider The settings provider instance
      */
     constructor(serviceProvider, settingsProvider) {
         this._serviceProvider = serviceProvider;
@@ -30,12 +32,16 @@ export class Shell {
         this._processingPromise = null;
         this._currentJob = null;
         this._queue = [];
+        this._exitRequested = false;
 
         this._parser = new PosixShellCommandParser();
         this._quoteSplitter = new ShellQuoteSplitter();
         this._aliases = new ShellAliases();
         this._variables = new ShellVariables();
         this._programRegistry = new ShellProgramRegistry();
+        this._readline = new ShellReadline();
+        this._input = new ShellInput(this);
+        this._lineRequest = null;
 
         this._info = new ShellInfo();
     }
@@ -49,11 +55,26 @@ export class Shell {
     }
 
     /**
-     * Gets the user instance
-     * @returns {SystemUser} The user instance
+     * Gets the current user
+     * @returns {SystemUser} The current user
      */
     getUser() {
-        return this._settingsProvider.getUser();
+        return this.getUserManager().getCurrentUser();
+    }
+
+    /**
+     * Switches the current user and moves to that user's home directory when it exists
+     * @param {string} name The user name
+     * @returns {SystemUser} The user that is now current
+     */
+    switchUser(name) {
+        const user = this.getUserManager().setCurrentUser(name).getCurrentUser();
+        const explorer = this.getFileSystemExplorer();
+        const home = (user.getHome() || '').replace(/^\/+/, '');
+        if (explorer && home) {
+            explorer.changeDirectory(`/${home}`);
+        }
+        return user;
     }
 
     /**
@@ -62,6 +83,14 @@ export class Shell {
      */
     getHost() {
         return this._settingsProvider.getHost();
+    }
+
+    /**
+     * Gets the user manager
+     * @returns {UserManager} The user manager
+     */
+    getUserManager() {
+        return this._serviceProvider.get('userManager');
     }
 
     /**
@@ -82,7 +111,7 @@ export class Shell {
 
     /**
      * Gets the prompt
-     * @returns {Object} The prompt
+     * @returns {object} The prompt
      */
     getPrompt() {
         return {
@@ -91,6 +120,85 @@ export class Shell {
             cwd: this.getFileSystemExplorer().getCurrentPath(),
             text: ''
         }
+    }
+
+    /**
+     * Gets the shell readline
+     * Owns input editing, completion, history, and prompt formatting
+     * @returns {ShellReadline} The readline instance
+     */
+    getReadline() {
+        return this._readline;
+    }
+
+    /**
+     * Gets the terminal API that receives shell output
+     * @returns {object|null} The terminal API
+     */
+    getTerminal() {
+        return this._terminal;
+    }
+
+    /**
+     * Handles a forwarded terminal event
+     * @param {object} terminalEvent The terminal event
+     * @returns {Shell} The Shell instance
+     */
+    handleInput(terminalEvent) {
+        this._input.handleInput(terminalEvent);
+        return this;
+    }
+
+    /**
+     * Returns whether an application line read is waiting for Enter
+     * @returns {boolean} True while a read is in progress
+     */
+    isReading() {
+        return this._lineRequest !== null;
+    }
+
+    /**
+     * Reads one line
+     * The line is not stored in shell history unless history is enabled
+     * @param {string} prompt The prompt to write before reading
+     * @param {object} options The readline options for this read
+     * @returns {Promise<string|null>} The line, or null when a read is already active or the read is cancelled
+     */
+    readLine(prompt = '', options = {}) {
+        if (this._lineRequest) return Promise.resolve(null);
+        const text = prompt || '';
+        this._readline.startRead(text, options);
+        if (this._terminal) {
+            this._terminal.write(text);
+        }
+        return new Promise((resolve) => {
+            this._lineRequest = resolve;
+        });
+    }
+
+    /**
+     * Completes the active line read
+     * @param {string} text The completed line
+     * @returns {Shell} The Shell instance
+     */
+    completeRead(text) {
+        const resolve = this._lineRequest;
+        this._lineRequest = null;
+        this._readline.stopRead();
+        if (resolve) resolve(text);
+        return this;
+    }
+
+    /**
+     * Cancels the active line read
+     * @returns {Shell} The Shell instance
+     */
+    cancelRead() {
+        const resolve = this._lineRequest;
+        this._lineRequest = null;
+        this._readline.cancelRead();
+        if (resolve) resolve(null);
+        return this;
     }
 
     /**
@@ -108,18 +216,24 @@ export class Shell {
 
     /**
      * Sets a terminal to the Shell instance
-     * @param {object} terminal - The terminal
-     * @returns {Shell} - The Shell instance
+     * @param {object} terminal The terminal
+     * @returns {Shell} The Shell instance
      */
     setTerminal(terminal) {
         this._terminal = terminal;
+        this._readline.setTerminal(terminal);
+        SHELL_STARTUP_LINES.map(startupLine => {
+            const line = this._variables.expand(startupLine, this.getEnvironmentVariables());
+            terminal.writeLine(line);
+        });
+        terminal.writePrompt();
         return this;
     }
 
     /**
      * Sets the process manager to the Shell instance
-     * @param {ProcessManager} processManager - The process manager
-     * @returns {Shell} - The Shell instance
+     * @param {ProcessManager} processManager The process manager
+     * @returns {Shell} The Shell instance
      */
     setProcessManager(processManager) {
         this._processManager = processManager;
@@ -128,9 +242,9 @@ export class Shell {
 
     /**
      * Adds an alias to the Shell instance
-     * @param {string} name - The name of the alias to add
-     * @param {string} command - The command to add
-     * @returns {Shell} - The Shell instance
+     * @param {string} name The name of the alias to add
+     * @param {string} command The command to add
+     * @returns {Shell} The Shell instance
      */
     setAlias(name, command) {
         this._aliases.set(name, command);
@@ -139,8 +253,8 @@ export class Shell {
 
     /**
      * Gets an alias by name
-     * @param {string} name - The name of the alias to get
-     * @returns {string|null} - The command of the alias or null if the alias does not exist
+     * @param {string} name The name of the alias to get
+     * @returns {string|null} The command of the alias or null if the alias does not exist
      */
     getAlias(name) {
         return this._aliases.get(name);
@@ -148,8 +262,8 @@ export class Shell {
 
     /**
      * Removes an alias from the Shell instance
-     * @param {string} name - The name of the alias to remove
-     * @returns {Shell} - The Shell instance
+     * @param {string} name The name of the alias to remove
+     * @returns {Shell} The Shell instance
      */
     removeAlias(name) {
         this._aliases.remove(name);
@@ -158,7 +272,7 @@ export class Shell {
 
     /**
      * Gets all aliases
-     * @returns {object[]} - The aliases
+     * @returns {object[]} The aliases
      */
     getAliases() {
         return this._aliases.list();
@@ -166,7 +280,7 @@ export class Shell {
 
     /**
      * Clears all aliases from the Shell instance
-     * @returns {Shell} - The Shell instance
+     * @returns {Shell} The Shell instance
      */
     clearAliases() {
         this._aliases.clear();
@@ -175,9 +289,9 @@ export class Shell {
 
     /**
      * Sets a variable to the Shell instance
-     * @param {string} name - The name of the variable to set
-     * @param {string} value - The value to set
-     * @returns {Shell} - The Shell instance
+     * @param {string} name The name of the variable to set
+     * @param {string} value The value to set
+     * @returns {Shell} The Shell instance
      */
     setVariable(name, value) {
         this._variables.set(name, value);
@@ -186,8 +300,8 @@ export class Shell {
 
     /**
      * Gets a variable by name
-     * @param {string} name - The name of the variable to get
-     * @returns {string|null} - The value of the variable or null if the variable does not exist
+     * @param {string} name The name of the variable to get
+     * @returns {string|null} The value of the variable or null if the variable does not exist
      */
     getVariable(name) {
         return this._variables.get(name);
@@ -195,8 +309,8 @@ export class Shell {
 
     /**
      * Removes a variable from the Shell instance
-     * @param {string} name - The name of the variable to remove
-     * @returns {Shell} - The Shell instance
+     * @param {string} name The name of the variable to remove
+     * @returns {Shell} The Shell instance
      */
     removeVariable(name) {
         this._variables.remove(name);
@@ -205,7 +319,7 @@ export class Shell {
 
     /**
      * Clears all variables from the Shell instance
-     * @returns {Shell} - The Shell instance
+     * @returns {Shell} The Shell instance
      */
     clearVariables() {
         this._variables.clear();
@@ -214,7 +328,7 @@ export class Shell {
 
     /**
      * Gets all variables
-     * @returns {Object[]} - The variables
+     * @returns {Object[]} The variables
      */
     getVariables() {
         return this._variables.list();
@@ -231,7 +345,7 @@ export class Shell {
     /**
      * Sets the command line parser used to parse commands
      * Use this to switch the command line syntax (e.g. POSIX/Unix vs Windows/DOS)
-     * @param {ShellCommandParser} parser - The parser to use
+     * @param {ShellCommandParser} parser The parser to use
      * @returns {Shell} The shell instance
      */
     setParser(parser) {
@@ -262,8 +376,8 @@ export class Shell {
 
     /**
      * Registers a program with the Shell instance
-     * @param {string} name - The name of the program to register
-     * @param {ShellProgram} - The registered program
+     * @param {string} name The name of the program to register
+     * @param {ShellProgram} The registered program
      */
     registerProgram(name) {
         return this._programRegistry.register(name);
@@ -271,8 +385,8 @@ export class Shell {
 
     /**
      * Registers a programs from a manifest
-     * @param {object} manifest - The manifest with programs description
-     * @returns {ShellProgram[]} - The registered programs
+     * @param {object} manifest The manifest with programs description
+     * @returns {ShellProgram[]} The registered programs
      */
     registerPrograms(manifest) {
         return this._programRegistry.registerFromManifest(manifest);
@@ -280,8 +394,8 @@ export class Shell {
 
     /**
      * Unregisters a program with the Shell instance
-     * @param {string} name - The name of the program to unregister
-     * @returns {ShellProgram|null} - The unregistered program or null if the program was not registered
+     * @param {string} name The name of the program to unregister
+     * @returns {ShellProgram|null} The unregistered program or null if the program was not registered
      */
     unregisterProgram(name) {
         return this._programRegistry.unregister(name);
@@ -289,8 +403,8 @@ export class Shell {
 
     /**
      * Gets a program by name
-     * @param {string} name - The name of the program to get
-     * @returns {ShellProgram|null} - The program or null if the program was not registered
+     * @param {string} name The name of the program to get
+     * @returns {ShellProgram|null} The program or null if the program was not registered
      */
     getProgram(name) {
         return this._programRegistry.get(name);
@@ -298,7 +412,7 @@ export class Shell {
 
     /**
      * Returns all registered programs
-     * @returns {ShellProgram[]} - An array of all registered programs
+     * @returns {ShellProgram[]} An array of all registered programs
      */
     getPrograms() {
         return this._programRegistry.list();
@@ -315,9 +429,9 @@ export class Shell {
 
     /**
      * Executes the program with the given command, arguments, and options
-     * @param {string} command - The command to execute
-     * @param {string} stdin - The stdin to pass to the program
-     * @returns {Promise<any>} - A promise that resolves to the result of the program execution
+     * @param {string} command The command to execute
+     * @param {string} stdin The stdin to pass to the program
+     * @returns {Promise<any>} A promise that resolves to the result of the program execution
      * @throws {ShellInterruptedError} - If the current job was aborted
      */
     async _executeProgram(command, stdin = '') {
@@ -342,13 +456,11 @@ export class Shell {
 
     /**
      * Processes the queue iteratively
-     * @returns {Promise<void>} - A promise that resolves when the queue is processed
+     * @returns {Promise<void>} A promise that resolves when the queue is processed
      */
     async _processQueue() {
         while (this._queue.length > 0) {
             this._currentJob = this._queue[0];
-            const prompt = this.getPrompt();
-            this._terminal.writePrompt(prompt.user, prompt.host, prompt.cwd, this._currentJob.getCommand());
             try {
                 const result = await this._runPipeline(this._currentJob.getCommand());
                 this._terminal.writeLine(result);
@@ -360,14 +472,20 @@ export class Shell {
                 this._currentJob = null;
                 this._queue.shift();
             }
+            if (this._exitRequested) {
+                this._queue.length = 0;
+                this._terminal.dispose();
+                return;
+            }
         }
+        this._terminal.writePrompt();
     }
 
     /**
      * Runs a pipeline
-     * @param {string} command - The command to run
-     * @param {string} stdin - The stdin to pass to the pipeline
-     * @returns {Promise<string>} - A promise that resolves to the output of the pipeline execution
+     * @param {string} command The command to run
+     * @param {string} stdin The stdin to pass to the pipeline
+     * @returns {Promise<string>} A promise that resolves to the output of the pipeline execution
      */
     async _runPipeline(command, stdin = '') {
         let context = new ShellCommandContext(command, stdin);
@@ -390,8 +508,8 @@ export class Shell {
 
     /**
      * Handles the variable assignment (name=value)
-     * @param {object} context - The context
-     * @returns {Promise<object>} - A promise that resolves to the context
+     * @param {object} context The context
+     * @returns {Promise<object>} A promise that resolves to the context
      */
     _handleVariableAssignment(context) {
         const { command, assigned } = this._variables.applyAssignments(context.command);
@@ -407,8 +525,8 @@ export class Shell {
 
     /**
      * Expands the aliases in the command
-     * @param {object} context - The context
-     * @returns {Promise<object>} - A promise that resolves to the context
+     * @param {object} context The context
+     * @returns {Promise<object>} A promise that resolves to the context
      */
     async _expandAliases(context) {
         const tokens = this._quoteSplitter.split(context.command, ' ');
@@ -418,29 +536,40 @@ export class Shell {
     }
 
     /**
-     * Expands the variables in the command
-     * @param {object} context - The context
-     * @returns {Promise<object>} - A promise that resolves to the context
+     * Gets the environment variables
+     * @returns {object} The environment variables
      */
-    async _expandVariables(context) {
+    getEnvironmentVariables() {
         const history = this.getFileSystemExplorer().getHistory();
         const pwd = `/${this.getFileSystemExplorer().getCurrentPath()}`;
         const oldPwd = `/${history.length > 1 ? history[history.length - 2] : ''}`;
-        context.command = this._variables.expand(context.command, {
+        return {
             [VARIABLES.USER]: this.getUser().getName(),
             [VARIABLES.HOSTNAME]: this.getHost().getName(),
             [VARIABLES.PWD]: pwd,
             [VARIABLES.OLDPWD]: oldPwd,
             [VARIABLES.TERM]: this._terminal.getInfo().type,
+            [VARIABLES.COLORTERM]: this._terminal.getInfo().colorMode,
+            [VARIABLES.TERM_PROGRAM]: this._terminal.getInfo().name,
+            [VARIABLES.TERM_PROGRAM_VERSION]: this._terminal.getInfo().version,
             [VARIABLES.SHELL]: this.getInfo().name
-        });
+        }
+    }
+
+    /**
+     * Expands the variables in the command
+     * @param {object} context The context
+     * @returns {Promise<object>} A promise that resolves to the context
+     */
+    async _expandVariables(context) {
+        context.command = this._variables.expand(context.command, this.getEnvironmentVariables());
         return context;
     }
 
     /**
      * Expands unquoted glob tokens (*, ?, [...]) against the file system
-     * @param {object} context - The context
-     * @returns {Promise<object>} - A promise that resolves to the context
+     * @param {object} context The context
+     * @returns {Promise<object>} A promise that resolves to the context
      */
     async _expandGlobs(context) {
         if (!context.command) return context;
@@ -452,8 +581,8 @@ export class Shell {
 
     /**
      * Handles the pipes
-     * @param {object} context - The context
-     * @returns {Promise<object>} - A promise that resolves to the context
+     * @param {object} context The context
+     * @returns {Promise<object>} A promise that resolves to the context
      */
     async _handlePipes(context) {
         const pipedCommands = this._quoteSplitter.split(context.command, ' | ')
@@ -472,8 +601,8 @@ export class Shell {
 
     /**
      * Handles the redirection
-     * @param {object} context - The context
-     * @returns {Promise<object>} - A promise that resolves to the context
+     * @param {object} context The context
+     * @returns {Promise<object>} A promise that resolves to the context
      */
     async _handleRedirection(context) {
         // Append >>
@@ -494,7 +623,8 @@ export class Shell {
         const input = this._quoteSplitter.split(context.command, ' < ');
         if (input.length > 1) {
             context.command = input[0].trim();
-            const file = this.getFileSystemExplorer().getFile(input[1].trim());
+            const path = this.getFileSystemExplorer().getAbsolutePath(input[1].trim());
+            const file = this.getFileSystemManager().getFile(path);
             context.stdin = file ? file.readAsString() : '';
         }
         return context;
@@ -502,21 +632,25 @@ export class Shell {
 
     /**
      * Executes the program or handles the redirection depending on the context parameters
-     * @param {object} context - The context
-     * @returns {Promise<object>} - A promise that resolves to the context
+     * @param {object} context The context
+     * @returns {Promise<object>} A promise that resolves to the context
      */
     async _execute(context) {
         const output = await this._executeProgram(context.command, context.stdin);
+        const fsExplorer = this.getFileSystemExplorer();
+        const fsManager = this.getFileSystemManager();
         if (context.appendFile) {
-            const file = this.getFileSystemExplorer().getFile(context.appendFile);
+            const path = fsExplorer.getAbsolutePath(context.appendFile);
+            const file = fsManager.getFile(path);
             if (file) file.writeLine(output);
-            else this.getFileSystemManager().createFile(context.appendFile, output, true);
-            context.stdout = `Output added to: ${context.appendFile}`;
+            else fsManager.createFile(path, output, true);
+            context.stdout = `Output added to: ${path}`;
             return context;
         }
         if (context.outputFile) {
-            this.getFileSystemManager().createFile(context.outputFile, output, true);
-            context.stdout = `Output written to: ${context.outputFile}`;
+            const path = fsExplorer.getAbsolutePath(context.outputFile);
+            fsManager.createFile(path, output, true);
+            context.stdout = `Output written to: ${path}`;
             return context;
         }
         context.stdout = output?.toString() || '';
@@ -525,32 +659,45 @@ export class Shell {
 
     /**
      * Checks whether the shell is executing a command
-     * @returns {boolean} - True while processing commands
+     * @returns {boolean} True while processing commands
      */
     isProcessing() {
         return this._processingPromise !== null;
     }
 
     /**
+     * Requests the shell to close the terminal once the current queue is drained
+     * @returns {Shell} The Shell instance
+     */
+    requestExit() {
+        this._exitRequested = true;
+        return this;
+    }
+
+    /**
      * Interrupts the foreground job and discards queued commands
-     * @returns {boolean} - True if a process was interrupted
+     * @returns {boolean} True if a process was interrupted
      */
     abortCurrentJob() {
+        if (!this._currentJob || this._currentJob.isAborted()) return false;
         this._queue.splice(1);
-        if (!this._currentJob) return false;
         this._currentJob.abort();
         return true;
     }
 
     /**
      * Inputs text into the Shell instance
-     * @param {string} text - The input text
-     * @returns {Promise<void>} - A promise that resolves when the input is processed
+     * @param {string} text The input text
+     * @returns {Promise<void>} A promise that resolves when the input is processed
      */
     async input(text) {
         const commands = this._quoteSplitter.split(text, ';')
             .map(command => command.trim())
             .filter(Boolean);
+        if (commands.length === 0) {
+            if (!this._processingPromise) this._terminal.writePrompt();
+            return;
+        }
         for (const command of commands) {
             this._queue.push(new ShellJob(command));
         }

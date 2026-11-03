@@ -4,14 +4,14 @@
 export class SystemClock {
     /**
      * Gets the current time in milliseconds
-     * @returns {number} - The current time in milliseconds
+     * @returns {number} The current time in milliseconds
      */
     static get NOW() { return Date.now(); }
     static get STEP_INTERVAL() { return 1000; }
 
     /**
      * Creates a new Clock instance
-     * @param {number} startTime - The start time in milliseconds
+     * @param {number} startTime The start time in milliseconds
      */
     constructor(startTime = SystemClock.NOW) {
         this.timeoutHandler = null;
@@ -23,7 +23,7 @@ export class SystemClock {
 
     /**
      * Gets the current date
-     * @returns {Date} - The current date
+     * @returns {Date} The current date
      */
     get currentDate() {
         return new Date(this.currentTime);
@@ -31,6 +31,7 @@ export class SystemClock {
 
     /**
      * Starts the clock
+     * @returns {SystemClock} The instance of the SystemClock
      */
     start() {
         let expectedTime = SystemClock.NOW - this.startTimeOffset;
@@ -48,20 +49,25 @@ export class SystemClock {
             this.timeoutHandler = setTimeout(() => step(), Math.max(0, SystemClock.STEP_INTERVAL - drift));
         }
         step();
+        return this;
     }
 
     /**
      * Stops the clock
+     * @returns {SystemClock} The instance of the SystemClock
      */
     stop() {
         clearTimeout(this.timeoutHandler);
+        return this;
     }
 
     /**
      * Disposes the SystemClock instance resources
+     * @returns {SystemClock} The instance of the SystemClock
      */
     dispose() {
         this.stop();
+        return this;
     }
 }
 

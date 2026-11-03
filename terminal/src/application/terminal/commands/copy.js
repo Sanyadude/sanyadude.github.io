@@ -10,13 +10,15 @@ export class CopyCommand {
 
     /**
      * Executes the copy command
-     * @param {object} context - Context
+     * @param {object} context Context
      */
     async execute(context) {
+        if (!context.textSelection.isActive() || !context.textSelection.hasRange()) return;
         try {
             const selectionRanges = context.textSelection.getSelectionRanges();
-            const selectionText = context.textBuffer.getSelectionText(selectionRanges);
-            await navigator.clipboard.writeText(selectionText);
+            const block = context.textSelection.getSelection().mode === 'block';
+            const selectionText = context.textBuffer.getSelectionText(selectionRanges, block);
+            await context.clipboard.copy(selectionText);
         } catch (error) {
             return;
         }

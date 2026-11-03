@@ -33,6 +33,12 @@ import { Column } from '../cli-application/column/column.js'
 import { Fortune } from '../cli-application/fortune/fortune.js'
 import { DateInfo } from '../cli-application/date-info/date-info.js'
 import { Whoami } from '../cli-application/whoami/whoami.js'
+import { SwitchUser } from '../cli-application/switch-user/switch-user.js'
+import { Useradd } from '../cli-application/useradd/useradd.js'
+import { Groupadd } from '../cli-application/groupadd/groupadd.js'
+import { Groups } from '../cli-application/groups/groups.js'
+import { Passwd } from '../cli-application/passwd/passwd.js'
+import { Id } from '../cli-application/id/id.js'
 import { Hostname } from '../cli-application/hostname/hostname.js'
 import { Uptime } from '../cli-application/uptime/uptime.js'
 import { Help } from '../cli-application/help/help.js'
@@ -76,6 +82,12 @@ export const CLI_APPS = Object.freeze({
     fortune: new Fortune(),
     dateInfo: new DateInfo(),
     whoami: new Whoami(),
+    switchUser: new SwitchUser(),
+    useradd: new Useradd(),
+    groupadd: new Groupadd(),
+    groups: new Groups(),
+    passwd: new Passwd(),
+    id: new Id(),
     hostname: new Hostname(),
     uptime: new Uptime(),
     help: new Help(),

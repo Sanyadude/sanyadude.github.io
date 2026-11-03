@@ -20,9 +20,9 @@ export class DateInfo extends Application {
 
     /**
      * Executes the `date` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the date command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the date command execution
      */
     main(commandLine, context) {
         const options = commandLine.getOptions();
@@ -55,9 +55,9 @@ export class DateInfo extends Application {
 
     /**
      * Sets the system time to the specified date
-     * @param {string} date - The date to set
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the date command execution
+     * @param {string} date The date to set
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the date command execution
      */
     _setDate(date, context) {
         const newDate = this._dateParser.parse(date);
@@ -70,10 +70,10 @@ export class DateInfo extends Application {
 
     /**
      * Formats the date according to the ISO 8601 standard
-     * @param {Date} date - The date to format
-     * @param {string} fmt - The format to use
-     * @param {boolean} utc - Whether to use UTC time
-     * @returns {string} - The formatted date
+     * @param {Date} date The date to format
+     * @param {string} fmt The format to use
+     * @param {boolean} utc Whether to use UTC time
+     * @returns {string} The formatted date
      */
     _iso8601(date, format = DEFAULT_ISO8601_FORMAT, utc = false) {
         switch (format) {
@@ -91,9 +91,9 @@ export class DateInfo extends Application {
 
     /**
      * Formats the date according to the RFC 5322 standard
-     * @param {Date} date - The date to format
-     * @param {boolean} utc - Whether to use UTC time
-     * @returns {string} - The formatted date
+     * @param {Date} date The date to format
+     * @param {boolean} utc Whether to use UTC time
+     * @returns {string} The formatted date
      */
     _rfcEmail(date, utc = false) {
         return this._dateFormatter.format(date, '%a, %d %b %Y %H:%M:%S %z', utc);

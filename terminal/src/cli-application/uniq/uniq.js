@@ -19,9 +19,9 @@ export class Uniq extends Application {
 
     /**
      * Executes the `uniq` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the uniq command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the uniq command execution
      */
     main(commandLine, context) {
         const options = commandLine.getOptions();
@@ -38,9 +38,9 @@ export class Uniq extends Application {
 
     /**
      * Filters adjacent duplicate lines from text.
-     * @param {string} text - The text to filter
-     * @param {object} options - The options object
-     * @returns {string} - The filtered text
+     * @param {string} text The text to filter
+     * @param {object} options The options object
+     * @returns {string} The filtered text
      */
     _filterText(text = '', options = {}) {
         if (text === '') return '';
@@ -54,8 +54,8 @@ export class Uniq extends Application {
 
     /**
      * Returns the --group method, or null when unused
-     * @param {object} options - The options object
-     * @returns {string|null}
+     * @param {object} options The options object
+     * @returns {string|null} The group method
      */
     _getGroupMethod(options = {}) {
         if (options['group'] === undefined || options['group'] === null) return null;
@@ -66,8 +66,8 @@ export class Uniq extends Application {
 
     /**
      * Returns the --all-repeated method, or null when unused
-     * @param {object} options - The options object
-     * @returns {string|null}
+     * @param {object} options The options object
+     * @returns {string|null} The all repeated method
      */
     _getAllRepeatedMethod(options = {}) {
         if (options['all-repeated'] !== undefined && options['all-repeated'] !== null) {
@@ -81,10 +81,10 @@ export class Uniq extends Application {
 
     /**
      * Joins formatted groups using the selected separator method
-     * @param {string[]} groups - The formatted groups
-     * @param {string} delimiter - The line delimiter
-     * @param {object} options - The options object
-     * @returns {string}
+     * @param {string[]} groups The formatted groups
+     * @param {string} delimiter The line delimiter
+     * @param {object} options The options object
+     * @returns {string} The joined groups
      */
     _joinGroups(groups, delimiter, options = {}) {
         const groupMethod = this._getGroupMethod(options);
@@ -100,8 +100,8 @@ export class Uniq extends Application {
 
     /**
      * Returns the line delimiter for the given options
-     * @param {object} options - The options object
-     * @returns {string} - The line delimiter
+     * @param {object} options The options object
+     * @returns {string} The line delimiter
      */
     _getLineDelimiter(options) {
         return options['zero-terminated'] ? '\0' : '\n';
@@ -109,9 +109,9 @@ export class Uniq extends Application {
 
     /**
      * Splits text into lines using the delimiter for the given options
-     * @param {string} text - The text to split
-     * @param {object} options - The options object
-     * @returns {string[]} - The lines
+     * @param {string} text The text to split
+     * @param {object} options The options object
+     * @returns {string[]} The split lines
      */
     _splitLines(text, options) {
         if (options['zero-terminated']) return text.split('\0');
@@ -120,9 +120,9 @@ export class Uniq extends Application {
 
     /**
      * Groups adjacent equal lines.
-     * @param {string[]} lines - The lines to group
-     * @param {object} options - The options object
-     * @returns {{ line: string, count: number, lines: string[] }[]} - The grouped lines
+     * @param {string[]} lines The lines to group
+     * @param {object} options The options object
+     * @returns {{ line: string, count: number, lines: string[] }[]} The grouped lines
      */
     _groupLines(lines, options = {}) {
         const groups = [];
@@ -141,9 +141,9 @@ export class Uniq extends Application {
 
     /**
      * Returns whether a grouped line should be output.
-     * @param {{ line: string, count: number }} group - The grouped line
-     * @param {object} options - The options object
-     * @returns {boolean} - True when the group should be output
+     * @param {{ line: string, count: number }} group The grouped line
+     * @param {object} options The options object
+     * @returns {boolean} True when the group should be output
      */
     _shouldOutputGroup(group, options = {}) {
         if (this._getGroupMethod(options)) return true;
@@ -154,10 +154,10 @@ export class Uniq extends Application {
 
     /**
      * Formats a grouped line for output.
-     * @param {{ line: string, count: number }} group - The grouped line
-     * @param {object} options - The options object
-     * @param {string} delimiter - The line delimiter
-     * @returns {string} - The formatted line
+     * @param {{ line: string, count: number }} group The grouped line
+     * @param {object} options The options object
+     * @param {string} delimiter The line delimiter
+     * @returns {string} The formatted line
      */
     _formatGroup(group, options = {}, delimiter = '\n') {
         if (this._getGroupMethod(options) || this._getAllRepeatedMethod(options)) {
@@ -169,10 +169,10 @@ export class Uniq extends Application {
 
     /**
      * Compares two lines for equality.
-     * @param {string} line1 - The first line to compare
-     * @param {string} line2 - The second line to compare
-     * @param {object} options - The options object
-     * @returns {boolean} - True if the lines are equal, false otherwise
+     * @param {string} line1 The first line to compare
+     * @param {string} line2 The second line to compare
+     * @param {object} options The options object
+     * @returns {boolean} True if the lines are equal, false otherwise
      */
     _compareLines(line1, line2, options = {}) {
         return this._getComparisonLineKey(line1, options) === this._getComparisonLineKey(line2, options);
@@ -180,9 +180,9 @@ export class Uniq extends Application {
 
     /**
      * Returns the normalized line used for comparison.
-     * @param {string} line - The line to normalize
-     * @param {object} options - The options object
-     * @returns {string} - The comparison key
+     * @param {string} line The line to normalize
+     * @param {object} options The options object
+     * @returns {string} The comparison key
      */
     _getComparisonLineKey(line, options = {}) {
         const skipFields = options['skip-fields'] ? parseInt(options['skip-fields']) : 0;
@@ -197,9 +197,9 @@ export class Uniq extends Application {
 
     /**
      * Skips fields from the beginning of a line.
-     * @param {string} line - The line to trim
-     * @param {number} count - The number of fields to skip
-     * @returns {string} - The line after skipped fields
+     * @param {string} line The line to trim
+     * @param {number} count The number of fields to skip
+     * @returns {string} The line after skipped fields
      */
     _skipFields(line, count = 0) {
         let index = 0;

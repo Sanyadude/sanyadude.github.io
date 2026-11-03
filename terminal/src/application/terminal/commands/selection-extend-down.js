@@ -10,17 +10,16 @@ export class SelectionExtendDownCommand {
 
     /**
      * Executes the selection extend down command
-     * @param {object} context - Context
+     * @param {object} context Context
      */
     execute(context) {
         if (!context.textSelection.isActive()) {
             const position = context.textBuffer.getCursorPosition();
             context.textSelection.setModeLine();
             context.textSelection.setActive();
-            context.textSelection.setStart(position.line, position.column);
+            context.textSelection.setStart(position.row, position.column);
         }
         context.textSelection.moveEnd(1);
-        context.terminalApi.render();
     }
 }
 

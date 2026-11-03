@@ -3,7 +3,7 @@ export const DIRECTORY_MANIFEST = {
     version: '0.1.0',
     description: 'Lists directory contents',
     type: 'cli',
-    dependencies: ['fileSystemExplorer', 'fileSystemManager', 'terminal'],
+    dependencies: ['fileSystemExplorer', 'fileSystemManager', 'terminal', 'userManager'],
     programs: [{
         name: 'dir',
         options: [

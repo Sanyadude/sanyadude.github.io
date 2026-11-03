@@ -15,9 +15,9 @@ export class Find extends Application {
 
     /**
      * Executes the `find` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the find command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the find command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();
@@ -47,9 +47,9 @@ export class Find extends Application {
 
     /**
      * Formats search results for stdin or files
-     * @param {Array<{path: string, lines: string[]}>} results - The lines per source
-     * @param {object} options - The command options
-     * @returns {string[]}
+     * @param {Array<{path: string, lines: string[]}>} results The lines per source
+     * @param {object} options The command options
+     * @returns {string[]} The formatted lines
      */
     _formatLines(results, options) {
         const prefixPaths = results.length > 1;
@@ -73,10 +73,10 @@ export class Find extends Application {
 
     /**
      * Finds lines that contain the search string
-     * @param {string} search - The string to search for
-     * @param {string} text - The text to search in
-     * @param {object} options - The options for the search
-     * @returns {string[]} - The lines containing the search string
+     * @param {string} search The string to search for
+     * @param {string} text The text to search in
+     * @param {object} options The options for the search
+     * @returns {string[]} The lines containing the search string
      */
     _find(search, text, options) {
         const lines = [];

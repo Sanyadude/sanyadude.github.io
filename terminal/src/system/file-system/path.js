@@ -13,7 +13,7 @@ export class Path {
 
     /**
      * Checks if a path is valid
-     * @param {string} path - The path to check
+     * @param {string} path The path to check
      * @returns {boolean} True if the path is valid, false otherwise
      */
     static isValid(path) {
@@ -28,7 +28,7 @@ export class Path {
 
     /**
      * Creates a path from the given parameters
-     * @param {...string} params - The parameters to join
+     * @param {...string} params The parameters to join
      * @returns {string} The created path
      */
     static create(...params) {
@@ -43,7 +43,7 @@ export class Path {
 
     /**
      * Gets the parts of a path
-     * @param {string} path - The path to get the parts of
+     * @param {string} path The path to get the parts of
      * @returns {string[]} The parts of the path
      */
     static getParts(path) {
@@ -56,7 +56,7 @@ export class Path {
 
     /**
      * Trims the path
-     * @param {string} path - The path to trim
+     * @param {string} path The path to trim
      * @returns {string} The trimmed path
      */
     static trim(path) {
@@ -69,7 +69,7 @@ export class Path {
      * - Converts backslashes to slashes
      * - Collapses consecutive slashes
      * - Trims leading/trailing slashes (optional for absolute paths)
-     * @param {string} path - The path to normalize
+     * @param {string} path The path to normalize
      * @returns {string} The normalized path
      */
     static normalize(path) {
@@ -89,7 +89,7 @@ export class Path {
 
     /**
      * Checks if a path is an absolute path
-     * @param {string} path - The path to check
+     * @param {string} path The path to check
      * @returns {boolean} True if the path is an absolute path, false otherwise
      */
     static isAbsolutePath(path) {
@@ -99,7 +99,7 @@ export class Path {
 
     /**
      * Gets the depth of a path
-     * @param {string} path - The path to get the depth of
+     * @param {string} path The path to get the depth of
      * @returns {number} The depth of the path
      */
     static getDepth(path) {
@@ -109,7 +109,7 @@ export class Path {
 
     /**
      * Gets the base name of a path
-     * @param {string} path - The path to get the base name of
+     * @param {string} path The path to get the base name of
      * @returns {string} The base name of the path
      */
     static getName(path) {
@@ -121,8 +121,8 @@ export class Path {
 
     /**
      * Checks if a path is a subdirectory of another path
-     * @param {string} parentPath - The parent path
-     * @param {string} childPath - The child path
+     * @param {string} parentPath The parent path
+     * @param {string} childPath The child path
      * @returns {boolean} True if the path is a subdirectory of the other path, false otherwise
      */
     static isSubdirectory(parentPath, childPath) {
@@ -138,9 +138,9 @@ export class Path {
 
     /**
      * Compares two paths lexicographically 
-     * @param {string} path1 - The first path
-     * @param {string} path2 - The second path
-     * @returns {number} -1 if path1 is less than path2, 1 if path1 is greater than path2, 0 if they are equal
+     * @param {string} path1 The first path
+     * @param {string} path2 The second path
+     * @returns {number} The comparison result: -1 if path1 is less than path2, 1 if path1 is greater than path2, 0 if they are equal
      */
     static comparePaths(path1, path2) {
         if (!Path.isValid(path1) || !Path.isValid(path2)) return 0;
@@ -158,8 +158,8 @@ export class Path {
 
     /**
      * Gets the common path of two paths
-     * @param {string} path1 - The first path
-     * @param {string} path2 - The second path
+     * @param {string} path1 The first path
+     * @param {string} path2 The second path
      * @returns {string} The common path of the two paths
      */
     static getCommonPath(path1, path2) {
@@ -179,8 +179,8 @@ export class Path {
 
     /**
      * Resolves a relative path to an absolute path
-     * @param {string} basePath - The base path
-     * @param {string} relativePath - The relative path
+     * @param {string} basePath The base path
+     * @param {string} relativePath The relative path
      * @returns {string} The absolute path
      */
     static resolvePath(basePath, relativePath) {
@@ -205,8 +205,8 @@ export class Path {
 
     /**
      * Gets the relative path from one path to another
-     * @param {string} fromPath - The starting path
-     * @param {string} toPath - The target path
+     * @param {string} fromPath The starting path
+     * @param {string} toPath The target path
      * @returns {string} The relative path
      */
     static getRelativePath(fromPath, toPath) {
@@ -236,7 +236,7 @@ export class Path {
 
     /**
      * Gets the name part of a file full name
-     * @param {string} fileFullName - The file full name
+     * @param {string} fileFullName The file full name
      * @returns {string} The name part of the file full name
      */
     static getNamePart(fileFullName) {
@@ -248,7 +248,7 @@ export class Path {
 
     /**
      * Gets the extension part of a file full name
-     * @param {string} fileFullName - The file full name
+     * @param {string} fileFullName The file full name
      * @returns {string} The extension part of the file full name
      */
     static getExtensionPart(fileFullName) {
@@ -260,7 +260,7 @@ export class Path {
 
     /**
      * Checks if a path or name contains glob characters (*, ?, or [...])
-     * @param {string} pattern - The path or name to check
+     * @param {string} pattern The path or name to check
      * @returns {boolean} True if the pattern contains glob characters
      */
     static isGlob(pattern) {
@@ -271,7 +271,7 @@ export class Path {
     /**
      * Converts glob pattern to a regular expression
      * Supports *, ?, and [abc] / [!abc] character classes
-     * @param {string} pattern - The glob pattern
+     * @param {string} pattern The glob pattern
      * @returns {RegExp} The regular expression
      */
     static globToRegExp(pattern) {

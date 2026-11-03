@@ -11,8 +11,8 @@ export class ApplicationRegistry {
 
     /**
      * Gets a registry entry by name
-     * @param {string} name - The name of the registry entry
-     * @returns {Object<Application, string[]>} - The registry entry
+     * @param {string} name The name of the registry entry
+     * @returns {Object<Application, string[]>} The registry entry
      */
     get(name) {
         const entry = this._registry.get(name);
@@ -22,8 +22,8 @@ export class ApplicationRegistry {
 
     /**
      * Checks if an application is registered by name
-     * @param {string} name - The name of the application
-     * @returns {boolean} - True if the application is registered, false otherwise
+     * @param {string} name The name of the application
+     * @returns {boolean} True if the application is registered, false otherwise
      */
     has(name) {
         return this._registry.has(name);
@@ -31,7 +31,7 @@ export class ApplicationRegistry {
 
     /**
      * Gets all applications and their dependencies
-     * @returns {Object<Application, string[]>} - The applications and their dependencies
+     * @returns {Object<Application, string[]>} The applications and their dependencies
      */
     values() {
         return [...this._registry.values()];
@@ -39,8 +39,8 @@ export class ApplicationRegistry {
 
     /**
      * Gets an application by name
-     * @param {string} name - The name of the application
-     * @returns {Application} - The application
+     * @param {string} name The name of the application
+     * @returns {Application} The application
      */
     getApplication(name) {
         const applicationEntry = this._registry.get(name);
@@ -50,8 +50,8 @@ export class ApplicationRegistry {
 
     /**
      * Gets the dependencies of an application by name
-     * @param {string} name - The name of the application
-     * @returns {string[]} - The dependencies of the application
+     * @param {string} name The name of the application
+     * @returns {string[]} The dependencies of the application
      */
     getDependencies(name) {
         const applicationEntry = this._registry.get(name);
@@ -61,9 +61,9 @@ export class ApplicationRegistry {
 
     /**
      * Registers an application
-     * @param {Application} application - The application to register
-     * @param {string[]} dependencies - The dependencies of the application
-     * @returns {ApplicationRegistry} - The application registry instance
+     * @param {Application} application The application to register
+     * @param {string[]} dependencies The dependencies of the application
+     * @returns {ApplicationRegistry} The application registry instance
      * @throws {Error} - If the application is already registered
      */
     register(application, dependencies = []) {

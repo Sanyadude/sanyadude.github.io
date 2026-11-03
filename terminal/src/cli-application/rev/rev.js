@@ -15,9 +15,9 @@ export class Rev extends Application {
 
     /**
      * Executes the `rev` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the rev command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the rev command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();
@@ -44,9 +44,9 @@ export class Rev extends Application {
 
     /**
      * Formats the text of the `rev` command
-     * @param {string} text - The text to format
-     * @param {object} options - The options of the command
-     * @returns {string} - The formatted text
+     * @param {string} text The text to format
+     * @param {object} options The options of the command
+     * @returns {string} The formatted text
      */
     _formatText(text, options = {}) {
         if (!text) return '';
@@ -57,9 +57,9 @@ export class Rev extends Application {
 
     /**
      * Splits text into lines using the delimiter for the given options
-     * @param {string} text - The text to split
-     * @param {object} options - The options object
-     * @returns {string[]} - The lines
+     * @param {string} text The text to split
+     * @param {object} options The options object
+     * @returns {string[]} The lines
      */
     _splitLines(text, options) {
         if (options['zero']) return text.split('\0');
@@ -68,8 +68,8 @@ export class Rev extends Application {
 
     /**
      * Returns the line delimiter for the given options
-     * @param {object} options - The options object
-     * @returns {string} - The line delimiter
+     * @param {object} options The options object
+     * @returns {string} The line delimiter
      */
     _getLineDelimiter(options) {
         return options['zero'] ? '\0' : '\n';

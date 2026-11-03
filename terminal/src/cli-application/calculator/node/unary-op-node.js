@@ -4,8 +4,8 @@
 export class UnaryOpNode {
     /**
      * Creates a new UnaryOpNode
-     * @param {string} operator - The unary operator symbol
-     * @param {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} operand - The operand node
+     * @param {string} operator The unary operator symbol
+     * @param {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} operand The operand node
      */
     constructor(operator, operand) {
         this.operator = operator;

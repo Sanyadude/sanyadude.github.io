@@ -2,28 +2,17 @@
  * Action names
  */
 export const ACTIONS = Object.freeze({
-    INSERT_CHAR: 'insertChar',
-    SUBMIT: 'submit',
-    COMPLETION: 'completion',
-    COMPLETION_REVERSE: 'completionReverse',
-    DELETE_BACKWARD: 'deleteBackward',
-    DELETE_FORWARD: 'deleteForward',
-    HISTORY_UP: 'historyUp',
-    HISTORY_DOWN: 'historyDown',
     SELECTION_EXTEND_UP: 'selectionExtendUp',
     SELECTION_EXTEND_DOWN: 'selectionExtendDown',
     SELECTION_EXTEND_LEFT: 'selectionExtendLeft',
     SELECTION_EXTEND_RIGHT: 'selectionExtendRight',
+    SELECT_WORD: 'selectWord',
+    SELECT_LINE: 'selectLine',
     COPY: 'copy',
-    PASTE: 'paste',
-    INTERRUPT: 'interrupt',
-    MOVE_CURSOR_LEFT: 'moveCursorLeft',
-    MOVE_CURSOR_RIGHT: 'moveCursorRight',
-    MOVE_CURSOR_WORD_LEFT: 'moveCursorWordLeft',
-    MOVE_CURSOR_WORD_RIGHT: 'moveCursorWordRight',
-    MOVE_CURSOR_TO_COORDINATES: 'moveCursorToCoordinates',
-    MOVE_CURSOR_TO_START: 'moveCursorToStart',
-    MOVE_CURSOR_TO_END: 'moveCursorToEnd',
+    SCROLL_HOME: 'scrollHome',
+    SCROLL_END: 'scrollEnd',
+    SCROLL_PAGE_UP: 'scrollPageUp',
+    SCROLL_PAGE_DOWN: 'scrollPageDown'
 });
 
 export default ACTIONS

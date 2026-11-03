@@ -3,7 +3,7 @@ import { FONTS } from '../../figlet/fonts.js'
 /**
  * Generates smoke tests for every toilet font.
  * Each test runs the command and passes if it produces any non-error output.
- * @returns {Array<{input: string}>}
+ * @returns {Array<{input: string}>} The tests
  */
 function generateTests() {
     const tests = [];

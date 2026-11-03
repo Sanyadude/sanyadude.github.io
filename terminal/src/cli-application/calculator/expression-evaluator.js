@@ -17,8 +17,8 @@ export class ExpressionEvaluator {
 
     /**
      * Evaluates the given AST and returns the numeric result
-     * @param {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} tree - The root AST node
-     * @returns {number} - The computed numeric value
+     * @param {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} tree The root AST node
+     * @returns {number} The computed numeric value
      * @throws {Error} If division by zero occurs or an unknown function/node is encountered
      */
     evaluate(tree) {
@@ -28,8 +28,8 @@ export class ExpressionEvaluator {
 
     /**
      * Recursively evaluates an AST node
-     * @param {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} node - The AST node to evaluate
-     * @returns {number} - The computed numeric value
+     * @param {NumberNode|BinaryOpNode|UnaryOpNode|FunctionCallNode} node The AST node to evaluate
+     * @returns {number} The computed numeric value
      * @throws {Error} If division by zero occurs or an unknown function/node is encountered
      */
     _evaluateNode(node) {

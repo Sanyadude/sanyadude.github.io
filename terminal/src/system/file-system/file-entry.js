@@ -8,8 +8,8 @@ import { Path } from './path.js'
 export class FileEntry extends Entry {
     /**
      * Creates a new file entry
-     * @param {string} name - The name of the file
-     * @param {string|Uint8Array|ArrayBuffer|Object|any} content - The content of the file
+     * @param {string} name The name of the file
+     * @param {string|Uint8Array|ArrayBuffer|Object|any} content The content of the file
      */
     constructor(name, content) {
         super(name);
@@ -73,7 +73,7 @@ export class FileEntry extends Entry {
 
     /**
      * Gets the content of the file as a JSON object
-     * @returns {Object} The content of the file as a JSON object
+     * @returns {object} The content of the file as a JSON object
      */
     readAsJSON() {
         try {
@@ -85,7 +85,7 @@ export class FileEntry extends Entry {
 
     /**
      * Reads a specific line (0-based index) from the file content
-     * @param {number} lineNumber - The line number to read (0-based)
+     * @param {number} lineNumber The line number to read (0-based)
      * @returns {string|null} The line content, or null if line does not exist
      */
     readLine(lineNumber) {
@@ -112,7 +112,7 @@ export class FileEntry extends Entry {
 
     /**
      * Writes the content to the file
-     * @param {string|Uint8Array|ArrayBuffer} content - The content to write to the file
+     * @param {string|Uint8Array|ArrayBuffer} content The content to write to the file
      */
     write(content) {
         if (typeof content === 'string') {
@@ -125,7 +125,7 @@ export class FileEntry extends Entry {
 
     /**
      * Writes the content to the file as a byte array
-     * @param {Uint8Array|ArrayBuffer} content - The content to write to the file as a byte array
+     * @param {Uint8Array|ArrayBuffer} content The content to write to the file as a byte array
      */
     writeBytes(content) {
         if (!(content instanceof Uint8Array) && !(content instanceof ArrayBuffer)) {
@@ -138,7 +138,7 @@ export class FileEntry extends Entry {
 
     /**
      * Writes the content to the file as a string
-     * @param {string} content - The content to write to the file as a string
+     * @param {string} content The content to write to the file as a string
      */
     writeString(content) {
         if (typeof content !== 'string') {
@@ -151,7 +151,7 @@ export class FileEntry extends Entry {
 
     /**
      * Writes the content to the file as an array of lines
-     * @param {string[]} lines - The content to write to the file as an array of lines
+     * @param {string[]} lines The content to write to the file as an array of lines
      */
     writeLines(lines) {
         if (!Array.isArray(lines)) {
@@ -163,7 +163,7 @@ export class FileEntry extends Entry {
 
     /**
      * Writes the content to the file as a JSON object
-     * @param {object} data - The content to write to the file as a JSON object
+     * @param {object} data The content to write to the file as a JSON object
      */
     writeJSON(data) {
         if (typeof data !== 'object') {
@@ -175,7 +175,7 @@ export class FileEntry extends Entry {
 
     /**
      * Appends the content to the file
-     * @param {string} content - The content to append to the file
+     * @param {string} content The content to append to the file
      */
     writeLine(content) {
         const newContent = new TextEncoder().encode('\n' + content);
@@ -204,7 +204,7 @@ export class FileEntry extends Entry {
 
     /**
      * Checks if the entry is a file
-     * @returns {boolean} returns true
+     * @returns {boolean} True if the entry is a file, false otherwise
      */
     isFile() {
         return true;

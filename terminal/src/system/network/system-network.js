@@ -34,7 +34,7 @@ export class SystemNetwork {
 
     /**
      * Gets the status of the network
-     * @returns {string} - The status of the network
+     * @returns {string} The status of the network
      */
     getStatus() {
         return this.isOnline ? NETWORK_STATUS.ONLINE : NETWORK_STATUS.OFFLINE;

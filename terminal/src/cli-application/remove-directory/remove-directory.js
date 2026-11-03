@@ -15,9 +15,9 @@ export class RemoveDirectory extends Application {
 
     /**
      * Executes the `rd` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The context of the command execution
-     * @returns {string} - The result of the rmdir/rd command execution
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The context of the command execution
+     * @returns {string} The result of the rmdir/rd command execution
      */
     main(commandLine, context) {
         const args = commandLine.getArguments();

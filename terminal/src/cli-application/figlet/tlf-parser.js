@@ -4,8 +4,8 @@
 export class TlfParser {
     /**
      * Parses the TLF font file
-     * @param {string} fontFile - The font file content
-     * @returns {Object} - Parsed font object with metadata and character map
+     * @param {string} fontFile The font file content
+     * @returns {object} Parsed font object with metadata and character map
      */
     parse(fontFile) {
         const lines = fontFile.split('\n');
@@ -95,9 +95,9 @@ export class TlfParser {
 
     /**
      * Parses the layout property of font
-     * @param {number} oldLayout - The old layout
-     * @param {number} fullLayout - The full layout
-     * @returns {Object} - The parsed layout object
+     * @param {number} oldLayout The old layout
+     * @param {number} fullLayout The full layout
+     * @returns {object} The parsed layout object
      */
     _parseLayout(oldLayout, fullLayout) {
         const hasBit = (value, bit) => (value & bit) !== 0;

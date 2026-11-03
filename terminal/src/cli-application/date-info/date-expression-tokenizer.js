@@ -6,8 +6,8 @@ import { TOKEN, UNITS, WEEKDAYS, MONTHS, KEYWORDS, RELATIVE_DAYS, NUMBER_REGEX, 
 export class DateExpressionTokenizer {
     /**
      * Tokenizes a date string
-     * @param {string} dateString - The date string to tokenize
-     * @returns {Array<{type: string, value: string}>} - The tokens
+     * @param {string} dateString The date string to tokenize
+     * @returns {Array<{type: string, value: string}>} The tokens
      */
     tokenize(dateString) {
         dateString = dateString

@@ -19,8 +19,8 @@ export class Calculator extends Application {
 
     /**
      * Parses and evaluates a mathematical expression
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @returns {string} - The evaluation result
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @returns {string} The evaluation result
      */
     main(commandLine) {
         const args = commandLine.getArguments();

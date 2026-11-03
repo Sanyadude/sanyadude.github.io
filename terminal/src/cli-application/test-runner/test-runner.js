@@ -28,9 +28,9 @@ export class TestRunner extends Application {
 
     /**
      * Executes the `test` command
-     * @param {ShellCommandLine} commandLine - The command line to execute
-     * @param {object} context - The execution context with dependencies
-     * @returns {Promise<string>} - The test results output
+     * @param {ShellCommandLine} commandLine The command line to execute
+     * @param {object} context The execution context with dependencies
+     * @returns {Promise<string>} The test results output
      */
     async main(commandLine, context) {
         const shell = context.shell;
@@ -50,7 +50,7 @@ export class TestRunner extends Application {
 
     /**
      * Returns a formatted list of available test suites
-     * @returns {string} - The formatted suite list
+     * @returns {string} The formatted suite list
      */
     _listSuites() {
         const lines = [`${ANSI_BOLD}Available test suites:${ANSI_RESET}`, ''];
@@ -64,9 +64,9 @@ export class TestRunner extends Application {
 
     /**
      * Runs multiple test suites and returns the combined results
-     * @param {Shell} shell - The shell instance for executing commands
-     * @param {boolean} verbose - Whether to show passing tests
-     * @returns {Promise<string>} - The formatted test results
+     * @param {Shell} shell The shell instance for executing commands
+     * @param {boolean} verbose Whether to show passing tests
+     * @returns {Promise<string>} The formatted test results
      */
     async _runAllSuites(shell, verbose) {
         const suites = Object.values(this._suites);
@@ -91,10 +91,10 @@ export class TestRunner extends Application {
 
     /**
      * Runs a single test suite and returns the results
-     * @param {{name: string, description: string, tests: Array}} suite - The test suite
-     * @param {Shell} shell - The shell instance for executing commands
-     * @param {boolean} verbose - Whether to show passing tests
-     * @returns {Promise<{passed: number, failed: number, output: string}>} - The suite results
+     * @param {{name: string, description: string, tests: Array}} suite The test suite
+     * @param {Shell} shell The shell instance for executing commands
+     * @param {boolean} verbose Whether to show passing tests
+     * @returns {Promise<{passed: number, failed: number, output: string}>} The suite results
      */
     async _runSuite(suite, shell, verbose) {
         let passed = 0;
@@ -128,9 +128,9 @@ export class TestRunner extends Application {
      * If `test.expected` is defined, compares output against it.
      * If absent (smoke test), passes as long as the command doesn't throw
      * or return an output starting with a known error prefix.
-     * @param {{input: string, expected: string}} test - The test case
-     * @param {Shell} shell - The shell instance
-     * @returns {Promise<{passed: boolean, expected: string, actual: string}>} - The test result
+     * @param {{input: string, expected: string}} test The test case
+     * @param {Shell} shell The shell instance
+     * @returns {Promise<{passed: boolean, expected: string, actual: string}>} The test result
      */
     async _runTest(test, shell) {
         try {
@@ -161,9 +161,9 @@ export class TestRunner extends Application {
     /**
      * Executes a command through the shell and returns the output,
      * handling pipes and redirections through the full shell pipeline
-     * @param {Shell} shell - The shell instance
-     * @param {string} command - The command to execute
-     * @returns {Promise<string>} - The command output
+     * @param {Shell} shell The shell instance
+     * @param {string} command The command to execute
+     * @returns {Promise<string>} The command output
      */
     async _executeCommand(shell, command) {
         return shell._runPipeline(command);
